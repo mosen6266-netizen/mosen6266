@@ -4,21 +4,24 @@
 
 1. 先解压并检查备份包的完整目录结构，不要删除或改写现有 HTML 工具内容，除非迁移所必需。
 2. 新仓库默认分支使用 main。
-3. 保留并部署：index.html、所有 HTML 工具、DOCX文件编辑器.html、邮件编辑器.html、docx-template-loader.js、shared-order.js、access-gate.js、access-config.json、global-order.json、templates/ 目录及其中 DOCX 模板与 index.json、图片资源、.github/workflows/ 下的自动构建/部署配置、site_parts/ 及其它当前构建依赖。
-4. 自动把 shared-order.js 和 access-gate.js 里的旧仓库信息替换为新仓库：OWNER = 当前新 GitHub 用户名，REPO = 当前新仓库名，BRANCH = main。不得继续指向 mosen6266-netizen/mosen6266。
-5. 保留工具中心首页密码遮罩。只有 index.html 首页需要输入访问密码，里面各个工具的直接链接不要增加密码。登录页右上角保留“管理员”功能：管理员输入旧密码、新密码和当前新仓库的 Fine-grained Personal Access Token 后，可以把 access-config.json 中的全局访问密码更新为新密码。密码只能保存 SHA-256 哈希，不得把明文密码或 Token 写进仓库。Token 只允许用于当次浏览器请求。
-6. 保留工具中心三个分类：美国、德国、其它工具。
-7. 美国、德国分类标题要显示对应真实国旗；美国/德国工具卡片右上角国家小气泡也要显示对应国旗。
-8. 保留工具中心卡片拖拽排序与“保存当前排序”；排序是全局排序，所有人打开固定原链接都看到管理员最后保存的顺序。
-9. 保留 DOCX 编辑器：美国模板 / 德国模板 / 我的模板；文件名含“德国”的内置 DOCX 自动归德国，其余归美国；左侧栏加宽，长文件名完整换行显示；美国、德国标题显示对应国旗；模板可拖拽排序，点“保存当前排序”后保存为全局顺序；手动上传 DOCX 功能继续保留。
-10. 保留 DOCX 输出文件名选择窗口的美国/德国两个板块，并保留现有固定输出名称与国旗显示。
-11. templates/ 以后仍然是我上传内置 DOCX 模板的唯一固定目录。上传或删除 DOCX 后，自动构建要更新 templates/index.json，不需要手改 HTML。
-12. 保留 global-order.json 中当前顺序，除非新仓库结构导致 ID 不匹配；如不匹配，请在不改变视觉顺序的前提下修复。
-13. 保留 GitHub Pages 可直接访问：根地址打开带密码遮罩的墨森工具中心，每个 HTML 工具仍能通过固定 URL 直接打开。
-14. 检查缓存版本号，确保新部署不会继续读取旧 JS。
-15. 完成后请实际检查 GitHub Actions / Pages 是否成功，并给我：新的墨森工具中心固定链接、DOCX 编辑器固定链接、templates/ 上传目录链接、新仓库链接。
-16. 不要把任何 Personal Access Token 写入仓库或网页。需要管理员全局保存排序或修改首页密码时，仍然只在浏览器临时输入 fine-grained token；token 仅给新仓库 Contents: Read and write 权限。
-17. 如果备份中已有自动部署工作流，优先修复复用，不要重新设计整套架构。
-18. 不要只告诉我步骤。你应当直接使用已连接的 GitHub 工具完成仓库创建、上传、修改和部署；只有当连接权限确实缺失时才告诉我缺少哪一步授权。
+3. 保留并部署：index.html、所有现有 HTML 工具、DOCX文件编辑器.html、邮件编辑器.html、docx-template-loader.js、shared-order.js、dynamic-tools.js、access-gate.js、access-config-fresh.js、access-config.json、global-order.json、templates/、tools/、图片资源、.github/workflows/、site_parts/ 及其它当前构建依赖。
+4. 自动把 shared-order.js、dynamic-tools.js、access-gate.js、access-config-fresh.js 里涉及旧仓库的 OWNER / REPO / BRANCH 替换为新仓库实际信息；不得继续指向 mosen6266-netizen/mosen6266。
+5. 保留工具中心首页密码遮罩。只有 index.html 首页需要输入访问密码，里面各个工具的直接链接不要增加密码。登录页右上角保留“管理员”功能：管理员输入旧密码、新密码和当前新仓库的 Fine-grained Personal Access Token 后，可以更新 access-config.json 中所有人使用的访问密码。密码只能保存 SHA-256 哈希，不得把明文密码或 Token 写进仓库；Token 只允许用于当次浏览器请求。
+6. 保留工具中心三个分类：美国、德国、其它工具。美国、德国分类标题要显示对应真实国旗，美国/德国工具卡片右上角国家小气泡也要显示对应国旗。
+7. 保留工具中心跨分类拖拽。卡片必须能在美国、德国、其它工具三个分类之间互相拖动；点击“保存当前排序”后，分类位置和分类内顺序一起写入 global-order.json，所有人打开固定原链接都看到管理员最后保存的结果。
+8. 保留 tools/ 作为以后上传自定义 HTML 工具和配套图片/静态资源的固定目录。上传或删除 tools/ 中的 HTML 后，GitHub Actions 自动扫描 tools/**/*.html 并重建 tools/index.json，首页自动新增或移除对应工具卡片，不需要手改 index.html。
+9. tools/ 中 HTML 的默认自动分类规则保持：文件名/路径含“德国”归德国；含“其它”或“其他”归其它工具；其余默认归美国。允许管理员之后通过跨分类拖拽并全局保存来覆盖默认分类。
+10. tools/ 必须保留原目录结构并支持 HTML 使用相对路径读取同目录或子目录中的 PNG/JPG/JPEG/SVG/WEBP/GIF/CSS/JS 等静态资源。例如 tools/A.html 读取 ./logo.png，或 tools/子目录/A.html 读取 ./images/logo.png，都要正常工作。
+11. 动态工具卡片标题优先读取 HTML 的 <title>；没有时使用文件名。保留可选 meta：mosen-title、mosen-description、mosen-category、mosen-icon 的支持。
+12. 保留 DOCX 编辑器：美国模板 / 德国模板 / 我的模板；文件名含“德国”的内置 DOCX 自动归德国，其余归美国；左侧栏加宽，长文件名完整换行显示；美国、德国标题显示对应国旗；模板可拖拽排序，点“保存当前排序”后保存为全局顺序；手动上传 DOCX 功能继续保留。
+13. 保留 DOCX 输出文件名选择窗口的美国/德国两个板块，并保留现有固定输出名称与国旗显示。
+14. templates/ 以后仍然是我上传内置 DOCX 模板的唯一固定目录。上传或删除 DOCX 后，自动构建更新 templates/index.json，不需要手改 HTML。
+15. 保留 global-order.json 中当前顺序和分类；如迁移后动态工具 ID 或仓库结构发生变化，请在不改变当前视觉分类和顺序的前提下修复。
+16. 保留 GitHub Pages 可直接访问：根地址打开带密码遮罩的墨森工具中心，每个静态 HTML 工具和 tools/ 内动态 HTML 工具都能通过固定 URL 直接打开。
+17. 检查所有 JS 缓存版本号，确保新部署读取当前最新版脚本。
+18. 完成后实际检查 GitHub Actions / Pages 是否成功，并给我：新的墨森工具中心固定链接、DOCX 编辑器固定链接、templates/ 上传目录链接、tools/ 上传目录链接、新仓库链接。
+19. 不要把任何 Personal Access Token 写入仓库或网页。需要管理员全局保存排序或修改首页密码时，仍然只在浏览器临时输入 fine-grained token；token 仅给新仓库 Contents: Read and write 权限。
+20. 如果备份中已有自动部署工作流，优先修复复用，不要重新设计整套架构。
+21. 不要只告诉我步骤。你应当直接使用已连接的 GitHub 工具完成仓库创建、上传、修改和部署；只有当连接权限确实缺失时才告诉我缺少哪一步授权。
 
 迁移目标：最终效果必须尽量与备份时一致，我只需要把新固定链接发给别人即可使用。
