@@ -71,6 +71,7 @@ jobs:
 
           cp docx-template-loader.js public/docx-template-loader.js
           cp shared-order.js public/shared-order.js
+          cp dynamic-tools.js public/dynamic-tools.js
           cp access-config-fresh.js public/access-config-fresh.js
           cp access-gate.js public/access-gate.js
           cp access-config.json public/access-config.json
@@ -92,7 +93,7 @@ jobs:
               '.template-name{font-size:13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
               '.template-name{font-size:13px;font-weight:650;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.45;overflow-wrap:anywhere}'
           )
-          for v in range(1, 20):
+          for v in range(1, 30):
               for name in ('docx-template-loader.js', 'shared-order.js'):
                   old = f'<script src="./{name}?v={v}"></script>'
                   s = s.replace(old + '\n', '').replace(old, '')
@@ -104,27 +105,117 @@ jobs:
           )
           p.write_text(s, encoding='utf-8')
 
-          # Tool center global-order + password-gate support
+          # Tool center global-order + password-gate + dynamic HTML tools support
           p = Path('public/index.html')
           s = p.read_text(encoding='utf-8')
-          for v in range(1, 20):
-              for name in ('shared-order.js', 'access-gate.js', 'access-config-fresh.js'):
+          for v in range(1, 30):
+              for name in ('shared-order.js', 'dynamic-tools.js', 'access-gate.js', 'access-config-fresh.js'):
                   old = f'<script src="./{name}?v={v}"></script>'
                   s = s.replace(old + '\n', '').replace(old, '')
           s = s.replace(
               '拖拽后的顺序只有在点击保存后才会被记住。',
-              '拖拽后点击保存，会把当前顺序保存为所有人使用的全局顺序。'
+              '可在美国、德国和其它工具之间跨分类拖拽；点击保存后，分类和顺序都会保存为所有人使用的全局结果。'
+          )
+          s = s.replace(
+              '拖拽后点击保存，会把当前顺序保存为所有人使用的全局顺序。',
+              '跨分类拖拽后点击保存，会把当前分类和顺序保存为所有人使用的全局结果。'
           )
           s = s.replace(
               '排序保存在当前浏览器的本地存储中。请将本文件与所有 HTML 工具及图片资源放在同一目录中使用。',
-              '固定链接会自动读取全局排序。只有拥有仓库写入授权的管理员才能修改全局顺序。'
+              '固定链接会自动读取全局分类和排序。只有拥有仓库写入授权的管理员才能修改。'
           )
           s = s.replace('</head>', '<script src="./access-config-fresh.js?v=1"></script>\n<script src="./access-gate.js?v=2"></script>\n</head>')
-          s = s.replace('</body>', '<script src="./shared-order.js?v=3"></script>\n</body>')
+          s = s.replace('</body>', '<script src="./dynamic-tools.js?v=1"></script>\n<script src="./shared-order.js?v=3"></script>\n</body>')
           p.write_text(s, encoding='utf-8')
           PY
 
           cp -a public/. .
+
+      - name: Build dynamic HTML tool index
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tools
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, html, json, re
+
+          root = Path('tools')
+
+          def read_text(path):
+              data = path.read_bytes()
+              for enc in ('utf-8', 'utf-8-sig', 'gb18030', 'latin-1'):
+                  try:
+                      return data.decode(enc)
+                  except Exception:
+                      pass
+              return data.decode('utf-8', errors='replace')
+
+          def meta_value(text, name):
+              escaped = re.escape(name)
+              patterns = [
+                  rf'<meta\b[^>]*\bname\s*=\s*["\']{escaped}["\'][^>]*\bcontent\s*=\s*["\']([^"\']*)["\'][^>]*>',
+                  rf'<meta\b[^>]*\bcontent\s*=\s*["\']([^"\']*)["\'][^>]*\bname\s*=\s*["\']{escaped}["\'][^>]*>',
+              ]
+              for pattern in patterns:
+                  m = re.search(pattern, text, flags=re.I | re.S)
+                  if m:
+                      return html.unescape(m.group(1)).strip()
+              return ''
+
+          def title_value(text, fallback):
+              custom = meta_value(text, 'mosen-title')
+              if custom:
+                  return custom
+              m = re.search(r'<title\b[^>]*>(.*?)</title>', text, flags=re.I | re.S)
+              if m:
+                  value = re.sub(r'<[^>]+>', '', m.group(1))
+                  value = html.unescape(value).strip()
+                  if value:
+                      return value
+              return fallback
+
+          def category_value(text, rel):
+              custom = meta_value(text, 'mosen-category').strip().lower()
+              if custom in ('de', '德国'):
+                  return 'de'
+              if custom in ('other', '其它', '其他', '其它工具', '其他工具'):
+                  return 'other'
+              if custom in ('us', '美国'):
+                  return 'us'
+              name = rel.as_posix()
+              if '德国' in name:
+                  return 'de'
+              if '其它' in name or '其他' in name:
+                  return 'other'
+              return 'us'
+
+          items = []
+          for p in sorted(root.rglob('*.html'), key=lambda x: x.as_posix().lower()):
+              if not p.is_file():
+                  continue
+              rel = p.relative_to(Path('.'))
+              text = read_text(p)
+              title = title_value(text, p.stem)
+              description = meta_value(text, 'description') or meta_value(text, 'mosen-description') or '自定义 HTML 工具'
+              icon = meta_value(text, 'mosen-icon')
+              stable_id = 'dynamic-' + hashlib.sha1(rel.as_posix().encode('utf-8')).hexdigest()[:12]
+              items.append({
+                  'id': stable_id,
+                  'name': p.name,
+                  'title': title,
+                  'description': description,
+                  'path': rel.as_posix(),
+                  'category': category_value(text, rel),
+                  'icon': icon,
+              })
+
+          (root / 'index.json').write_text(
+              json.dumps({'tools': items}, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8'
+          )
+          print(f'Indexed {len(items)} dynamic HTML tools.')
+          PY
 
       - name: Build DOCX template index
         shell: bash
@@ -158,10 +249,10 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- '*.html' '*.png' '*.js' access-config.json templates/index.json .nojekyll
+          git add -A -- '*.html' '*.png' '*.js' access-config.json tools/index.json templates/index.json .nojekyll
           if git diff --cached --quiet; then
-            echo 'Site files and template index are already up to date.'
+            echo 'Site files and indexes are already up to date.'
             exit 0
           fi
-          git commit -m 'Publish Mosen tools site and template index'
+          git commit -m 'Publish Mosen tools site and indexes'
           git push
