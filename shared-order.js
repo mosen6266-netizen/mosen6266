@@ -1,50 +1,31 @@
 (() => {
   'use strict';
 
-  const TOOL_PARAM = 'toolOrder';
-  const TEMPLATE_PARAM = 'templateOrder';
+  const OWNER = 'mosen6266-netizen';
+  const REPO = 'mosen6266';
+  const BRANCH = 'main';
+  const CONFIG_PATH = 'global-order.json';
+  const RAW_CONFIG_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${CONFIG_PATH}`;
+  const API_CONFIG_URL = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${CONFIG_PATH}`;
 
-  function readOrderParam(name){
-    try{
-      const raw = new URL(window.location.href).searchParams.get(name);
-      if(!raw) return null;
-      const data = JSON.parse(raw);
-      return data && typeof data === 'object' ? data : null;
-    }catch(err){
-      console.warn('无法读取共享排序：', err);
-      return null;
-    }
+  function blankConfig(){
+    return {version:1, toolCenter:null, docxTemplates:null, updatedAt:null};
   }
 
-  function writeOrderParam(name, data){
-    const url = new URL(window.location.href);
-    url.searchParams.set(name, JSON.stringify(data));
-    history.replaceState(null, '', url.toString());
-    return url.toString();
-  }
-
-  async function copyText(text){
-    try{
-      if(navigator.clipboard && window.isSecureContext){
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    }catch(_){ }
-    try{
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      ta.style.pointerEvents = 'none';
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand('copy');
-      ta.remove();
-      return ok;
-    }catch(_){
-      return false;
+  async function fetchGlobalConfig(){
+    const urls = [
+      RAW_CONFIG_URL + '?v=' + Date.now(),
+      './' + CONFIG_PATH + '?v=' + Date.now()
+    ];
+    for(const url of urls){
+      try{
+        const res = await fetch(url, {cache:'no-store'});
+        if(!res.ok) continue;
+        const data = await res.json();
+        return Object.assign(blankConfig(), data && typeof data === 'object' ? data : {});
+      }catch(_){ }
     }
+    return blankConfig();
   }
 
   function reorderByIds(container, selector, keyFn, ids){
@@ -63,28 +44,105 @@
     return true;
   }
 
-  function initToolCenter(){
+  function utf8ToBase64(text){
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    for(let i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function base64ToUtf8(text){
+    const clean = String(text || '').replace(/\s/g, '');
+    const binary = atob(clean);
+    const bytes = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  function askWriteToken(){
+    return (window.prompt(
+      '保存全局排序需要 GitHub 写入授权。\n\n请粘贴仅对 mosen6266 仓库具有 Contents: Read and write 权限的 Fine-grained personal access token。\n\n令牌只用于本次保存请求，不会写入网页、仓库或浏览器存储。请不要把令牌发送给任何人。'
+    ) || '').trim();
+  }
+
+  async function readRepoConfigForWrite(token){
+    const res = await fetch(API_CONFIG_URL + '?ref=' + encodeURIComponent(BRANCH), {
+      cache:'no-store',
+      headers:{
+        'Accept':'application/vnd.github+json',
+        'Authorization':'Bearer ' + token,
+        'X-GitHub-Api-Version':'2022-11-28'
+      }
+    });
+    if(res.status === 404) return {sha:null, data:blankConfig()};
+    const payload = await res.json().catch(() => ({}));
+    if(!res.ok){
+      if(res.status === 401 || res.status === 403) throw new Error('GitHub 授权无效，或令牌没有该仓库的 Contents 写入权限。');
+      throw new Error(payload.message || `读取全局排序失败 (${res.status})`);
+    }
+    let data = blankConfig();
+    try{
+      data = Object.assign(blankConfig(), JSON.parse(base64ToUtf8(payload.content || '')));
+    }catch(_){ }
+    return {sha:payload.sha || null, data};
+  }
+
+  async function saveGlobalSection(section, value){
+    const token = askWriteToken();
+    if(!token) throw new Error('已取消全局保存。');
+
+    const current = await readRepoConfigForWrite(token);
+    const next = Object.assign(blankConfig(), current.data || {});
+    next[section] = value;
+    next.updatedAt = new Date().toISOString();
+
+    const body = {
+      message: section === 'toolCenter' ? 'Save global tool center order' : 'Save global DOCX template order',
+      content: utf8ToBase64(JSON.stringify(next, null, 2) + '\n'),
+      branch: BRANCH
+    };
+    if(current.sha) body.sha = current.sha;
+
+    const res = await fetch(API_CONFIG_URL, {
+      method:'PUT',
+      headers:{
+        'Accept':'application/vnd.github+json',
+        'Authorization':'Bearer ' + token,
+        'Content-Type':'application/json',
+        'X-GitHub-Api-Version':'2022-11-28'
+      },
+      body:JSON.stringify(body)
+    });
+    const payload = await res.json().catch(() => ({}));
+    if(!res.ok){
+      if(res.status === 401 || res.status === 403) throw new Error('GitHub 授权无效，或令牌没有该仓库的 Contents 写入权限。');
+      if(res.status === 409) throw new Error('排序文件刚刚被更新，请刷新页面后再保存一次。');
+      throw new Error(payload.message || `全局保存失败 (${res.status})`);
+    }
+    return next;
+  }
+
+  function setToolNote(text, type){
+    const note = document.getElementById('sortNote');
+    if(!note) return;
+    note.classList.remove('unsaved','saved');
+    if(type) note.classList.add(type);
+    const target = note.querySelector('span:last-child');
+    if(target) target.textContent = text;
+  }
+
+  async function initToolCenter(){
     const saveBtn = document.getElementById('saveOrder');
     const grids = [...document.querySelectorAll('[data-grid]')];
     if(!saveBtn || !grids.length) return;
 
-    const shared = readOrderParam(TOOL_PARAM);
-    if(shared){
+    const config = await fetchGlobalConfig();
+    const shared = config.toolCenter;
+    if(shared && typeof shared === 'object'){
       grids.forEach(grid => {
-        reorderByIds(
-          grid,
-          '.card',
-          card => card.dataset.id || '',
-          shared[grid.dataset.grid]
-        );
+        reorderByIds(grid, '.card', card => card.dataset.id || '', shared[grid.dataset.grid]);
       });
-      const note = document.getElementById('sortNote');
-      if(note){
-        note.classList.remove('unsaved');
-        note.classList.add('saved');
-        const text = note.querySelector('span:last-child');
-        if(text) text.textContent = '当前正在使用共享排序。';
-      }
+      setToolNote('当前使用全局排序。所有人打开这个固定链接都会看到相同顺序。', 'saved');
     }
 
     saveBtn.addEventListener('click', async () => {
@@ -92,45 +150,50 @@
       grids.forEach(grid => {
         data[grid.dataset.grid] = [...grid.querySelectorAll('.card')].map(card => card.dataset.id);
       });
-      const link = writeOrderParam(TOOL_PARAM, data);
-      const copied = await copyText(link);
-      const note = document.getElementById('sortNote');
-      if(note){
-        note.classList.remove('unsaved');
-        note.classList.add('saved');
-        const text = note.querySelector('span:last-child');
-        if(text) text.textContent = copied ? '当前排序已保存，共享链接已复制。别人打开这个链接会看到相同顺序。' : '当前排序已保存。请复制地址栏里的链接分享，别人打开后会看到相同顺序。';
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = '正在保存全局排序…';
+      try{
+        await saveGlobalSection('toolCenter', data);
+        setToolNote('全局排序已保存。以后直接发送原来的墨森工具中心链接即可，所有人都会看到这个顺序。', 'saved');
+        saveBtn.textContent = '全局排序已保存';
+      }catch(err){
+        const msg = err && err.message ? err.message : String(err);
+        setToolNote(msg === '已取消全局保存。' ? '已取消全局保存，仓库里的公共顺序没有改变。' : '全局保存失败：' + msg, 'unsaved');
+        saveBtn.textContent = '全局保存失败';
+      }finally{
+        setTimeout(() => {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '保存当前排序';
+        }, 1800);
       }
-      saveBtn.textContent = copied ? '共享链接已复制' : '已生成共享链接';
-      setTimeout(() => { saveBtn.textContent = '保存当前排序'; }, 1800);
     });
   }
 
   function initDocxEditor(){
     let attempts = 0;
-    const timer = setInterval(() => {
+    const timer = setInterval(async () => {
       attempts++;
       const saveBtn = document.getElementById('saveBuiltinOrderBtn');
       const usList = document.getElementById('builtinUsList');
       const deList = document.getElementById('builtinDeList');
       if(!saveBtn || !usList || !deList){
-        if(attempts > 200) clearInterval(timer);
+        if(attempts > 240) clearInterval(timer);
         return;
       }
       clearInterval(timer);
 
       let applying = false;
-      const applyShared = () => {
-        if(applying) return;
-        const shared = readOrderParam(TEMPLATE_PARAM);
-        if(!shared) return;
+      let shared = null;
+      const applyGlobal = () => {
+        if(applying || !shared) return;
         applying = true;
         try{
           reorderByIds(usList, '.builtin-item', node => node.dataset.path || '', shared.us);
           reorderByIds(deList, '.builtin-item', node => node.dataset.path || '', shared.de);
           const status = document.getElementById('builtinSortStatus');
           if(status){
-            status.textContent = '共享排序';
+            status.textContent = '全局排序';
             status.classList.remove('dirty');
           }
         }finally{
@@ -138,27 +201,46 @@
         }
       };
 
+      const config = await fetchGlobalConfig();
+      shared = config.docxTemplates && typeof config.docxTemplates === 'object' ? config.docxTemplates : null;
+      applyGlobal();
+
       const observer = new MutationObserver(() => {
-        if(!applying) applyShared();
+        if(!applying) applyGlobal();
       });
       observer.observe(usList, {childList:true});
       observer.observe(deList, {childList:true});
-      applyShared();
 
       saveBtn.addEventListener('click', async () => {
         const data = {
-          us: [...usList.querySelectorAll('.builtin-item')].map(node => node.dataset.path),
-          de: [...deList.querySelectorAll('.builtin-item')].map(node => node.dataset.path)
+          us:[...usList.querySelectorAll('.builtin-item')].map(node => node.dataset.path),
+          de:[...deList.querySelectorAll('.builtin-item')].map(node => node.dataset.path)
         };
-        const link = writeOrderParam(TEMPLATE_PARAM, data);
-        const copied = await copyText(link);
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = '正在保存全局排序…';
         const status = document.getElementById('builtinSortStatus');
-        if(status){
-          status.textContent = copied ? '共享链接已复制' : '共享排序已保存';
-          status.classList.remove('dirty');
+        try{
+          await saveGlobalSection('docxTemplates', data);
+          shared = data;
+          if(status){
+            status.textContent = '已全局保存';
+            status.classList.remove('dirty');
+          }
+          saveBtn.textContent = '全局排序已保存';
+        }catch(err){
+          const msg = err && err.message ? err.message : String(err);
+          if(status){
+            status.textContent = msg === '已取消全局保存。' ? '未全局保存' : '全局保存失败';
+            status.classList.add('dirty');
+          }
+          saveBtn.textContent = msg === '已取消全局保存。' ? '已取消' : '全局保存失败';
+        }finally{
+          setTimeout(() => {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '保存当前排序';
+          }, 1800);
         }
-        saveBtn.textContent = copied ? '共享链接已复制' : '已生成共享链接';
-        setTimeout(() => { saveBtn.textContent = '保存当前排序'; }, 1800);
       });
     }, 100);
   }

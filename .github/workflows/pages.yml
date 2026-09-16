@@ -89,33 +89,33 @@ jobs:
               '.template-name{font-size:13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
               '.template-name{font-size:13px;font-weight:650;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.45;overflow-wrap:anywhere}'
           )
-          for v in range(1, 10):
+          for v in range(1, 20):
               for name in ('docx-template-loader.js', 'shared-order.js'):
                   old = f'<script src="./{name}?v={v}"></script>'
                   s = s.replace(old + '\n', '').replace(old, '')
           s = s.replace(
               '</body>',
               '<script src="./docx-template-loader.js?v=3"></script>\n'
-              '<script src="./shared-order.js?v=1"></script>\n'
+              '<script src="./shared-order.js?v=2"></script>\n'
               '</body>'
           )
           p.write_text(s, encoding='utf-8')
 
-          # Tool center shared-order support
+          # Tool center global-order support
           p = Path('public/index.html')
           s = p.read_text(encoding='utf-8')
-          for v in range(1, 10):
+          for v in range(1, 20):
               old = f'<script src="./shared-order.js?v={v}"></script>'
               s = s.replace(old + '\n', '').replace(old, '')
           s = s.replace(
               '拖拽后的顺序只有在点击保存后才会被记住。',
-              '拖拽后点击保存，系统会生成并复制可共享排序链接。'
+              '拖拽后点击保存，会把当前顺序保存为所有人使用的全局顺序。'
           )
           s = s.replace(
               '排序保存在当前浏览器的本地存储中。请将本文件与所有 HTML 工具及图片资源放在同一目录中使用。',
-              '点击“保存当前排序”后会生成共享链接；把该链接发给别人，对方会看到相同的排序。'
+              '固定链接会自动读取全局排序。只有拥有仓库写入授权的管理员才能修改全局顺序。'
           )
-          s = s.replace('</body>', '<script src="./shared-order.js?v=1"></script>\n</body>')
+          s = s.replace('</body>', '<script src="./shared-order.js?v=2"></script>\n</body>')
           p.write_text(s, encoding='utf-8')
           PY
 
