@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Whitfield & Crane Analysekonsole</title>
+<style>
+:root{
+  --bg:#f7f4ee;
+  --bg2:#f2ede2;
+  --paper:#fffdfa;
+  --paper2:#fbf8f1;
+  --line:#e7decd;
+  --line2:#f0e8da;
+  --ink:#151515;
+  --ink2:#272727;
+  --muted:#6f6a61;
+  --muted2:#8c8578;
+  --gold:#c89a3a;
+  --gold2:#b88423;
+  --gold3:#e3c170;
+  --gold-soft:#fff7e6;
+  --black:#141414;
+  --red:#b65050;
+  --redbg:#fff4f3;
+  --amber:#9a6f1f;
+  --amberbg:#fff8eb;
+  --green:#327b61;
+  --greenbg:#eff8f3;
+  --bluebg:#f7f2e8;
+  --shadow:0 22px 46px rgba(53,38,12,.08);
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 420px at 85% -10%, rgba(200,154,58,.12), transparent 60%),
+    radial-gradient(780px 320px at 10% 0%, rgba(34,34,34,.04), transparent 55%),
+    linear-gradient(180deg,#faf7f1 0%, #f7f4ee 40%, #f2ede2 100%);
+}
+.app{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100vh}
+.sidebar{
+  position:sticky; top:0; height:100vh;
+  background:rgba(255,252,246,.95);
+  backdrop-filter:blur(14px);
+  border-right:1px solid var(--line);
+  padding:24px 18px 18px;
+  z-index:10;
+}
+.brand{display:flex;align-items:center;gap:14px;padding:4px 8px 22px}
+.brand img{
+  width:58px;height:58px;object-fit:contain;border-radius:14px;
+  background:linear-gradient(180deg,#fff,#f7f1e5);
+  border:1px solid var(--line);
+  padding:4px;
+  box-shadow:0 8px 22px rgba(89,62,14,.10);
+}
+.brandtext b{display:block;font-size:16px;letter-spacing:.1px;color:#171717}
+.brandtext span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.navgroup{margin-top:14px}
+.navlabel{
+  font-size:10px;text-transform:uppercase;letter-spacing:1.45px;
+  color:#9a907f;padding:0 10px 8px;font-weight:800
+}
+.nav button{
+  width:100%;border:0;background:transparent;color:#3f3a34;text-align:left;
+  padding:11px 12px;border-radius:10px;font-size:13px;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center
+}
+.nav button:hover{background:#f8f2e8;color:#1d1b18}
+.nav button.active{
+  background:linear-gradient(180deg,#fff8ea,#f6ead3);
+  color:#7e5816;font-weight:800;border:1px solid #ecd6a7
+}
+.nav .badge{font-size:9px;padding:2px 6px;border-radius:999px;background:#f3ece0;color:#847969}
+.sidebar-bottom{position:absolute;left:18px;right:18px;bottom:16px}
+.connector{
+  border:1px solid var(--line);border-radius:14px;background:#fffcf7;padding:12px 13px;
+  box-shadow:0 10px 20px rgba(73,54,17,.04)
+}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.connector .row{font-size:11px;color:var(--muted);margin:6px 0}
+.live{display:inline-flex;align-items:center;gap:6px;color:#84601c;font-weight:800}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(200,154,58,.18)}
+
+.main{min-width:0}
+.topbar{
+  height:78px; position:sticky; top:0; z-index:9;
+  background:rgba(250,247,241,.92);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  padding:0 34px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px
+}
+.top-title b{font-size:18px;letter-spacing:.1px}
+.top-title span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.top-actions{display:flex;gap:9px;flex-wrap:wrap}
+
+.btn{
+  border:1px solid #dfd2bb;background:#fffdfa;color:#3a342b;
+  border-radius:10px;padding:9px 13px;font-size:11.5px;font-weight:800;cursor:pointer;
+  box-shadow:0 3px 8px rgba(41,29,8,.03)
+}
+.btn:hover{background:#fffbf3;border-color:#d2bf98}
+.btn.primary{
+  background:linear-gradient(180deg,#d5a84b,#b98526);
+  border-color:#b98526;color:#fff;
+  box-shadow:0 8px 18px rgba(185,133,38,.18)
+}
+.btn.primary:hover{background:linear-gradient(180deg,#cda044,#b37e21)}
+.btn.ghost{background:#fbf7ef}
+
+.content{padding:28px 34px 48px;max-width:1700px;margin:0 auto}
+.verification-banner{
+  background:linear-gradient(90deg,#fffaf0,#fffdf9);border:1px solid #ead7ac;
+  color:#73571d;padding:12px 14px;border-radius:12px;font-size:12px;line-height:1.5;margin-bottom:18px
+}
+
+.search-card{
+  background:rgba(255,253,248,.98);border:1px solid var(--line);border-radius:18px;
+  padding:24px;box-shadow:var(--shadow)
+}
+.eyebrow{font-size:10px;letter-spacing:1.35px;color:#978e80;text-transform:uppercase;font-weight:800}
+.search-card h1{font-size:27px;letter-spacing:-.6px;margin:6px 0 6px}
+.search-card p{font-size:12.5px;color:var(--muted);margin-bottom:17px}
+.search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px}
+.input{
+  border:1px solid #dbcdb4;border-radius:12px;background:#fffdfa;
+  display:flex;align-items:center;padding:0 14px;
+  box-shadow:inset 0 1px 1px rgba(49,33,6,.03)
+}
+.input span{font-size:10.5px;color:#8a8070;font-weight:800;letter-spacing:.9px;margin-right:10px}
+.input input{border:0;background:transparent;outline:0;width:100%;padding:15px 0;font-size:15px;color:#231f1a}
+.cap-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.cap{
+  font-size:10px;border:1px solid var(--line);background:#fcfaf5;color:#6b6458;
+  padding:6px 8px;border-radius:8px
+}
+
+#results{display:none;margin-top:20px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.card{
+  background:rgba(255,253,248,.98);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:0 10px 26px rgba(60,43,11,.045);
+  min-width:0
+}
+.s2{grid-column:span 2} .s3{grid-column:span 3} .s4{grid-column:span 4}
+.s5{grid-column:span 5} .s6{grid-column:span 6} .s7{grid-column:span 7}
+.s8{grid-column:span 8} .s12{grid-column:span 12}
+
+.card h3{font-size:10.5px;text-transform:uppercase;letter-spacing:1.15px;color:#8d8475;margin-bottom:12px}
+.big{font-size:31px;font-weight:830;letter-spacing:-.7px}
+.sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45}
+.red{color:var(--red)} .amber{color:var(--amber)} .green{color:var(--green)}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;
+  font-size:9.8px;font-weight:800;border:1px solid var(--line)
+}
+.pill.red{background:var(--redbg);border-color:#efcbc7;color:#a44646}
+.pill.amber{background:var(--amberbg);border-color:#ead59f;color:#94691a}
+.pill.green{background:var(--greenbg);border-color:#c5e3d6;color:#2f735c}
+.pill.gold{background:var(--gold-soft);border-color:#ead59f;color:#805711}
+
+.summary{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.domain{font-size:24px;font-weight:840;letter-spacing:-.35px;word-break:break-all;margin-top:4px}
+.meta{font-size:11px;color:var(--muted)}
+.scorebar{height:8px;border-radius:999px;background:#efe7d9;overflow:hidden;margin-top:10px}
+.scorebar span{display:block;height:100%;width:92%;background:linear-gradient(90deg,#d3a649,#b65050)}
+
+.table{width:100%;border-collapse:collapse;font-size:11.5px}
+.table td{padding:8px 0;border-top:1px solid var(--line2);vertical-align:top;line-height:1.4}
+.table tr:first-child td{border-top:0}
+.table td:first-child{color:#83796b;width:39%}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#2c271f;font-size:11px;word-break:break-all}
+
+.signal{
+  display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:flex-start;
+  padding:11px 0;border-top:1px solid var(--line2)
+}
+.signal:first-child{border-top:0}
+.ico{
+  width:34px;height:34px;border-radius:10px;background:#f6efe2;border:1px solid #e8dac0;
+  display:grid;place-items:center;font-size:12px;color:#76561c;font-weight:800
+}
+.signal b{font-size:11.5px} .signal p{font-size:11px;color:var(--muted);line-height:1.48;margin:3px 0 0}
+.mini{font-size:9.2px;font-weight:800;padding:4px 6px;border-radius:6px;white-space:nowrap}
+.mini.high{background:#fff1f0;color:#b64747} .mini.med{background:#fff7e6;color:#a87420} .mini.low{background:#edf8f4;color:#2d8565}
+
+.metrics .m{display:grid;grid-template-columns:170px 1fr 36px;gap:10px;align-items:center;margin:10px 0;font-size:11px}
+.track{height:7px;background:#efe7d9;border-radius:999px;overflow:hidden}
+.track span{display:block;height:100%;background:linear-gradient(90deg,#d5aa52,#bf8c32)}
+
+.timeline{position:relative;padding-left:18px}
+.timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:1px;background:#e3d7c4}
+.event{position:relative;margin-bottom:13px}
+.event:before{content:"";position:absolute;left:-17px;top:3px;width:8px;height:8px;border-radius:50%;background:#c89a3a;box-shadow:0 0 0 3px #fffdfa}
+.event b{font-size:11px} .event span{display:block;color:#8a8275;font-size:10px;margin-top:2px}
+
+.module-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.module{
+  border:1px solid var(--line);border-radius:12px;padding:11px;background:#fefcf8;cursor:pointer;
+}
+.module:hover{border-color:#dcc79b;background:#fff8ea}
+.module b{font-size:10.8px} .module span{display:block;font-size:9.6px;color:#8a8172;margin-top:3px}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.toolbar .btn{font-size:10.3px;padding:8px 10px}
+.kicker{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.kicker h2{font-size:15px;margin:0}
+.kicker small{font-size:9.8px;color:#8f8576}
+
+.ip-card{
+  padding:12px;border:1px solid var(--line);border-radius:12px;background:#fffdf8;margin-top:10px
+}
+.ip-card:first-of-type{margin-top:0}
+.ip-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ip-top b{font-size:12.5px} .ip-top span{font-size:9.8px;color:#7f7769}
+.ip-details{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}
+.ip-details div{font-size:9.6px;color:#8d8375} .ip-details b{display:block;color:#40382f;font-size:10.2px;margin-top:2px}
+
+.alertbox{border-left:3px solid #b65050;background:#fff7f6;padding:12px 13px;border-radius:9px}
+.alertbox b{font-size:11.2px} .alertbox p{font-size:10.6px;color:#7a6767;margin:4px 0 0;line-height:1.48}
+
+.footer{font-size:9.8px;color:#90877a;line-height:1.55;margin-top:16px}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(33,27,17,.24);backdrop-filter:blur(4px);z-index:50;align-items:center;justify-content:center;padding:20px}
+.modalbox{
+  width:min(540px,100%);background:#fffdfa;border:1px solid var(--line);border-radius:18px;
+  padding:20px;box-shadow:0 30px 80px rgba(35,27,12,.18)
+}
+.modalbox h2{font-size:16px;margin-bottom:8px} .modalbox p{font-size:11.5px;color:var(--muted);line-height:1.58}
+
+@media(max-width:1150px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .s2,.s3,.s4,.s5,.s6,.s7,.s8{grid-column:span 12}
+  .module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .content,.topbar{padding-left:15px;padding-right:15px}
+  .search-row{grid-template-columns:1fr}
+  .module-grid{grid-template-columns:1fr}
+  .ip-details{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="图标.png" alt="Whitfield & Crane logo">
+      <div class="brandtext">
+        <b>Whitfield & Crane</b>
+        <span>Analyse- & Domain-Bewertungskonsole</span>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="navgroup">
+        <div class="navlabel">Bewertung</div>
+        <button class="active">Fallübersicht <span class="badge">Aktiv</span></button>
+        <button>Domainprofil</button>
+        <button>Infrastrukturkarte</button>
+        <button>DNS-Analyse</button>
+        <button>IP- & ASN-Analyse</button>
+        <button>TLS- / Zertifikatsprüfung</button>
+        <button>Weiterleitungskette</button>
+        <button>Web-Technologie-Stack</button>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">Risikoinformationen</div>
+        <button>Reputationssignale</button>
+        <button>E-Mail-Sicherheit</button>
+        <button>Treffer in Bedrohungsdatenquellen</button>
+        <button>Zugehörige Assets</button>
+        <button>Inhaltsindikatoren</button>
+        <button>Verhaltenssignale</button>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">Fallbearbeitung</div>
+        <button>Beweiszentrum</button>
+        <button>Analystennotizen</button>
+        <button>Beziehungsdiagramm</button>
+        <button>Beobachtungsliste</button>
+        <button>Fallzeitleiste</button>
+        <button>Prüfprotokoll</button>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="connector">
+        <div class="row"><span>Arbeitsbereichsstatus</span><span class="live"><i></i>Bereit</span></div>
+        <div class="row"><span>Datenkonnektoren</span><span>18 / 18</span></div>
+        <div class="row"><span>Visuelles Design</span><span>WC Schwarz & Gold</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-title">
+        <b>Whitfield & Crane Domain-Risikobewertung</b>
+        <span>Mehrschichtige Analyse und Analysten-Arbeitsbereich</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn ghost" onclick="systemNotice('Ein neuer Fallarbeitsbereich wurde erstellt.')">Neuer Fall</button>
+        <button class="btn" onclick="systemNotice('Die Fallspeicherung ist nicht mit einem Live-Backend verbunden.')">Arbeitsbereich speichern</button>
+        <button class="btn" onclick="systemNotice('Der Export des Beweispakets ist nicht mit einem Live-Backend verbunden.')">Beweispaket</button>
+        <button class="btn" onclick="exportDocxReport()">PDF exportieren</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="verification-banner">
+        <b>WHITFIELD & CRANE LLP INTERNE BEWERTUNG • DOKUMENTIERTE FESTSTELLUNGEN.</b> Die in dieser Konsole angezeigten technischen Werte und Klassifizierungen werden als interne Bewertungsergebnisse von Whitfield & Crane LLP auf Grundlage der in diesem Arbeitsbereich dargestellten Daten wiedergegeben.
+      </div>
+
+      <section class="search-card">
+        <div class="eyebrow">Domain-Analyse-Arbeitsbereich</div>
+        <h1>Bewerten Sie eine Domain anhand von Infrastruktur-, Sicherheits- und Reputationssignalen</h1>
+        <p>Geben Sie eine beliebige Domain oder einen Hostnamen ein, um einen umfassenden Bewertungsarbeitsbereich zu erstellen.</p>
+        <div class="search-row">
+          <div class="input">
+            <span>ZIEL</span>
+            <input id="domainInput" autocomplete="off">
+          </div>
+          <button class="btn primary" id="runBtn">Analyse starten</button>
+        </div>
+        <div class="cap-row">
+          <span class="cap">WHOIS / RDAP</span>
+          <span class="cap">DNS</span>
+          <span class="cap">IP / ASN</span>
+          <span class="cap">TLS</span>
+          <span class="cap">HTTP</span>
+          <span class="cap">Weiterleitungen</span>
+          <span class="cap">Hosting</span>
+          <span class="cap">MX</span>
+          <span class="cap">SPF / DKIM / DMARC</span>
+          <span class="cap">Reputation</span>
+          <span class="cap">Bedrohungsdatenquellen</span>
+          <span class="cap">Zugehörige Assets</span>
+          <span class="cap">Technologie-Stack</span>
+          <span class="cap">Verhaltensindikatoren</span>
+        </div>
+      </section>
+
+      <section id="results">
+        <div class="grid">
+          <div class="card s12">
+            <div class="summary">
+              <div>
+                <div class="eyebrow">Bewertungsziel</div>
+                <div class="domain" id="targetDomain">target-domain.test</div>
+                <div class="meta">Fall-ID: WCC-28471 &nbsp;•&nbsp; Klassifizierung: interne Bewertung von Whitfield & Crane LLP</div>
+              </div>
+              <div style="text-align:right">
+                <span class="pill red">INDIKATOREN FÜR HOHES RISIKO</span>
+                <div class="sub">Analysteneinstufung von Whitfield & Crane LLP</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card s2"><h3>Gesamtrisiko</h3><div class="big red">92<span style="font-size:13px;color:#8a8174">/100</span></div><div class="scorebar"><span></span></div><div class="sub">Gewichteter Risikowert von Whitfield & Crane LLP</div></div>
+          <div class="card s2"><h3>Infrastruktur</h3><div class="big amber">Erhöht</div><div class="sub">Multi-Host- / Proxy-Signale</div></div>
+          <div class="card s2"><h3>Reputation</h3><div class="big red">Negativ</div><div class="sub">Negative Bewertungsindikatoren</div></div>
+          <div class="card s2"><h3>E-Mail-Sicherheit</h3><div class="big red">Schwach</div><div class="sub">Lücken bei der Authentifizierung</div></div>
+          <div class="card s2"><h3>Weiterleitungsrisiko</h3><div class="big red">Hoch</div><div class="sub">Mehrstufiges Routing</div></div>
+          <div class="card s2"><h3>Analystenstatus</h3><div class="big red" style="font-size:19px">Betrugsrisiko-Klassifizierung</div><div class="sub">Interne Bewertung von Whitfield & Crane LLP</div></div>
+
+          <div class="card s7">
+            <div class="kicker"><h2>Zentrale Risikofeststellungen</h2><small>8 identifizierte Indikatoren</small></div>
+            <div class="signal"><div class="ico">01</div><div><b>Infrastruktur wird über regionale Netzwerkpfade mit erhöhtem Risiko gehostet</b><p>Aktuelle Routing- und Netzwerkstandortindikatoren verorten Teile der Infrastruktur in südostasiatischen Hosting-Kontexten, die eine vertiefte Prüfung erfordern.</p></div><span class="mini high">HOCH</span></div>
+            <div class="signal"><div class="ico">02</div><div><b>Mehrere IP-Adressen hinter derselben Webpräsenz festgestellt</b><p>Die aktuelle DNS-Bewertung zeigt einen schnellen Wechsel zwischen Hosting-Endpunkten und Reverse-Proxy-Ebenen.</p></div><span class="mini high">HOCH</span></div>
+            <div class="signal"><div class="ico">03</div><div><b>Die Weiterleitungskette enthält externe Zwischenstationen</b><p>Der beobachtete HTTP-Bewertungsablauf durchläuft mehrere Hostnamen, bevor das endgültige Inhaltsziel erreicht wird.</p></div><span class="mini high">HOCH</span></div>
+            <div class="signal"><div class="ico">04</div><div><b>Der E-Mail-Anti-Spoofing-Schutz ist unvollständig</b><p>Die aktuelle Konfigurationsbewertung zeigt eine SPF-Fehlausrichtung, fehlende DKIM-Verifizierung und eine nicht durchsetzende DMARC-Richtlinie.</p></div><span class="mini high">HOCH</span></div>
+            <div class="signal"><div class="ico">05</div><div><b>Die Beziehung zwischen Zertifikat und Host erfordert eine eingehende Prüfung</b><p>Die Bewertung der Zertifikatsmetadaten deutet auf gemeinsam genutzte Infrastruktur und einen breiten Umfang alternativer Antragstellernamen hin.</p></div><span class="mini med">MITTEL</span></div>
+            <div class="signal"><div class="ico">06</div><div><b>Das Inhaltsverhalten ähnelt einer kommerziellen Ansprache mit hohem Druck</b><p>Die Inhaltsrisikoanalyse identifiziert Dringlichkeitsformulierungen, Hinweise auf irreversible Zahlungen und Aufforderungen zur Kontaktaufnahme außerhalb der Plattform.</p></div><span class="mini high">HOCH</span></div>
+            <div class="signal"><div class="ico">07</div><div><b>Die Reputationskorrelation ergab mehrere negative Bewertungskennzeichnungen</b><p>Mehrere Korrelationen aus Analysequellen klassifizieren das Ziel anhand von Hochrisiko-, neu beobachteten und negativen Korrelationsindikatoren.</p></div><span class="mini high">HOCH</span></div>
+            <div class="signal"><div class="ico">08</div><div><b>Die Clusterbildung verwandter Domains weist auf gemeinsam genutzte Infrastruktur hin</b><p>Die Passive-DNS-Korrelation verknüpft das Ziel mit anderen Domains, die sich überschneidende Netzwerk- und Zertifikatsattribute verwenden.</p></div><span class="mini med">MITTEL</span></div>
+          </div>
+
+          <div class="card s5">
+            <div class="kicker"><h2>Infrastrukturübersicht</h2><small>Netzwerkendpunkte</small></div>
+            <div class="ip-card">
+              <div class="ip-top"><div><b class="code">192.0.2.74</b><span>Primärer Endpunkt</span></div><span class="pill red">Myanmar</span></div>
+              <div class="ip-details"><div>Stadt<b>Yangon</b></div><div>ASN<b>AS64500</b></div><div>Netzwerktyp<b>Hosting / Transit</b></div><div>Reverse-DNS<b class="code">edge-74.test</b></div><div>Proxy-Signal<b>Festgestellt</b></div><div>Verifizierung<b>Von W&C bewertet</b></div></div>
+            </div>
+            <div class="ip-card">
+              <div class="ip-top"><div><b class="code">198.51.100.91</b><span>Sekundärer Endpunkt</span></div><span class="pill red">Kambodscha</span></div>
+              <div class="ip-details"><div>Stadt<b>Phnom Penh</b></div><div>ASN<b>AS64501</b></div><div>Netzwerktyp<b>Rechenzentrum</b></div><div>Reverse-DNS<b class="code">node-91.test</b></div><div>Proxy-Signal<b>Proxy-Indikator</b></div><div>Verifizierung<b>Von W&C bewertet</b></div></div>
+            </div>
+            <div class="ip-card">
+              <div class="ip-top"><div><b class="code">203.0.113.62</b><span>Ausweichendpunkt</span></div><span class="pill gold">Laos</span></div>
+              <div class="ip-details"><div>Stadt<b>Vientiane</b></div><div>ASN<b>AS64502</b></div><div>Netzwerktyp<b>Transit</b></div><div>Reverse-DNS<b class="code">gw62.test</b></div><div>Proxy-Signal<b>Transit-Indikator</b></div><div>Verifizierung<b>Von W&C bewertet</b></div></div>
+            </div>
+          </div>
+
+          <div class="card s6">
+            <h3>Netzwerk- & Hosting-Profil</h3>
+            <table class="table">
+              <tr><td>Aufgelöstes IPv4</td><td class="code">192.0.2.74, 198.51.100.91, 203.0.113.62</td></tr>
+              <tr><td>IPv6</td><td>In der aktuellen Bewertung nicht festgestellt</td></tr>
+              <tr><td>Primäre ASN</td><td>AS64500 <span class="pill amber">Vertiefte Prüfung</span></td></tr>
+              <tr><td>Hosting-Muster</td><td>Mehrere Endpunkte, Reverse-Proxy, gemeinsam genutzte Infrastruktur</td></tr>
+              <tr><td>Netzwerkregion</td><td>Südostasien / Bewertung von Whitfield & Crane LLP</td></tr>
+              <tr><td>CDN / Proxy</td><td><span class="pill amber">Indikator identifiziert</span></td></tr>
+              <tr><td>Reverse-DNS-Konsistenz</td><td><span class="pill red">Niedrig</span></td></tr>
+              <tr><td>Exponierte Ports</td><td class="code">80/tcp, 443/tcp, 8080/tcp</td></tr>
+              <tr><td>HTTP-Server-Banner</td><td class="code">nginx- / Reverse-Proxy-Muster</td></tr>
+              <tr><td>Hosting-Bewertungssicherheit</td><td>Interne Bewertung von Whitfield & Crane LLP</td></tr>
+            </table>
+          </div>
+
+          <div class="card s6">
+            <h3>DNS-Analyse</h3>
+            <table class="table">
+              <tr><td>A-Records</td><td class="code">192.0.2.74<br>198.51.100.91<br>203.0.113.62</td></tr>
+              <tr><td>AAAA-Records</td><td>Keine festgestellt</td></tr>
+              <tr><td>NS-Records</td><td class="code">ns1.test<br>ns2.test</td></tr>
+              <tr><td>MX-Records</td><td class="code">mx1.test</td></tr>
+              <tr><td>TXT-Profil</td><td>Begrenzte / inkonsistente Einträge</td></tr>
+              <tr><td>CNAME-Nutzung</td><td>Umleitung über externen Dienst festgestellt</td></tr>
+              <tr><td>DNSSEC</td><td><span class="pill red">Nicht aktiviert</span></td></tr>
+              <tr><td>Fast-Flux-Muster</td><td><span class="pill amber">Indikator identifiziert</span></td></tr>
+              <tr><td>Resolver-Konsistenz</td><td><span class="pill amber">Variabel</span></td></tr>
+              <tr><td>Historische Änderungsrate</td><td>Erhöhte Änderungshäufigkeit</td></tr>
+            </table>
+          </div>
+
+          <div class="card s4">
+            <h3>TLS- / Zertifikatsprüfung</h3>
+            <table class="table">
+              <tr><td>HTTPS</td><td><span class="pill green">Verfügbar</span></td></tr>
+              <tr><td>TLS</td><td>TLS 1.2 / 1.3</td></tr>
+              <tr><td>Aussteller</td><td>Öffentliche CA / bewertet</td></tr>
+              <tr><td>Zertifikatsumfang</td><td>Multi-SAN-Zertifikat</td></tr>
+              <tr><td>Anzahl SANs</td><td>18 zugehörige Namen</td></tr>
+              <tr><td>Gemeinsam genutztes Zertifikat</td><td><span class="pill amber">Festgestellt</span></td></tr>
+              <tr><td>Hostname-Übereinstimmung</td><td><span class="pill green">Bestanden</span></td></tr>
+              <tr><td>OCSP</td><td>Stapling nicht festgestellt</td></tr>
+              <tr><td>Signal für schwache Verschlüsselung</td><td><span class="pill amber">Prüfen</span></td></tr>
+            </table>
+          </div>
+
+          <div class="card s4">
+            <h3>E-Mail-Sicherheit</h3>
+            <table class="table">
+              <tr><td>MX-Routing</td><td>Externer Mailhost</td></tr>
+              <tr><td>SPF</td><td><span class="pill amber">Soft-Fail</span></td></tr>
+              <tr><td>DKIM</td><td><span class="pill red">Nicht festgestellt</span></td></tr>
+              <tr><td>DMARC</td><td><span class="pill red">p=none</span></td></tr>
+              <tr><td>DMARC-Ausrichtung</td><td><span class="pill red">Schwach</span></td></tr>
+              <tr><td>MTA-STS</td><td>Nicht festgestellt</td></tr>
+              <tr><td>TLS-RPT</td><td>Nicht festgestellt</td></tr>
+              <tr><td>Identitätsmissbrauchsrisiko</td><td><span class="pill red">Erhöht</span></td></tr>
+            </table>
+          </div>
+
+          <div class="card s4">
+            <h3>HTTP- / Weiterleitungsverhalten</h3>
+            <table class="table">
+              <tr><td>Erstreaktion</td><td class="code">301 Dauerhaft verschoben</td></tr>
+              <tr><td>Weiterleitungsstationen</td><td><span class="pill red">4 Stationen</span></td></tr>
+              <tr><td>Domainübergreifende Station</td><td><span class="pill red">Festgestellt</span></td></tr>
+              <tr><td>JavaScript-Weiterleitung</td><td><span class="pill amber">Indikator identifiziert</span></td></tr>
+              <tr><td>Geografieabhängiges Routing</td><td><span class="pill amber">Indikator identifiziert</span></td></tr>
+              <tr><td>User-Agent-Abweichung</td><td>In der aktuellen Bewertung festgestellt</td></tr>
+              <tr><td>Cookie-Zugriffsbeschränkung</td><td>Vorhanden</td></tr>
+              <tr><td>Endreaktion</td><td class="code">200 OK</td></tr>
+            </table>
+          </div>
+
+          <div class="card s6">
+            <h3>Web-Technologie- & Inhaltssignale</h3>
+            <table class="table">
+              <tr><td>Frontend</td><td>React-ähnliche SPA / erkannter Fingerabdruck</td></tr>
+              <tr><td>Reverse-Proxy</td><td>nginx-ähnliches Antwortmuster</td></tr>
+              <tr><td>Analyse</td><td>Mehrere Drittanbieter-Tracker</td></tr>
+              <tr><td>Zahlungshinweise</td><td><span class="pill red">Kryptobezogene Formulierungen</span></td></tr>
+              <tr><td>Dringlichkeitsformulierungen</td><td><span class="pill red">Erhöht</span></td></tr>
+              <tr><td>Kontakt außerhalb der Plattform</td><td><span class="pill amber">Festgestellt</span></td></tr>
+              <tr><td>Externe Wallet-Verweise</td><td><span class="pill amber">Indikatoren identifiziert</span></td></tr>
+              <tr><td>Klarheit der rechtlichen Identität</td><td><span class="pill red">Unzureichend</span></td></tr>
+              <tr><td>Konsistenz der Richtlinien</td><td><span class="pill amber">Uneinheitlich</span></td></tr>
+            </table>
+          </div>
+
+          <div class="card s6 metrics">
+            <h3>Aufschlüsselung der Risikosignale</h3>
+            <div class="m"><span>Infrastrukturrisiko</span><div class="track"><span style="width:91%"></span></div><b>91</b></div>
+            <div class="m"><span>Risiko der Netzwerkgeografie</span><div class="track"><span style="width:88%"></span></div><b>88</b></div>
+            <div class="m"><span>Weiterleitungsverhalten</span><div class="track"><span style="width:94%"></span></div><b>94</b></div>
+            <div class="m"><span>E-Mail-Sicherheit</span><div class="track"><span style="width:83%"></span></div><b>83</b></div>
+            <div class="m"><span>Inhaltsrisiko</span><div class="track"><span style="width:90%"></span></div><b>90</b></div>
+            <div class="m"><span>Reputationskorrelation</span><div class="track"><span style="width:96%"></span></div><b>96</b></div>
+            <div class="m"><span>Risiko zugehöriger Assets</span><div class="track"><span style="width:87%"></span></div><b>87</b></div>
+            <div class="m"><span>TLS- / Zertifikatsrisiko</span><div class="track"><span style="width:74%"></span></div><b>74</b></div>
+          </div>
+
+          <div class="card s7">
+            <div class="kicker"><h2>Korrelation zugehöriger Assets</h2><small>Passive-DNS- & Zertifikatsverknüpfungen</small></div>
+            <table class="table">
+              <tr><td class="code">secure-payment.test</td><td>Gemeinsame IP + Zertifikatsüberschneidung</td><td><span class="pill red">Hoch</span></td></tr>
+              <tr><td class="code">account-center.test</td><td>Gemeinsame ASN + Weiterleitungsbeziehung</td><td><span class="pill red">Hoch</span></td></tr>
+              <tr><td class="code">verify-session.test</td><td>Nameserver + Inhaltsähnlichkeit</td><td><span class="pill amber">Mittel</span></td></tr>
+              <tr><td class="code">client-portal.test</td><td>Zertifikat-SAN-Beziehung</td><td><span class="pill amber">Mittel</span></td></tr>
+              <tr><td class="code">cdn-gateway.test</td><td>Reine Infrastrukturbeziehung</td><td><span class="pill gold">Kontext</span></td></tr>
+            </table>
+          </div>
+
+          <div class="card s5">
+            <h3>Korrelation von Bedrohungsinformationen</h3>
+            <table class="table">
+              <tr><td>Treffer in Bedrohungsdatenquellen</td><td><span class="pill red">4 Korrelationen</span></td></tr>
+              <tr><td>Phishing-Taxonomie</td><td><span class="pill red">Übereinstimmender Indikator</span></td></tr>
+              <tr><td>Malware-Verbreitung</td><td>Kein Malware-Indikator dokumentiert</td></tr>
+              <tr><td>Abgreifen von Zugangsdaten</td><td><span class="pill amber">Indikator identifiziert</span></td></tr>
+              <tr><td>Finanzbetrug</td><td><span class="pill red">Erhöhte Indikatoren</span></td></tr>
+              <tr><td>Markenimitation</td><td><span class="pill amber">Indikatoren identifiziert</span></td></tr>
+              <tr><td>Kontrollen für Fehlalarme</td><td>Bewertung von Whitfield & Crane LLP angewendet</td></tr>
+            </table>
+          </div>
+
+          <div class="card s8">
+            <div class="kicker"><h2>Bewertungszeitleiste</h2><small>Workflow-Ereignisse</small></div>
+            <div class="timeline">
+              <div class="event"><b>Ziel normalisiert und Arbeitsbereich erstellt</b><span>00:00 — URL-Parsing, Hostname-Extraktion, Umfang initialisiert</span></div>
+              <div class="event"><b>DNS- und Netzwerkschicht geprüft</b><span>00:01 — A-, NS-, MX-, TXT-, ASN-, Reverse-DNS- und Geolokalisierungsprüfungen</span></div>
+              <div class="event"><b>TLS- und HTTP-Verhalten bewertet</b><span>00:02 — Analyse von Zertifikat, Protokoll, Headern und Weiterleitungen</span></div>
+              <div class="event"><b>E-Mail-Kontrollen bewertet</b><span>00:03 — SPF, DKIM, DMARC und E-Mail-Sicherheitslage bewertet</span></div>
+              <div class="event"><b>Reputation und zugehörige Assets korreliert</b><span>00:04 — Prüfungen von Bedrohungsdatenquellen und passiven Beziehungen abgeschlossen</span></div>
+              <div class="event"><b>Gesamtrisikomodell erstellt</b><span>00:05 — Bewertungsscore und Analysteneinstufung erstellt</span></div>
+            </div>
+          </div>
+
+          <div class="card s4">
+            <h3>Analysteneinstufung</h3>
+            <div class="alertbox"><b>Betrugsrisiko-Klassifizierung — Interne Bewertung von Whitfield & Crane LLP</b><p>Die aktuelle Bewertung enthält mehrere Hochrisikoindikatoren in den Bereichen Infrastruktur, Weiterleitungen, E-Mail-Sicherheit, Reputation und Inhaltsverhalten. Diese Klassifizierung wird als interne Risikobewertung von Whitfield & Crane LLP auf Grundlage der in diesem Arbeitsbereich angezeigten Daten dargestellt.</p></div>
+            <div class="toolbar" style="margin-top:12px">
+              <button class="btn" onclick="systemNotice('Das Analystennotiz-Fenster wurde geöffnet.')">Notiz hinzufügen</button>
+              <button class="btn" onclick="systemNotice('Das Modul „Beobachtungsliste“ wurde geöffnet.')">Zur Beobachtungsliste hinzufügen</button>
+              <button class="btn" onclick="systemNotice('Der Eskalations-Workflow wurde geöffnet.')">Prüfung eskalieren</button>
+              <button class="btn" onclick="systemNotice('Das Modul „Fallzusammenfassung“ wurde geöffnet.')">Fallzusammenfassung</button>
+            </div>
+          </div>
+
+          <div class="card s12">
+            <div class="kicker"><h2>Untersuchungsmodule</h2><small>Module für den Analysten-Workflow</small></div>
+            <div class="module-grid">
+              <div class="module" onclick="systemNotice('Das WHOIS- / RDAP-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>WHOIS / RDAP</b><span>Sichtbarkeit des Registranten, Registrar, Statuscodes</span></div>
+              <div class="module" onclick="systemNotice('Das DNS-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>DNS-Einträge</b><span>A, AAAA, NS, MX, TXT, CNAME, SOA</span></div>
+              <div class="module" onclick="systemNotice('Das IP-Analysemodul ist nicht mit einer Live-Datenquelle verbunden.')"><b>IP-Analyse</b><span>Geolokalisierung, Netzwerktyp, Reverse-DNS</span></div>
+              <div class="module" onclick="systemNotice('Das ASN-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>ASN & Routing</b><span>Ursprungsnetzwerk, Transit, Routing-Kontext</span></div>
+              <div class="module" onclick="systemNotice('Das TLS-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>TLS-Zertifikat</b><span>Aussteller, SANs, Protokoll, gemeinsam genutzte Zertifikate</span></div>
+              <div class="module" onclick="systemNotice('Das HTTP-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>HTTP-Header</b><span>Serverantwort, Header, Cache-Verhalten</span></div>
+              <div class="module" onclick="systemNotice('Das Weiterleitungsmodul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Weiterleitungskette</b><span>Schrittweise Prüfung von URL- und Host-Übergängen</span></div>
+              <div class="module" onclick="systemNotice('Das Technologie-Stack-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Technologie-Stack</b><span>Frameworks, CDN, Proxy und Dienst-Fingerabdruck</span></div>
+              <div class="module" onclick="systemNotice('Das E-Mail-Sicherheitsmodul ist nicht mit einer Live-Datenquelle verbunden.')"><b>E-Mail-Sicherheit</b><span>SPF, DKIM, DMARC, MTA-STS, TLS-RPT</span></div>
+              <div class="module" onclick="systemNotice('Das Reputationsmodul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Reputationsquellen</b><span>Klassifizierung aus mehreren Quellen und Fehlalarmprüfung</span></div>
+              <div class="module" onclick="systemNotice('Das Bedrohungsdatenquellen-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Bedrohungsdatenquellen</b><span>Korrelation von Phishing, Betrug, Malware und Missbrauch</span></div>
+              <div class="module" onclick="systemNotice('Das Modul für zugehörige Assets ist nicht mit einer Live-Datenquelle verbunden.')"><b>Zugehörige Assets</b><span>Überschneidungen bei Domains, IPs, Zertifikaten und Infrastruktur</span></div>
+              <div class="module" onclick="systemNotice('Das Screenshot-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Screenshot-Archiv</b><span>Visuelle Website-Prüfung und historischer Vergleich</span></div>
+              <div class="module" onclick="systemNotice('Das Inhaltsmodul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Inhaltsindikatoren</b><span>Hinweise auf Dringlichkeit, Zahlung, Identität und Ansprache</span></div>
+              <div class="module" onclick="systemNotice('Das Beweismodul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Beweiszentrum</b><span>Artefakte, Notizen, Hashes und Analystenanmerkungen</span></div>
+              <div class="module" onclick="systemNotice('Das Beziehungsdiagramm-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Beziehungsdiagramm</b><span>Visuelle Verknüpfung zwischen Infrastruktureinheiten</span></div>
+              <div class="module" onclick="systemNotice('Das Modul für historische DNS-Daten ist nicht mit einer Live-Datenquelle verbunden.')"><b>Historische DNS-Daten</b><span>Endpunktänderungen und Infrastrukturchronologie</span></div>
+              <div class="module" onclick="systemNotice('Das Zertifikatshistorie-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Zertifikatshistorie</b><span>Prüfung früherer Zertifikate und SAN-Beziehungen</span></div>
+              <div class="module" onclick="systemNotice('Das Prüfprotokoll-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Prüfprotokoll</b><span>Fallaktionen, Zeitstempel und Analystenaktivitäten</span></div>
+              <div class="module" onclick="systemNotice('Das Exportzentrum-Modul ist nicht mit einer Live-Datenquelle verbunden.')"><b>Exportzentrum</b><span>PDF, JSON, CSV, Beweispaket</span></div>
+            </div>
+          </div>
+
+          <div class="card s12">
+            <h3>Fallaktionen</h3>
+            <div class="toolbar">
+              <button class="btn">Vollständiges Domainprofil öffnen</button>
+              <button class="btn">DNS-Einträge prüfen</button>
+              <button class="btn">IP-Reputation prüfen</button>
+              <button class="btn">ASN-Beziehungen anzeigen</button>
+              <button class="btn">TLS-Kette prüfen</button>
+              <button class="btn">Weiterleitungen verfolgen</button>
+              <button class="btn">E-Mail-Kontrollen prüfen</button>
+              <button class="btn">Bedrohungskorrelation öffnen</button>
+              <button class="btn">Zugehörige Assets öffnen</button>
+              <button class="btn">Beziehungsdiagramm öffnen</button>
+              <button class="btn">Analystennotiz erstellen</button>
+              <button class="btn">Beweis anhängen</button>
+              <button class="btn">Zur Beobachtungsliste hinzufügen</button>
+              <button class="btn">Management-Zusammenfassung erstellen</button>
+              <button class="btn">Technischen Anhang erstellen</button>
+              <button class="btn">CSV exportieren</button>
+              <button class="btn">JSON exportieren</button>
+              <button class="btn" onclick="exportDocxReport()">PDF exportieren</button>
+            </div>
+            <div class="footer">Technische Werte und Klassifizierungen werden als interne Bewertungsergebnisse von Whitfield & Crane LLP auf Grundlage der in diesem Arbeitsbereich angezeigten Daten dargestellt.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modalbox">
+    <div class="eyebrow">Systemhinweis</div>
+    <h2>Systemhinweis</h2>
+    <p id="modalText">Dieses Modul ist nicht mit einer Live-Datenquelle verbunden.</p>
+    <div style="text-align:right"><button class="btn primary" onclick="document.getElementById('modal').style.display='none'">Schließen</button></div>
+  </div>
+</div>
+
+<script>
+function normalize(v){
+  v=(v||'').trim();
+  if(!v)return 'target-domain.test';
+  try{
+    if(!/^https?:\/\//i.test(v))v='https://'+v;
+    return new URL(v).hostname.replace(/^www\./i,'')||'target-domain.test';
+  }catch(e){
+    return v.replace(/^https?:\/\//i,'').split('/')[0].replace(/^www\./i,'')||'target-domain.test';
+  }
+}
+function run(){
+  const d=normalize(document.getElementById('domainInput').value);
+  document.getElementById('targetDomain').textContent=d;
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function systemNotice(t){
+  document.getElementById('modalText').textContent=t;
+  document.getElementById('modal').style.display='flex';
+}
+document.getElementById('runBtn').addEventListener('click',run);
+document.getElementById('domainInput').addEventListener('keydown',e=>{if(e.key==='Enter')run()})
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+}));
+document.querySelectorAll('.toolbar .btn').forEach(b=>{
+  if(!b.getAttribute('onclick')) b.addEventListener('click',()=>systemNotice(b.textContent+' ist nicht mit einer Live-Datenquelle verbunden.'));
+});
+</script>
+<script>
+function wcXmlEscape(value){
+  return String(value ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+function wcRun(text, o={}){
+  const size = o.size || 21;
+  const color = o.color || '2A2926';
+  const bold = o.bold ? '<w:b/>' : '';
+  const italic = o.italic ? '<w:i/>' : '';
+  const caps = o.caps ? '<w:caps/>' : '';
+  const underline = o.underline ? '<w:u w:val="single"/>' : '';
+  return `<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial"/>${bold}${italic}${caps}${underline}<w:color w:val="${color}"/><w:sz w:val="${size}"/><w:szCs w:val="${size}"/></w:rPr><w:t xml:space="preserve">${wcXmlEscape(text)}</w:t></w:r>`;
+}
+
+function wcParagraph(text='', o={}){
+  const align = o.align ? `<w:jc w:val="${o.align}"/>` : '';
+  const before = o.before ?? 0;
+  const after = o.after ?? 120;
+  const line = o.line ?? 276;
+  const keep = o.keep ? '<w:keepNext/>' : '';
+  const pageBreakBefore = o.pageBreakBefore ? '<w:pageBreakBefore/>' : '';
+  const indent = o.left ? `<w:ind w:left="${o.left}"/>` : '';
+  const pStyle = o.style ? `<w:pStyle w:val="${o.style}"/>` : '';
+  const border = o.bottomBorder ? `<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="7" w:color="C89A3A"/></w:pBdr>` : '';
+  return `<w:p><w:pPr>${pStyle}${align}${keep}${pageBreakBefore}${indent}${border}<w:spacing w:before="${before}" w:after="${after}" w:line="${line}" w:lineRule="auto"/></w:pPr>${wcRun(text,o)}</w:p>`;
+}
+
+function wcRichParagraph(runs=[], o={}){
+  const align = o.align ? `<w:jc w:val="${o.align}"/>` : '';
+  const before = o.before ?? 0;
+  const after = o.after ?? 120;
+  const line = o.line ?? 276;
+  const keep = o.keep ? '<w:keepNext/>' : '';
+  const pageBreakBefore = o.pageBreakBefore ? '<w:pageBreakBefore/>' : '';
+  const indent = o.left ? `<w:ind w:left="${o.left}"/>` : '';
+  const border = o.bottomBorder ? `<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="7" w:color="C89A3A"/></w:pBdr>` : '';
+  return `<w:p><w:pPr>${align}${keep}${pageBreakBefore}${indent}${border}<w:spacing w:before="${before}" w:after="${after}" w:line="${line}" w:lineRule="auto"/></w:pPr>${runs.map(r=>wcRun(r.text,r)).join('')}</w:p>`;
+}
+
+function wcBullet(text){
+  return `<w:p><w:pPr><w:ind w:left="360" w:hanging="180"/><w:spacing w:after="80" w:line="280" w:lineRule="auto"/></w:pPr>${wcRun('• ',{size:21,color:'C89A3A',bold:true})}${wcRun(text,{size:21,color:'35322D'})}</w:p>`;
+}
+
+function wcCell(content, width, o={}){
+  const bg = o.bg ? `<w:shd w:val="clear" w:color="auto" w:fill="${o.bg}"/>` : '';
+  const borders = o.borders === false ? '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>' : '';
+  const vAlign = `<w:vAlign w:val="${o.vAlign || 'center'}"/>`;
+  const margins = `<w:tcMar><w:top w:w="${o.padY || 110}" w:type="dxa"/><w:bottom w:w="${o.padY || 110}" w:type="dxa"/><w:left w:w="${o.padX || 120}" w:type="dxa"/><w:right w:w="${o.padX || 120}" w:type="dxa"/></w:tcMar>`;
+  const body = o.raw ? content : wcParagraph(content,{size:o.size||20,color:o.color||'302D28',bold:o.bold||false,after:0,before:0,line:250,align:o.align});
+  return `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${bg}${borders}${vAlign}${margins}</w:tcPr>${body}</w:tc>`;
+}
+
+function wcTable(rows, widths, o={}){
+  const total = widths.reduce((a,b)=>a+b,0);
+  const borderColor = o.borderColor || 'E6DDCF';
+  const borders = o.noBorders
+    ? '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>'
+    : `<w:tblBorders><w:top w:val="single" w:sz="4" w:color="${borderColor}"/><w:left w:val="single" w:sz="4" w:color="${borderColor}"/><w:bottom w:val="single" w:sz="4" w:color="${borderColor}"/><w:right w:val="single" w:sz="4" w:color="${borderColor}"/><w:insideH w:val="single" w:sz="4" w:color="${borderColor}"/><w:insideV w:val="single" w:sz="4" w:color="${borderColor}"/></w:tblBorders>`;
+  const grid = widths.map(w=>`<w:gridCol w:w="${w}"/>`).join('');
+  return `<w:tbl><w:tblPr><w:tblW w:w="${total}" w:type="dxa"/><w:tblLayout w:type="fixed"/>${borders}<w:tblCellMar><w:top w:w="90" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="90" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows.join('')}</w:tbl>`;
+}
+
+function wcRow(cells, height=null){
+  return `<w:tr>${height?`<w:trPr><w:trHeight w:val="${height}" w:hRule="atLeast"/></w:trPr>`:''}${cells.join('')}</w:tr>`;
+}
+
+function wcKvTable(items){
+  const rows = items.map((it,i)=>wcRow([
+    wcCell(it[0],2600,{bg:i%2?'FBF8F2':'F7F1E6',bold:true,color:'655C50'}),
+    wcCell(it[1],7840,{bg:i%2?'FFFEFB':'FFFDF8',color:'2D2A26'})
+  ]));
+  return wcTable(rows,[2600,7840]);
+}
+
+function wcSectionTitle(number,title,pageBreakBefore=false){
+  return wcRichParagraph([
+    {text:`${String(number).padStart(2,'0')}  `,size:18,bold:true,color:'B7872C'},
+    {text:title.toUpperCase(),size:24,bold:true,color:'1C1B18'}
+  ],{before:180,after:110,keep:true,bottomBorder:true,line:300,pageBreakBefore});
+}
+
+function wcPageBreak(){return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';}
+
+function wcHeaderXml(){
+  const pic = `<w:p><w:pPr><w:spacing w:after="0"/><w:jc w:val="left"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="430000" cy="430000"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Whitfield &amp; Crane Logo"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="logo.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId1" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="430000" cy="430000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+  const leftRaw = pic + wcParagraph('WHITFIELD & CRANE',{size:18,bold:true,color:'171717',after:0,line:220}) + wcParagraph('ANALYSE- & DOMAIN-BEWERTUNG',{size:12,bold:true,color:'9B772E',after:0,line:180});
+  const rightRaw = wcParagraph('DOMAIN-ANALYSE-BEWERTUNG',{size:13,bold:true,color:'4B463E',after:0,align:'right',line:190}) + wcParagraph('TECHNISCHER RISIKOBERICHT',{size:11,bold:true,color:'9A907F',after:0,align:'right',line:170});
+  const table = wcTable([
+    wcRow([
+      wcCell(leftRaw,6500,{raw:true,borders:false,padX:0,padY:20,vAlign:'center'}),
+      wcCell(rightRaw,3940,{raw:true,borders:false,padX:0,padY:20,vAlign:'center'})
+    ])
+  ],[6500,3940],{noBorders:true});
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">${table}<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="10" w:space="2" w:color="C89A3A"/></w:pBdr><w:spacing w:after="0"/></w:pPr></w:p></w:hdr>`;
+}
+
+function wcField(instr){
+  return `<w:fldSimple w:instr=" ${instr} "><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="6D6559"/><w:sz w:val="16"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>`;
+}
+
+function wcFooterXml(domain){
+  const left = wcRichParagraph([{text:'WHITFIELD & CRANE',size:16,bold:true,color:'3A352E'},{text:'  |  Domain-Analyse-Bewertung',size:16,color:'6D6559'}],{after:0,line:190});
+  const right = `<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:after="0"/></w:pPr>${wcRun('VERTRAULICH •  ',{size:16,bold:true,color:'8A6A2B'})}${wcRun('Seite ',{size:16,color:'6D6559'})}${wcField('PAGE')}${wcRun(' von ',{size:16,color:'6D6559'})}${wcField('NUMPAGES')}</w:p>`;
+  const table = wcTable([wcRow([
+    wcCell(left,6500,{raw:true,borders:false,padX:0,padY:50}),
+    wcCell(right,3940,{raw:true,borders:false,padX:0,padY:50})
+  ])],[6500,3940],{noBorders:true});
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:pBdr><w:top w:val="single" w:sz="6" w:space="3" w:color="D7C39A"/></w:pBdr><w:spacing w:after="0"/></w:pPr></w:p>${table}</w:ftr>`;
+}
+
+function wcStylesXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial"/><w:sz w:val="21"/><w:szCs w:val="21"/><w:color w:val="302D28"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`;
+}
+
+function wcSettingsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:defaultTabStop w:val="720"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`;
+}
+
+function wcContentTypesXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`;
+}
+
+function wcRootRelsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`;
+}
+
+function wcDocumentRelsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`;
+}
+
+function wcHeaderRelsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/></Relationships>`;
+}
+
+function wcCoreXml(title, createdIso){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${wcXmlEscape(title)}</dc:title><dc:subject>Domain-Analyse und technische Risikobewertung</dc:subject><dc:creator>Whitfield &amp; Crane</dc:creator><cp:lastModifiedBy>Whitfield &amp; Crane</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${createdIso}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${createdIso}</dcterms:modified></cp:coreProperties>`;
+}
+
+function wcAppXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Microsoft Office Word</Application><Company>Whitfield &amp; Crane</Company><AppVersion>16.0000</AppVersion></Properties>`;
+}
+
+function wcBuildDocumentXml(data){
+  const findings = [
+    ['Infrastruktur wird über regionale Netzwerkpfade mit erhöhtem Risiko gehostet','Aktuelle Routing- und Netzwerkstandortindikatoren verorten Teile der Infrastruktur in südostasiatischen Hosting-Kontexten, die eine vertiefte Prüfung erfordern.','HOCH'],
+    ['Mehrere IP-Adressen hinter derselben Webpräsenz festgestellt','Die aktuelle DNS-Bewertung zeigt einen Wechsel zwischen Hosting-Endpunkten und Reverse-Proxy-Ebenen.','HOCH'],
+    ['Die Weiterleitungskette enthält externe Zwischenstationen','Der beobachtete HTTP-Bewertungsablauf durchläuft mehrere Hostnamen, bevor das endgültige Inhaltsziel erreicht wird.','HOCH'],
+    ['Der E-Mail-Anti-Spoofing-Schutz ist unvollständig','Die aktuelle Konfigurationsbewertung zeigt eine SPF-Fehlausrichtung, fehlende DKIM-Verifizierung und eine nicht durchsetzende DMARC-Richtlinie.','HOCH'],
+    ['Die Beziehung zwischen Zertifikat und Host erfordert eine eingehende Prüfung','Die Bewertung der Zertifikatsmetadaten deutet auf gemeinsam genutzte Infrastruktur und einen breiten Umfang alternativer Antragstellernamen hin.','MITTEL'],
+    ['Das Inhaltsverhalten ähnelt einer kommerziellen Ansprache mit hohem Druck','Zu den Inhaltsrisikoindikatoren gehören Dringlichkeitsformulierungen, Hinweise auf irreversible Zahlungen und Aufforderungen zur Kontaktaufnahme außerhalb der Plattform.','HOCH'],
+    ['Die Reputationskorrelation ergab mehrere negative Kennzeichnungen','Mehrere Klassifizierungen aus Analysequellen weisen auf eine erhöhte Prüfpriorität hin.','HOCH'],
+    ['Die Clusterbildung verwandter Domains weist auf gemeinsam genutzte Infrastruktur hin','Passive-DNS-Beziehungen verknüpfen das Ziel über sich überschneidende Netzwerk- und Zertifikatsattribute mit anderen Domains.','MITTEL']
+  ];
+
+  const nowText = data.reportDate;
+  const target = data.domain;
+  const caseId = data.caseId;
+  const body = [];
+
+  // Cover
+  body.push(wcParagraph('TECHNISCHER ANALYSEBERICHT',{size:18,bold:true,color:'A57A27',after:160,before:500,align:'center'}));
+  body.push(wcParagraph('Domain-Risikobewertung',{size:52,bold:true,color:'171717',after:130,align:'center',line:560}));
+  body.push(wcParagraph(target,{size:30,bold:true,color:'6E531D',after:300,align:'center',line:360}));
+
+  const riskLeft = wcParagraph('GESAMTRISIKOBEWERTUNG',{size:15,bold:true,color:'8B4C4C',after:30,align:'center',line:190}) + wcParagraph('HOCH',{size:34,bold:true,color:'A54242',after:0,align:'center',line:360});
+  const riskRight = wcParagraph('GESAMTPUNKTWERT',{size:15,bold:true,color:'8B4C4C',after:30,align:'center',line:190}) + wcParagraph('92 / 100',{size:34,bold:true,color:'A54242',after:0,align:'center',line:360});
+  body.push(wcTable([wcRow([
+    wcCell(riskLeft,5220,{raw:true,bg:'FFF1EF',borders:false,padY:210}),
+    wcCell(riskRight,5220,{raw:true,bg:'FFF1EF',borders:false,padY:210})
+  ])],[5220,5220],{borderColor:'E7C1BC'}));
+  body.push(wcParagraph('',{after:180}));
+
+  body.push(wcKvTable([
+    ['Berichtsreferenz',caseId],
+    ['Bewertungsziel',target],
+    ['Berichtsdatum',nowText],
+    ['Erstellt von','Whitfield & Crane — Analyse- & Domain-Bewertung'],
+    ['Klassifizierung','Vertraulich — Interne Bewertung'],
+    ['Verifizierungsstatus','Interne Bewertung von Whitfield & Crane LLP']
+  ]));
+
+  body.push(wcParagraph('Zusammenfassende Bewertung',{size:26,bold:true,color:'1B1A17',before:260,after:110,bottomBorder:true,line:320}));
+  body.push(wcParagraph('Die Bewertung zeigt eine konzentrierte Gruppe erhöhter Risikoindikatoren in den Bereichen Netzwerkinfrastruktur, Weiterleitungsverhalten, E-Mail-Sicherheitslage, Inhaltssignale und Reputationskorrelation. Die stärksten Indikatoren sind Infrastrukturvolatilität, mehrstufiges Routing, schwache Anti-Spoofing-Kontrollen, negative Reputationssignale und Überschneidungen bei zugehörigen Assets. Diese Indikatoren stützen eine Hochrisiko-Einstufung innerhalb des internen Bewertungsrahmens von Whitfield & Crane LLP. Die technischen Werte in diesem Bericht werden als interne Bewertungsergebnisse auf Grundlage der in diesem Arbeitsbereich angezeigten Daten dokumentiert.',{size:21,color:'39352F',after:130,line:300}));
+  body.push(wcParagraph('Schlüsselindikatoren',{size:20,bold:true,color:'775A20',before:100,after:80}));
+  body.push(wcBullet('Gesamtrisikowert: 92 / 100 — Profil mit Hochrisikoindikatoren'));
+  body.push(wcBullet('Drei Netzwerkendpunkte im Zusammenhang mit südostasiatischem Routing-Kontext'));
+  body.push(wcBullet('Mehrere Weiterleitungsstationen einschließlich domainübergreifender Übergänge'));
+  body.push(wcBullet('Schwache SPF- / DKIM- / DMARC-Lage und erhöhtes Identitätsmissbrauchsrisiko'));
+  body.push(wcBullet('Korrelation verwandter Domains und Infrastruktur, die eine Analystenprüfung erfordert'));
+  // Section 1
+  body.push(wcSectionTitle(1,'Zentrale Risikofeststellungen',true));
+  const findingRows = findings.map((f,i)=>wcRow([
+    wcCell(String(i+1).padStart(2,'0'),700,{bg:'F7F1E6',bold:true,color:'9A7227',align:'center'}),
+    wcCell(wcRichParagraph([{text:f[0],size:20,bold:true,color:'282520'},{text:'\n'+f[1],size:18,color:'686055'}],{after:0,line:245}),8240,{raw:true,bg:'FFFEFB'}),
+    wcCell(f[2],1500,{bg:f[2]==='HOCH'?'FFF1EF':'FFF7E8',bold:true,color:f[2]==='HOCH'?'A74444':'956B1B',align:'center'})
+  ]));
+  body.push(wcTable(findingRows,[700,8240,1500]));
+
+  body.push(wcSectionTitle(2,'Infrastruktur- & Netzwerkprofil'));
+  body.push(wcKvTable([
+    ['Aufgelöstes IPv4','192.0.2.74; 198.51.100.91; 203.0.113.62'],
+    ['Primäre ASN','AS64500 — Indikator für vertiefte Prüfung'],
+    ['Hosting-Muster','Mehrere Endpunkte, Reverse-Proxy, gemeinsam genutzte Infrastruktur'],
+    ['Netzwerkregion','Südostasien — Bewertung von Whitfield & Crane LLP'],
+    ['CDN / Proxy','Proxy- / CDN-Indikator'],
+    ['Reverse-DNS-Konsistenz','Niedrig'],
+    ['Festgestellte Ports','80/tcp, 443/tcp, 8080/tcp'],
+    ['HTTP-Server-Profil','nginx- / Reverse-Proxy-Muster'],
+    ['Hosting-Bewertungssicherheit','Interne Bewertung von Whitfield & Crane LLP']
+  ]));
+  body.push(wcParagraph('Festgestellte Netzwerkendpunkte',{size:20,bold:true,color:'775A20',before:180,after:80,pageBreakBefore:true}));
+  body.push(wcTable([
+    wcRow([wcCell('IP-ADRESSE',2300,{bg:'EEDFBE',bold:true,color:'4B3A16'}),wcCell('REGIONALER KONTEXT',2100,{bg:'EEDFBE',bold:true,color:'4B3A16'}),wcCell('ASN',1700,{bg:'EEDFBE',bold:true,color:'4B3A16'}),wcCell('NETZWERKTYP',2640,{bg:'EEDFBE',bold:true,color:'4B3A16'}),wcCell('SIGNAL',1700,{bg:'EEDFBE',bold:true,color:'4B3A16'})]),
+    wcRow([wcCell('192.0.2.74',2300),wcCell('Myanmar',2100),wcCell('AS64500',1700),wcCell('Hosting / Transit',2640),wcCell('Festgestellt',1700,{color:'A74444',bold:true})]),
+    wcRow([wcCell('198.51.100.91',2300),wcCell('Kambodscha',2100),wcCell('AS64501',1700),wcCell('Rechenzentrum',2640),wcCell('Proxy-Indikator',1700,{color:'956B1B',bold:true})]),
+    wcRow([wcCell('203.0.113.62',2300),wcCell('Laos',2100),wcCell('AS64502',1700),wcCell('Transit',2640),wcCell('Transit-Indikator',1700,{color:'6B6257',bold:true})])
+  ],[2300,2100,1700,2640,1700]));
+
+  body.push(wcSectionTitle(3,'DNS-Analyse'));
+  body.push(wcKvTable([
+    ['A-Records','192.0.2.74; 198.51.100.91; 203.0.113.62'],
+    ['AAAA-Records','Im Bewertungsprofil nicht festgestellt'],
+    ['NS-Records','ns1.test; ns2.test'],
+    ['MX-Records','mx1.test'],
+    ['TXT-Profil','Begrenzte / inkonsistente Einträge'],
+    ['CNAME-Nutzung','Umleitung über externen Dienst festgestellt'],
+    ['DNSSEC','Nicht aktiviert'],
+    ['Fast-Flux-Muster','Indikator identifiziert'],
+    ['Resolver-Konsistenz','Variabel'],
+    ['Historische Änderungsrate','Im Bewertungsprofil erhöht']
+  ]));
+
+  body.push(wcSectionTitle(4,'TLS- & Zertifikatsprüfung',true));
+  body.push(wcKvTable([
+    ['HTTPS','Verfügbar'],
+    ['TLS-Unterstützung','TLS 1.2 / TLS 1.3'],
+    ['Aussteller','Öffentliche Zertifizierungsstelle'],
+    ['Zertifikatsumfang','Multi-SAN-Zertifikat'],
+    ['Anzahl SANs','18 zugehörige Hostnamen'],
+    ['Gemeinsam genutztes Zertifikat','Festgestellt'],
+    ['Hostname-Übereinstimmung','Bestanden'],
+    ['OCSP-Stapling','Nicht festgestellt'],
+    ['Verschlüsselungsprüfung','Indikator für vertiefte Prüfung']
+  ]));
+
+  body.push(wcSectionTitle(5,'E-Mail-Sicherheitslage'));
+  body.push(wcKvTable([
+    ['MX-Routing','Externer Mailhost'],
+    ['SPF','Soft-Fail / Bedenken bei der Ausrichtung'],
+    ['DKIM','Nicht festgestellt'],
+    ['DMARC','p=none'],
+    ['DMARC-Ausrichtung','Schwach'],
+    ['MTA-STS','Nicht festgestellt'],
+    ['TLS-RPT','Nicht festgestellt'],
+    ['Identitätsmissbrauchsrisiko','Erhöht']
+  ]));
+
+  body.push(wcSectionTitle(6,'HTTP- & Weiterleitungsverhalten',true));
+  body.push(wcKvTable([
+    ['Erstreaktion','301 Dauerhaft verschoben'],
+    ['Weiterleitungsstationen','4 Stationen'],
+    ['Domainübergreifende Station','Festgestellt'],
+    ['JavaScript-Weiterleitung','Indikator identifiziert'],
+    ['Geografieabhängiges Routing','Indikator identifiziert'],
+    ['User-Agent-Abweichung','Im Bewertungsprofil festgestellt'],
+    ['Cookie-Zugriffsbeschränkung','Vorhanden'],
+    ['Endreaktion','200 OK']
+  ]));
+
+  body.push(wcSectionTitle(7,'Web-Technologie- & Inhaltssignale'));
+  body.push(wcKvTable([
+    ['Frontend-Profil','Fingerabdruck einer React-ähnlichen Single-Page-Anwendung'],
+    ['Reverse-Proxy','nginx-ähnliches Antwortmuster'],
+    ['Analyse','Mehrere Drittanbieter-Tracking-Integrationen'],
+    ['Zahlungshinweise','Kryptobezogene Formulierungen'],
+    ['Dringlichkeitsformulierungen','Erhöht'],
+    ['Kontakt außerhalb der Plattform','Festgestellt'],
+    ['Externe Wallet-Verweise','Indikatoren identifiziert'],
+    ['Klarheit der rechtlichen Identität','Unzureichend'],
+    ['Konsistenz der Richtlinien','Uneinheitlich']
+  ]));
+
+  body.push(wcSectionTitle(8,'Korrelation von Bedrohungsinformationen',true));
+  body.push(wcKvTable([
+    ['Treffer in Bedrohungsdatenquellen','4 Korrelationen'],
+    ['Phishing-Taxonomie','Übereinstimmender Indikator'],
+    ['Malware-Verbreitung','Kein Malware-Indikator dokumentiert'],
+    ['Abgreifen von Zugangsdaten','Indikator identifiziert'],
+    ['Finanzbetrug','Erhöhte Indikatoren'],
+    ['Markenimitation','Indikatoren identifiziert'],
+    ['Kontrollen für Fehlalarme','Bewertung von Whitfield & Crane LLP angewendet']
+  ]));
+
+  body.push(wcSectionTitle(9,'Korrelation zugehöriger Assets'));
+  body.push(wcTable([
+    wcRow([wcCell('ZUGEHÖRIGER HOST',3600,{bg:'EEDFBE',bold:true,color:'4B3A16'}),wcCell('BEZIEHUNG',5240,{bg:'EEDFBE',bold:true,color:'4B3A16'}),wcCell('PRIORITÄT',1600,{bg:'EEDFBE',bold:true,color:'4B3A16'})]),
+    wcRow([wcCell('secure-payment.test',3600),wcCell('Gemeinsame IP + Zertifikatsüberschneidung',5240),wcCell('HOCH',1600,{color:'A74444',bold:true})]),
+    wcRow([wcCell('account-center.test',3600),wcCell('Gemeinsame ASN + Weiterleitungsbeziehung',5240),wcCell('HOCH',1600,{color:'A74444',bold:true})]),
+    wcRow([wcCell('verify-session.test',3600),wcCell('Nameserver + Inhaltsähnlichkeit',5240),wcCell('MITTEL',1600,{color:'956B1B',bold:true})]),
+    wcRow([wcCell('client-portal.test',3600),wcCell('Zertifikat-SAN-Beziehung',5240),wcCell('MITTEL',1600,{color:'956B1B',bold:true})]),
+    wcRow([wcCell('cdn-gateway.test',3600),wcCell('Reine Infrastrukturbeziehung',5240),wcCell('KONTEXT',1600,{color:'6A6359',bold:true})])
+  ],[3600,5240,1600]));
+
+  body.push(wcSectionTitle(10,'Aufschlüsselung der Risikosignale',true));
+  body.push(wcTable([
+    wcRow([wcCell('KATEGORIE',5400,{bg:'EEDFBE',bold:true,color:'4B3A16'}),wcCell('PUNKTWERT',1800,{bg:'EEDFBE',bold:true,color:'4B3A16',align:'center'}),wcCell('BEWERTUNG',3240,{bg:'EEDFBE',bold:true,color:'4B3A16'})]),
+    wcRow([wcCell('Infrastrukturrisiko',5400),wcCell('91 / 100',1800,{align:'center',bold:true}),wcCell('Hoch',3240,{color:'A74444',bold:true})]),
+    wcRow([wcCell('Risiko der Netzwerkgeografie',5400),wcCell('88 / 100',1800,{align:'center',bold:true}),wcCell('Erhöht',3240,{color:'956B1B',bold:true})]),
+    wcRow([wcCell('Weiterleitungsverhalten',5400),wcCell('94 / 100',1800,{align:'center',bold:true}),wcCell('Hoch',3240,{color:'A74444',bold:true})]),
+    wcRow([wcCell('E-Mail-Sicherheit',5400),wcCell('83 / 100',1800,{align:'center',bold:true}),wcCell('Erhöht',3240,{color:'956B1B',bold:true})]),
+    wcRow([wcCell('Inhaltsrisiko',5400),wcCell('90 / 100',1800,{align:'center',bold:true}),wcCell('Hoch',3240,{color:'A74444',bold:true})]),
+    wcRow([wcCell('Reputationskorrelation',5400),wcCell('96 / 100',1800,{align:'center',bold:true}),wcCell('Hoch',3240,{color:'A74444',bold:true})]),
+    wcRow([wcCell('Risiko zugehöriger Assets',5400),wcCell('87 / 100',1800,{align:'center',bold:true}),wcCell('Erhöht',3240,{color:'956B1B',bold:true})]),
+    wcRow([wcCell('TLS- / Zertifikatsrisiko',5400),wcCell('74 / 100',1800,{align:'center',bold:true}),wcCell('Prüfen',3240,{color:'6A6359',bold:true})])
+  ],[5400,1800,3240]));
+
+  body.push(wcSectionTitle(11,'Analysteneinstufung & nächste Schritte',true));
+  body.push(wcParagraph('Einstufung: Betrugsrisiko-Klassifizierung — Interne Bewertung von Whitfield & Crane LLP',{size:23,bold:true,color:'A74444',after:120}));
+  body.push(wcParagraph('Das kombinierte Indikatorenprofil stützt eine Hochrisiko-Klassifizierung innerhalb des internen Bewertungsrahmens von Whitfield & Crane LLP. Die dokumentierten Feststellungen spiegeln die in diesem Arbeitsbereich angezeigten Daten wider und werden als interne Bewertungsergebnisse von Whitfield & Crane LLP dargestellt.',{size:21,color:'38342E',after:130,line:300}));
+  body.push(wcParagraph('Bewertungshinweise von Whitfield & Crane LLP',{size:20,bold:true,color:'775A20',after:80}));
+  body.push(wcBullet('Live-Verifizierung von DNS, ASN, WHOIS/RDAP, TLS und HTTP über kontrollierte Analysteninfrastruktur durchführen.'));
+  body.push(wcBullet('Screenshots, Header, Weiterleitungsverläufe sowie relevante Transaktions- oder Kommunikationsartefakte mit Zeitstempeln sichern.'));
+  body.push(wcBullet('Reputations- und Bedrohungsdatenquellen-Ergebnisse anhand unabhängiger primärer oder maßgeblicher Quellen validieren.'));
+  body.push(wcBullet('Verwandte Domains, Zertifikate, Nameserver, IP-Adressen und Zahlungskennungen vor einer Zuordnung korrelieren.'));
+  body.push(wcBullet('Alle Verifizierungsschritte im Beweisprotokoll des Falls dokumentieren und ursprüngliches Quellenmaterial sichern.'));
+
+  body.push(wcSectionTitle(12,'Bewertungs- & Berichtsumfang'));
+  body.push(wcParagraph('Dieser Bericht gibt die derzeit in der Bewertungsoberfläche angezeigten Werte wieder. Technische Feststellungen und Klassifizierungen werden als interne Bewertungsergebnisse von Whitfield & Crane LLP auf Grundlage der in diesem Arbeitsbereich angezeigten Daten dargestellt. Dieser Bericht stellt keine Zertifizierung durch eine Aufsichtsbehörde, Regierungsstelle oder einen unbeteiligten Dritten dar.',{size:20,color:'575046',after:120,line:292}));
+  body.push(wcKvTable([
+    ['Ziel',target],
+    ['Berichtsreferenz',caseId],
+    ['Erstellt',nowText],
+    ['Quelle','Whitfield & Crane Domain-Bewertungskonsole'],
+    ['Verifizierung','Interne Bewertung von Whitfield & Crane LLP'],
+    ['Vertraulichkeit','Vertraulich — Internes Bewertungsmaterial']
+  ]));
+
+  const sectPr = `<w:sectPr><w:headerReference w:type="default" r:id="rId3"/><w:footerReference w:type="default" r:id="rId4"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="950" w:right="900" w:bottom="900" w:left="900" w:header="380" w:footer="420" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr>`;
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>${body.join('')}${sectPr}</w:body></w:document>`;
+}
+
+function wcUtf8(s){return new TextEncoder().encode(s);}
+function wcConcat(parts){
+  const len=parts.reduce((n,p)=>n+p.length,0);const out=new Uint8Array(len);let o=0;
+  for(const p of parts){out.set(p,o);o+=p.length;}return out;
+}
+function wcLe16(n){return new Uint8Array([n&255,(n>>>8)&255]);}
+function wcLe32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);}
+let wcCrcTable=null;
+function wcCrc32(bytes){
+  if(!wcCrcTable){wcCrcTable=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);wcCrcTable[n]=c>>>0;}}
+  let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=wcCrcTable[(c^bytes[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;
+}
+function wcDosDateTime(d=new Date()){
+  const year=Math.max(1980,d.getFullYear());
+  const dosDate=((year-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+  const dosTime=(d.getHours()<<11)|(d.getMinutes()<<5)|Math.floor(d.getSeconds()/2);
+  return {date:dosDate,time:dosTime};
+}
+function wcZipStore(entries){
+  const locals=[], centrals=[];let offset=0;const dt=wcDosDateTime();
+  for(const e of entries){
+    const nameBytes=wcUtf8(e.name);const data=typeof e.data==='string'?wcUtf8(e.data):e.data;const crc=wcCrc32(data);
+    const local=wcConcat([wcLe32(0x04034b50),wcLe16(20),wcLe16(0x0800),wcLe16(0),wcLe16(dt.time),wcLe16(dt.date),wcLe32(crc),wcLe32(data.length),wcLe32(data.length),wcLe16(nameBytes.length),wcLe16(0),nameBytes,data]);
+    locals.push(local);
+    const central=wcConcat([wcLe32(0x02014b50),wcLe16(20),wcLe16(20),wcLe16(0x0800),wcLe16(0),wcLe16(dt.time),wcLe16(dt.date),wcLe32(crc),wcLe32(data.length),wcLe32(data.length),wcLe16(nameBytes.length),wcLe16(0),wcLe16(0),wcLe16(0),wcLe16(0),wcLe32(0),wcLe32(offset),nameBytes]);
+    centrals.push(central);offset+=local.length;
+  }
+  const cd=wcConcat(centrals);const localAll=wcConcat(locals);
+  const eocd=wcConcat([wcLe32(0x06054b50),wcLe16(0),wcLe16(0),wcLe16(entries.length),wcLe16(entries.length),wcLe32(cd.length),wcLe32(localAll.length),wcLe16(0)]);
+  return wcConcat([localAll,cd,eocd]);
+}
+
+function wcBase64ToBytes(b64){
+  const bin=atob(b64);const out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;
+}
+
+function buildDomainReportDocx(domain, logoBytes, meta={}){
+  const d=new Date();
+  const createdIso=d.toISOString();
+  const dateText=meta.reportDate || new Intl.DateTimeFormat('de-DE',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'}).format(d);
+  const cleanDomain=(domain||'target-domain.test').replace(/[^a-zA-Z0-9._-]/g,'_');
+  const caseId=meta.caseId || `WCC-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${Math.floor(1000+Math.random()*9000)}`;
+  const data={domain:domain||'target-domain.test',caseId,reportDate:dateText};
+  const files=[
+    {name:'[Content_Types].xml',data:wcContentTypesXml()},
+    {name:'_rels/.rels',data:wcRootRelsXml()},
+    {name:'docProps/core.xml',data:wcCoreXml(`Domain-Risikobewertung — ${domain}`,createdIso)},
+    {name:'docProps/app.xml',data:wcAppXml()},
+    {name:'word/document.xml',data:wcBuildDocumentXml(data)},
+    {name:'word/styles.xml',data:wcStylesXml()},
+    {name:'word/settings.xml',data:wcSettingsXml()},
+    {name:'word/header1.xml',data:wcHeaderXml()},
+    {name:'word/footer1.xml',data:wcFooterXml(domain)},
+    {name:'word/_rels/document.xml.rels',data:wcDocumentRelsXml()},
+    {name:'word/_rels/header1.xml.rels',data:wcHeaderRelsXml()},
+    {name:'word/media/logo.png',data:logoBytes}
+  ];
+  return {bytes:wcZipStore(files),filename:`Whitfield_Crane_Domain_Bewertung_${cleanDomain}_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.docx`,caseId};
+}
+
+function exportDocxReport(){
+  const domainEl=document.getElementById('targetDomain');
+  const inputEl=document.getElementById('domainInput');
+  const domain=(domainEl && domainEl.textContent && domainEl.textContent!=='target-domain.test') ? domainEl.textContent.trim() : normalize(inputEl ? inputEl.value : 'target-domain.test');
+  const logoSrc=document.querySelector('.brand img').src;
+  const logoBytes=wcBase64ToBytes(logoSrc.split(',')[1]);
+  const report=buildDomainReportDocx(domain,logoBytes);
+  const blob=new Blob([report.bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=report.filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+</script>
+</body>
+</html>

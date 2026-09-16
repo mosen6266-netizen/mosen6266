@@ -1,0 +1,3147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>邮件编辑器（墨森）</title>
+<style>
+  :root{
+    --blue:#0D2B6A;
+    --mobilePreviewWidth:430px;
+    --blue2:#0A3F8C;
+    --light:#eef4fb;
+    --line:#d7e3f4;
+    --text:#17324d;
+    --muted:#5f7185;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#eaf1f9;font-family:Arial,Helvetica,'Microsoft YaHei','PingFang SC',sans-serif;color:#17324d;}
+  .appbar{position:sticky;top:0;z-index:9999;background:#ffffff;border-bottom:1px solid #d8e2ef;box-shadow:0 4px 18px rgba(7,47,91,.08);}
+  .topline{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 16px;background:#0D2B6A;color:#fff;}
+  .topline b{font-size:16px;}
+  .topline span{font-size:12px;opacity:.88;}
+  .toolbar{display:flex;flex-direction:column;gap:8px;align-items:stretch;padding:12px 16px;}
+  .toolbar-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%;}
+  .toolbar-row.primary-row{padding-bottom:8px;border-bottom:1px solid #e4edf7;}
+  .toolbar-group{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:7px 8px;border:1px solid #e4edf7;background:#fbfdff;border-radius:12px;}
+  .toolbar-group.compact{padding:0;border:none;background:transparent;}
+
+  .toolbar-group.block-toolbar{align-items:flex-start;gap:7px;padding:8px 9px;}
+  .toolbar-group.block-toolbar .toolgroup-title{align-self:center;margin-right:2px;}
+  .toolbar-group.block-toolbar button{padding:7px 9px;}
+  [data-progress-bar="true"]{cursor:pointer;}
+  [data-progress-bar="true"]:hover{box-shadow:0 0 0 3px rgba(13,43,106,.08);}
+  .toolgroup-title{font-size:12px;line-height:18px;color:#5f7185;font-weight:700;padding:0 2px;white-space:nowrap;}
+  .toolbar button,.toolbar select,.toolbar input{border:1px solid #c9d7e7;background:#fff;color:#17324d;border-radius:9px;padding:8px 10px;font-size:13px;line-height:16px;cursor:pointer;}
+  .toolbar button:hover{border-color:#0D2B6A;color:#0D2B6A;background:#f5f9ff;}
+  .toolbar button.icon-only{position:relative;width:36px;min-width:36px;height:34px;padding:6px 0;text-align:center;font-size:18px;line-height:18px;font-weight:700;}
+  .toolbar button.icon-only[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);z-index:10080;background:#17324d;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;line-height:16px;font-weight:400;white-space:nowrap;box-shadow:0 8px 22px rgba(7,47,91,.18);pointer-events:none;}
+  .toolbar button.icon-only[data-tip]:hover::before{content:'';position:absolute;left:50%;top:calc(100% + 3px);transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid #17324d;z-index:10081;pointer-events:none;}
+  .toolbar .primary{background:#0D2B6A;color:#fff;border-color:#0D2B6A;font-weight:700;}
+  .toolbar .primary:hover{background:#09214F;color:#fff;}
+  .toolbar .danger:hover{border-color:#b42318;color:#b42318;background:#fff5f5;}
+  .toolbar label{font-size:12px;color:#5f7185;display:flex;align-items:center;gap:6px;}
+  .hint{font-size:12px;color:#5f7185;padding:0 16px 12px 16px;}
+  .workspace{max-width:760px;margin:24px auto 50px auto;padding:0 18px;}
+  .canvas-shell{background:#dfeaf5;border-radius:18px;padding:22px;border:1px solid #cedcec;max-width:calc(var(--mobilePreviewWidth) + 46px);margin:0 auto;overflow:visible;}
+  #emailCanvas{margin:0 auto;width:100%!important;max-width:var(--mobilePreviewWidth)!important;}
+  [contenteditable="true"]{outline:1px dashed transparent;border-radius:4px;}
+  [contenteditable="true"]:hover{outline-color:#9bb7d8;background:rgba(3,68,129,.04);}
+  [data-edit-block]{position:relative;transition:outline .12s, box-shadow .12s;}
+  [data-edit-block]:hover{outline:2px dashed rgba(3,68,129,.35);outline-offset:4px;}
+  [data-edit-block].selected{outline:3px solid #0D2B6A!important;outline-offset:5px;box-shadow:0 0 0 7px rgba(13,43,106,.12);}
+  .height-resizer{position:fixed;z-index:10000;width:90px;height:16px;border-radius:999px;background:#0D2B6A;box-shadow:0 3px 10px rgba(13,43,106,.25);cursor:ns-resize;display:none;align-items:center;justify-content:center;}
+  .height-resizer:before{content:'';display:block;width:34px;height:3px;border-radius:99px;background:#ffffff;opacity:.9;}
+  .width-resizer{position:fixed;z-index:10000;width:16px;height:80px;border-radius:999px;background:#0D2B6A;box-shadow:0 3px 10px rgba(13,43,106,.25);cursor:ew-resize;display:none;align-items:center;justify-content:center;}
+  .width-resizer:before{content:'';display:block;width:3px;height:34px;border-radius:99px;background:#ffffff;opacity:.9;}
+  .image-resizer{position:fixed;z-index:10001;width:20px;height:20px;border-radius:6px;background:#0D2B6A;border:2px solid #ffffff;box-shadow:0 3px 12px rgba(13,43,106,.28);cursor:nwse-resize;display:none;}
+  .image-resizer:before{content:'';position:absolute;right:3px;bottom:3px;width:8px;height:8px;border-right:2px solid #fff;border-bottom:2px solid #fff;}
+  .status{display:inline-block;margin-left:8px;font-size:12px;color:#0b5;}
+  .preview-mode [contenteditable="true"]{outline:none!important;background:transparent!important;}
+  .preview-mode [data-edit-block], .preview-mode [data-edit-block]:hover, .preview-mode [data-edit-block].selected{outline:none!important;box-shadow:none!important;}
+  .preview-mode .height-resizer,.preview-mode .width-resizer,.preview-mode .image-resizer{display:none!important;}
+  .preview-mode .appbar{display:none;}
+  .small-note{font-size:12px;line-height:20px;color:#627388;margin:14px auto 0;max-width:430px;}
+
+  .status-modal-backdrop{display:none;position:fixed;inset:0;z-index:10050;background:rgba(4,22,48,.42);align-items:center;justify-content:center;padding:18px;}
+  .status-modal-backdrop.show{display:flex;}
+  .status-modal{width:min(560px,96vw);background:#fff;border:1px solid #d7e3f4;border-radius:18px;box-shadow:0 24px 70px rgba(3,35,80,.24);overflow:hidden;}
+  .status-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;background:#f5f9ff;border-bottom:1px solid #d7e3f4;}
+  .status-modal-head b{font-size:16px;color:#17324d;}
+  .status-modal-head button{border:1px solid #d7e3f4;background:#fff;border-radius:10px;padding:6px 10px;cursor:pointer;}
+  .status-modal-body{padding:16px 18px 18px;}
+  .status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 14px;}
+  .status-choice{border:1px solid #d7e3f4;background:#fff;border-radius:12px;padding:9px 8px;cursor:pointer;font-size:14px;line-height:20px;text-align:center;}
+  .status-choice:hover{border-color:var(--blue);box-shadow:0 0 0 3px rgba(13,43,106,.08);}
+  .status-form{display:grid;grid-template-columns:1fr 1fr 72px auto;gap:8px;align-items:end;margin-top:12px;}
+  .status-form label{font-size:12px;color:#5f7185;display:flex;flex-direction:column;gap:5px;}
+  .status-form input,.status-form select{border:1px solid #d7e3f4;border-radius:10px;padding:9px 10px;font-size:14px;background:#fff;}
+  .status-form button{border:1px solid var(--blue);background:var(--blue);color:#fff;border-radius:10px;padding:9px 12px;font-size:14px;cursor:pointer;}
+  .status-mini-help{font-size:12px;line-height:20px;color:#627388;margin-top:6px;}
+  @media(max-width:560px){.status-grid{grid-template-columns:repeat(2,1fr);} .status-form{grid-template-columns:1fr;}.status-form button{width:100%;}}
+
+
+  .add-block-preview-popover{display:none;position:fixed;z-index:10040;width:360px;max-width:calc(100vw - 28px);background:#ffffff;border:1px solid #c9d7e7;border-radius:16px;box-shadow:0 18px 50px rgba(7,47,91,.24);padding:12px;pointer-events:none;overflow:hidden;}
+  .add-block-preview-popover.show{display:block;}
+  .add-block-preview-title{font-size:13px;line-height:20px;font-weight:700;color:#17324d;margin:0 0 8px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .add-block-preview-title span{font-size:11px;font-weight:400;color:#5f7185;white-space:nowrap;}
+  .add-block-preview-frame{background:#eef4fb;border:1px solid #d7e3f4;border-radius:12px;padding:12px;max-height:300px;overflow:hidden;}
+  .add-block-preview-scale{width:430px;transform:scale(.76);transform-origin:top left;}
+  .add-block-preview-popover [contenteditable="true"]{outline:none!important;background:transparent!important;}
+  .add-block-preview-popover [data-edit-block], .add-block-preview-popover [data-edit-block]:hover{outline:none!important;box-shadow:none!important;}
+  .preview-mode .add-block-preview-popover{display:none!important;}
+  .marker-choice-popover{display:none;position:fixed;z-index:10060;background:#ffffff;border:1px solid #c9d7e7;border-radius:14px;box-shadow:0 18px 50px rgba(7,47,91,.24);padding:8px;min-width:188px;}
+  .marker-choice-popover.show{display:block;}
+  .marker-choice-popover button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:#fff;color:#17324d;border-radius:10px;padding:8px 10px;font-size:13px;line-height:18px;text-align:left;cursor:pointer;}
+  .marker-choice-popover button:hover{background:#f5f9ff;}
+  .marker-choice-popover .marker-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:8px;background:#eef4fb;font-weight:700;}
+
+
+
+  /* 左侧固定工具面板：避免顶部工具区占用模板视图 */
+  .appbar{position:sticky;top:0;z-index:9999;background:transparent;border-bottom:0;box-shadow:none;}
+  .topline{box-shadow:0 4px 18px rgba(7,47,91,.08);}
+  .toolbar{position:fixed;left:14px;top:58px;bottom:14px;z-index:9997;width:316px;display:block;overflow-y:auto;overflow-x:hidden;padding:10px;background:#ffffff;border:1px solid #d8e2ef;border-radius:18px;box-shadow:0 16px 45px rgba(7,47,91,.16);}
+  .toolbar::-webkit-scrollbar{width:8px;}
+  .toolbar::-webkit-scrollbar-thumb{background:#c9d7e7;border-radius:999px;}
+  .toolbar-row{display:block;width:100%;margin:0 0 8px 0;}
+  .toolbar-row.primary-row{position:sticky;top:-10px;z-index:2;margin:-10px -10px 10px -10px;padding:10px;border-bottom:1px solid #e4edf7;background:#ffffff;border-radius:18px 18px 0 0;}
+  .toolbar-row.primary-row > .primary{width:100%;margin-bottom:8px;}
+  .toolbar-row.primary-row > button:not(.primary){width:86px;margin-right:6px;vertical-align:middle;}
+  .toolbar-group{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;align-items:stretch;margin-bottom:8px;padding:8px;border:1px solid #e4edf7;background:#fbfdff;border-radius:14px;}
+  .toolbar-group.compact{display:inline-flex;width:auto;vertical-align:middle;gap:6px;padding:0;border:none;background:transparent;margin:0;}
+  .toolbar-group.block-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:7px;padding:8px;max-height:none;}
+  .toolbar-group.block-toolbar .toolgroup-title{align-self:auto;margin-right:0;}
+  .toolgroup-title{grid-column:1/-1;padding:0 2px 2px 2px;border-bottom:1px solid #edf3fb;margin-bottom:2px;}
+  .toolbar button,.toolbar select,.toolbar input{width:100%;min-width:0;}
+  .toolbar label{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:4px;font-size:12px;line-height:16px;}
+  .toolbar button.icon-only{width:34px;min-width:34px;height:32px;}
+  .toolbar .status{display:block;margin:6px 0 0 0;}
+  .hint,.small-note{display:none!important;}
+  .workspace{max-width:none;margin:18px 22px 50px 352px;padding:0;min-height:calc(100vh - 80px);}
+  .canvas-shell{margin:0 auto;}
+  .preview-mode .toolbar{display:none!important;}
+  .preview-mode .workspace{margin:18px auto 50px auto;padding:0 18px;max-width:760px;}
+
+  .count-modal-backdrop{display:none;position:fixed;inset:0;z-index:10100;background:rgba(4,22,48,.42);align-items:center;justify-content:center;padding:18px;}
+  .count-modal-backdrop.show{display:flex;}
+  .count-modal{width:min(440px,96vw);background:#ffffff;border:1px solid #d7e3f4;border-radius:18px;box-shadow:0 24px 70px rgba(3,35,80,.24);overflow:hidden;}
+  .count-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;background:#f5f9ff;border-bottom:1px solid #d7e3f4;}
+  .count-modal-head b{font-size:16px;line-height:22px;color:#17324d;}
+  .count-modal-sub{font-size:12px;line-height:20px;color:#5f7185;margin-top:2px;}
+  .count-modal-close{width:32px;height:32px;border:1px solid #d7e3f4;background:#fff;border-radius:10px;color:#17324d;font-size:20px;line-height:20px;cursor:pointer;}
+  .count-modal-body{padding:18px;}
+  .count-stepper{display:grid;grid-template-columns:46px 1fr 46px;gap:8px;align-items:center;}
+  .count-stepper button{border:1px solid #c9d7e7;background:#fff;color:#0D2B6A;border-radius:12px;height:44px;font-size:24px;font-weight:700;cursor:pointer;}
+  .count-stepper button:hover{border-color:var(--blue);background:#f5f9ff;}
+  .count-stepper input{height:44px;border:1px solid #c9d7e7;border-radius:12px;text-align:center;font-size:20px;font-weight:700;color:#17324d;outline:none;}
+  .count-stepper input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(13,43,106,.10);}
+  .count-quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .count-quick button{border:1px solid #d7e3f4;background:#fff;color:#17324d;border-radius:999px;padding:7px 12px;font-size:13px;line-height:18px;cursor:pointer;}
+  .count-quick button:hover,.count-quick button.active{border-color:var(--blue);background:#eef4fb;color:var(--blue);}
+  .count-modal-error{min-height:20px;margin-top:10px;font-size:12px;line-height:20px;color:#b42318;}
+  .count-modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px 18px;border-top:1px solid #eef4fb;}
+  .count-modal-actions button{border:1px solid #c9d7e7;background:#fff;color:#17324d;border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer;}
+  .count-modal-actions .primary{background:var(--blue);border-color:var(--blue);color:#ffffff;font-weight:700;}
+
+  @media(max-width:980px){
+    .toolbar{position:static;width:auto;max-height:44vh;border-radius:0;border-left:0;border-right:0;border-top:0;box-shadow:0 8px 22px rgba(7,47,91,.10);}
+    .toolbar-row.primary-row{position:sticky;top:0;}
+    .workspace{margin:18px auto 50px auto;padding:0 18px;max-width:760px;}
+  }
+  @media(max-width:560px){
+    .toolbar-group,.toolbar-group.block-toolbar{grid-template-columns:1fr 1fr;}
+    .toolbar-row.primary-row > button:not(.primary){width:72px;}
+  }
+
+</style>
+</head>
+<body>
+<div class="appbar" id="appbar">
+  <div class="topline">
+    <div><b>邮件编辑器（墨森）</b></div>
+    <div id="statusText" style="font-size:12px;opacity:.9;">编辑模式</div>
+  </div>
+  <div class="toolbar">
+    <div class="toolbar-row primary-row">
+      <button class="primary" onclick="copyForGmail()">复制到 Gmail 正文</button>
+      <button onclick="togglePreview()">预览</button>
+      <button onclick="outputPdf()" title="默认 A4 无边距输出 PDF">输出 PDF</button>
+      <div class="toolbar-group compact" aria-label="常用图标操作">
+        <button class="icon-only" id="undoBtn" onclick="undoEditor()" title="返回上一步" data-tip="返回上一步" aria-label="返回上一步">↶</button>
+        <button class="icon-only" id="redoBtn" onclick="redoEditor()" title="前进一步" data-tip="前进一步" aria-label="前进一步">↷</button>
+        <button class="icon-only" onclick="downloadCleanHtml()" title="下载干净HTML" data-tip="下载干净HTML" aria-label="下载干净HTML">⬇</button>
+        <button class="icon-only" onclick="openCleanHtmlUpload()" title="打开干净HTML编辑" data-tip="打开干净HTML编辑" aria-label="打开干净HTML编辑">📂</button>
+        <button class="icon-only" onclick="moveBlock(-1)" title="上移板块" data-tip="上移板块" aria-label="上移板块">↑</button>
+        <button class="icon-only" onclick="moveBlock(1)" title="下移板块" data-tip="下移板块" aria-label="下移板块">↓</button>
+        <button class="icon-only danger" onclick="deleteBlock()" title="删除选中板块" data-tip="删除选中板块" aria-label="删除选中板块">🗑</button>
+      </div>
+      <span class="status" id="copyStatus"></span>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="toolbar-group">
+        <span class="toolgroup-title">主题/文件</span>
+        <label>手机预览宽度
+          <select id="mobileWidthCtl" onchange="setMobilePreviewWidth(this.value)">
+            <option value="390">390</option>
+            <option value="414">414</option>
+            <option value="430" selected>430</option>
+            <option value="460">460</option>
+            <option value="480">480</option>
+          </select>
+        </label>
+        <input id="cleanHtmlUpload" type="file" accept=".html,text/html" style="display:none" onchange="importCleanHtml(this)">
+        <label title="点击颜色块打开色板，也可以使用浏览器色板内的采色功能">整体主题色
+          <input id="themeColorCtl" type="color" value="#0D2B6A" oninput="setThemeColor(this.value)" title="点击打开色板" style="width:42px;height:34px;padding:2px;">
+        </label>
+        <button onclick="document.getElementById('logoUpload').click()" title="替换顶部Logo">顶部Logo</button>
+        <input id="logoUpload" type="file" accept="image/*" style="display:none" onchange="uploadTopLogo(this)">
+        <input id="contentImageUpload" type="file" accept="image/*" style="display:none" onchange="uploadContentImage(this)">
+      </div>
+
+      <div class="toolbar-group">
+        <span class="toolgroup-title">文字</span>
+        <label>字号
+          <select id="fontCtl" onchange="setFontSize(this.value)">
+            <option value="8px">8</option>
+            <option value="9px">9</option>
+            <option value="10px">10</option>
+            <option value="11px">11</option>
+            <option value="12px">12</option>
+            <option value="13px">13</option>
+            <option value="14px">14</option>
+            <option value="15px" selected>15</option>
+            <option value="16px">16</option>
+            <option value="17px">17</option>
+            <option value="18px">18</option>
+            <option value="19px">19</option>
+            <option value="20px">20</option>
+            <option value="22px">22</option>
+            <option value="24px">24</option>
+            <option value="26px">26</option>
+            <option value="28px">28</option>
+            <option value="30px">30</option>
+            <option value="32px">32</option>
+            <option value="34px">34</option>
+            <option value="36px">36</option>
+            <option value="40px">40</option>
+            <option value="44px">44</option>
+            <option value="48px">48</option>
+            <option value="52px">52</option>
+            <option value="56px">56</option>
+            <option value="60px">60</option>
+            <option value="64px">64</option>
+            <option value="72px">72</option>
+          </select>
+        </label>
+        <label>自定义字号(px)
+          <input id="fontCustomCtl" type="number" min="1" step="1" placeholder="输入" style="width:78px;" oninput="setFontSize(this.value)">
+        </label>
+        <label>文字颜色
+          <input id="textColorCtl" type="color" value="#17324d" oninput="applySelectedTextColor(this.value)" title="选中文字后改颜色" style="width:42px;height:34px;padding:2px;">
+        </label>
+        <button onclick="applySelectedTextColor()" title="把选中文字改成左边选择的颜色">改色</button>
+        <button onclick="formatText('bold')">加粗</button>
+        <button onclick="formatText('blue')">主题色</button>
+        <button onclick="openStatusPicker()">状态</button>
+      </div>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="toolbar-group">
+        <span class="toolgroup-title">图片</span>
+        <button onclick="addBlock('image')">图片板块</button>
+        <button onclick="openContentImageUpload()">替换选中图片</button>
+        <label>图片圆角
+          <select id="imageRadiusCtl" onchange="setSelectedImageRadius(this.value)">
+            <option value="0px">无</option>
+            <option value="8px">小</option>
+            <option value="14px" selected>中</option>
+            <option value="22px">大</option>
+            <option value="999px">圆形</option>
+          </select>
+        </label>
+        <label>图片对齐
+          <select id="imageAlignCtl" onchange="setSelectedImageAlign(this.value)">
+            <option value="left">靠左</option>
+            <option value="center" selected>居中</option>
+            <option value="right">靠右</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="toolbar-group">
+        <span class="toolgroup-title">板块样式</span>
+        <label>内边距
+          <select id="paddingCtl" onchange="setPadding(this.value)">
+            <option value="14px">小</option>
+            <option value="20px" selected>中</option>
+            <option value="28px">大</option>
+            <option value="36px">更大</option>
+          </select>
+        </label>
+        <button onclick="editSelectedLink()">修改选中按钮链接</button>
+      </div>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="toolbar-group block-toolbar">
+        <span class="toolgroup-title">板块</span>
+        <button onclick="addBlock('plainText')">纯文字</button>
+        <button onclick="addBlock('title')">蓝色标题</button>
+        <button onclick="addBlock('sectionHeader')">分节标题</button>
+        <button onclick="addBlock('text')">文字卡片</button>
+        <button onclick="addBlock('notice')">温馨提示</button>
+        <button onclick="addBlock('bullets')">蓝点列表</button>
+        <button onclick="addBlock('cards')">双栏</button>
+        <button onclick="addBlock('threeCards')">三栏</button>
+        <button onclick="addBlock('twoColumnText')">左右说明</button>
+        <button onclick="addBlock('infoCard')">提示卡片</button>
+        <button onclick="addBlock('importantAlert')">重点提醒</button>
+        <button onclick="addBlock('successNotice')">成功通知</button>
+        <button onclick="addBlock('warningNotice')">警告通知</button>
+        <button onclick="addBlock('steps')">编号步骤</button>
+        <button onclick="addBlock('timeline')">时间线</button>
+        <button onclick="addBlock('checklist')">检查清单</button>
+        <button onclick="addBlock('actionList')">行动清单</button>
+        <button onclick="addBlock('documentList')">材料列表</button>
+        <button onclick="addBlock('infoTable')">信息表格</button>
+        <button onclick="addBlock('transaction')">交易信息</button>
+        <button onclick="addBlock('caseStatus')">案件状态</button>
+        <button onclick="addBlock('receipt')">收据摘要</button>
+        <button onclick="addBlock('amountSummary')">金额摘要</button>
+        <button onclick="addBlock('stats')">数据摘要</button>
+        <button onclick="addBlock('metricGrid')">指标网格</button>
+        <button onclick="addBlock('progress')">进度条</button>
+        <button onclick="addBlock('compareTable')">对比表</button>
+        <button onclick="addBlock('schedule')">日程安排</button>
+        <button onclick="addBlock('deadline')">截止提醒</button>
+        <button onclick="addBlock('quote')">引用说明</button>
+        <button onclick="addBlock('addressBox')">地址哈希</button>
+        <button onclick="addBlock('verificationCode')">验证码</button>
+        <button onclick="addBlock('faq')">问答</button>
+        <button onclick="addBlock('contact')">联系方式</button>
+        <button onclick="addBlock('signature')">签名区</button>
+        <button onclick="addBlock('button')">按钮</button>
+        <button onclick="addBlock('multiButtons')">双按钮</button>
+        <button onclick="addBlock('divider')">分割线</button>
+        <button onclick="addBlock('spacer')">空白间距</button>
+        <button onclick="addBlock('footerNote')">页脚说明</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="status-modal-backdrop" id="statusModal" onclick="closeStatusPicker(event)">
+  <div class="status-modal" onclick="event.stopPropagation()">
+    <div class="status-modal-head">
+      <b>添加状态标识</b>
+      <button onclick="closeStatusPicker()">关闭</button>
+    </div>
+    <div class="status-modal-body">
+      <div style="font-size:13px;line-height:22px;color:#5f7185;">先把光标点到邮件文字里，再选择下面的状态。它会像小表情/小标签一样插入到当前文字位置。</div>
+      <div class="status-grid">
+        <button class="status-choice" onclick="insertStatusPreset('✅','成功','#16a34a')">✅ 成功</button>
+        <button class="status-choice" onclick="insertStatusPreset('❌','失败','#dc2626')">❌ 失败</button>
+        <button class="status-choice" onclick="insertStatusPreset('⚠️','警告','#f59e0b')">⚠️ 警告</button>
+        <button class="status-choice" onclick="insertStatusPreset('⏳','待定','#64748b')">⏳ 待定</button>
+        <button class="status-choice" onclick="insertStatusPreset('✓','', '#16a34a')">✓ 对号</button>
+        <button class="status-choice" onclick="insertStatusPreset('✕','', '#dc2626')">✕ 叉号</button>
+        <button class="status-choice" onclick="insertStatusPreset('●','', '#0D2B6A')">● 蓝点</button>
+        <button class="status-choice" onclick="insertStatusPreset('●','', '#64748b')">● 灰点</button>
+        <button class="status-choice" onclick="insertStatusPreset('ℹ','提示', '#2563eb')">ℹ 提示</button>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:#17324d;margin-top:8px;">自定义状态</div>
+      <div class="status-form">
+        <label>图标
+          <select id="statusIconCtl">
+            <option value="✅">✅</option>
+            <option value="❌">❌</option>
+            <option value="⚠️">⚠️</option>
+            <option value="⏳">⏳</option>
+            <option value="✓">✓</option>
+            <option value="✕">✕</option>
+            <option value="●">●</option>
+            <option value="•">•</option>
+            <option value="ℹ">ℹ</option>
+            <option value="★">★</option>
+          </select>
+        </label>
+        <label>文字
+          <input id="statusTextCtl" type="text" value="成功" placeholder="可留空，只插入图标">
+        </label>
+        <label>颜色
+          <input id="statusColorCtl" type="color" value="#16a34a">
+        </label>
+        <button onclick="insertCustomStatus()">插入</button>
+      </div>
+      <div class="status-mini-help">插入后会保留在邮件正文里，复制到 Gmail 时不会把这个弹窗或编辑器工具复制过去。</div>
+    </div>
+  </div>
+</div>
+
+<div class="count-modal-backdrop" id="countModal" onclick="closeBlockCountModal(false, event)">
+  <div class="count-modal" onclick="event.stopPropagation()">
+    <div class="count-modal-head">
+      <div>
+        <b id="countModalTitle">选择数量</b>
+        <div id="countModalSub" class="count-modal-sub">请输入需要添加的数量</div>
+      </div>
+      <button class="count-modal-close" onclick="closeBlockCountModal(false)" title="关闭">×</button>
+    </div>
+    <div class="count-modal-body">
+      <div class="count-stepper">
+        <button type="button" onclick="stepBlockCount(-1)" aria-label="减少">−</button>
+        <input id="countModalInput" type="number" min="1" max="20" value="3" inputmode="numeric" oninput="updateCountQuickActive()" onkeydown="handleCountModalKey(event)">
+        <button type="button" onclick="stepBlockCount(1)" aria-label="增加">+</button>
+      </div>
+      <div id="countQuickChoices" class="count-quick"></div>
+      <div id="countModalError" class="count-modal-error"></div>
+    </div>
+    <div class="count-modal-actions">
+      <button type="button" onclick="closeBlockCountModal(false)">取消</button>
+      <button type="button" class="primary" onclick="confirmBlockCountModal()">确定添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="workspace">
+  <div class="canvas-shell">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" id="emailCanvas" style="background-color:#eef4fb; margin:0 auto; padding:24px 0; width:100%; max-width:760px;">
+      <tbody id="emailRoot">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; max-width:640px; background:#ffffff; border:1px solid #d7e3f4; border-radius:18px; overflow:hidden;">
+            <tbody id="mainBody">
+              <tr data-edit-row="true">
+                <td style="padding:30px 36px 18px 36px; background:#ffffff;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">
+                    <tr>
+                      <td valign="middle" align="left" style="text-align:left;">
+                        <img src="data:image/webp;base64,UklGRt4LAABXRUJQVlA4WAoAAAAQAAAAfwEALAAAQUxQSOMFAAABsFVte9hG0AdBEH4IhvBDMIMxgzGD6CyBhoHDIMNAEAzhhyAI74UlxR7vdrp3ETEB+pcu+h4n++H7XePxk+c7QCw/dVbovu0nLj0qo5v9uC2VD2P5WfPCiTH/nNmbkzf7GUuPyvn/sf9a5u7ph2AOLo3lv1UG/EfAC5fH9LPFX2n/j0iWBswsHVJSMrM0kMxMkpmlQ7KrLF1glj4yGzKzdLDUS/aXpHnNqw8ld++5+zQ0LTnP04i5e+q4+zTkxyFz99SY3KeOuXu6SXoEUMvSMGCTHkFWqlBTLwCTAUXpEUBZWmsJYC/l3UmPAtSynOLvCsRmvfQoAGXpGLBpKhVikZQeFSjTdbZVjnWz3gJ8tQwoA0vQ3JfeC/CWAWVk4ugjL8AaBaq1MuD3+F3phvVSAbL0BNaOA5taFrTDDi+60fpd6YZ9lN70H6250o1p5FeluWmqtNerpko/bAg/Y2Pw8Rdsjedp7Hd7MBqp80XLgdLZAG9F0A8748Fo9Q8sGN0OD4Z/9Qr9r0p/usYqQJQKEDYU6bMvgLqXA+t10ajpNL7utQCUxf0VkNUqAHWVVICpVSHUArZ58hdAkTTnAmw5r4cFoCzuawDVxjag5nmaX0CWNAOUxX0NoFoHyrK8DlCfy/o6PK8JYHdJHkAZ4uujBeCZJMtATVc5UAE/D79VAFlH21/qANl0nIHcWIBnr7qOK4BLUgZc7QCyjrYDZWgBYtJxrlmSAsg62g6U3lOSvDFJ0hOIS2Ygko5WgWmIX5/sQFbzBaxXbcAMvC+IdKMF2NROGnG1U4XaKID1VrWfwPOjBdjUThWwkQIsaidJWoBN7VQBb1U7qACbjgngkg1Y1M5AHqs2ZkCo7RHxvKpCqEBN5/F1ozfgnXYjq58Bl2RAUaeqa0B8VADrKAPrQAJC429g6igDa6uomYG1obhqB1LHgT8DBShjM/DsjJ43A09lYDnrBcz32QGdYQMJKJIWYOmVngL4KKCq78A24MD2wQ5VfQO21jaytMpVQFU3ATGQn8A6lIH1pOGBNzDJgHJWCqh2m4A4o2i0AEkKCPW2a4AYsBPyBwHxQblT9PSJdmD6ZPl7DAhJBUgnyYFyJ874M+RA1gRsA38G6hkBdcA/mIDtszowAX9uU4cSsA9ZhZjusgBPSRlYz9ITWO/yAvyEbUg77NoAH6ipY8D+UQG8twLrQALigzfgvQVYbxNA6jhQhrQC74EFeJ7katpQAcq2bW+gnKYd6vsmK1CuyoAHhAZYOxuw9ebWCpROCsAGVIB5bAVKJwVgt3kBa2cD8pjeNFsG1I6VUvIlxridZpXmHVIFHo30FXZOqhDAMlS98RvAe7mVKvBopDew6bjYwYE6Nab4JSlV4NFIG/DWbRyI1LAA7IMUQyrA2tqA5ZLlg3ya1vtoBdiXaVoDwk7Rk6YNweY+F4BNxwWo6zJL0gqwL9O0BhAmKQWsklQANp/mDfglaQaIZZrWAKrdRwUIk+QBbPpAPjYDPCSlLyDskh1Y/DgDcZ7e91Fm9CxvbBrZg35YI9GMgzKjdZIkA7ZDCkazJGWGZ91oqgB7CYCwj/Qc0guglr0CrLrCgFC7AH5eivsoDxTTOSqHeahYdIqpnYe01l5MalTIB9mrV1c11+jFpDtpCvph+kz7UHozmHXJE3h2MvA8T34j2WsHanEdT5mB0JjSukMtiwaXfUT23IFaFnXt6er6qwKRTV3LO1DLmnQv2atVc9IZVkekJVrFdU0AU8eAeoGeN5KUzNQ3s/SJA9snR9PFZjo/WdKnZho1s9RKZpZaycyuktKc8+pJg+bu1tLkPg1Ivua8mAYnd0+t5O7TIbm7q+/u3pjcXc3J3Tty93SfqzfAzviff8p30PbriuuvN6Dop0Ra4pq66oYLsPygSPmKnHTHVynvNFJK+frhkL3OKqZ/yu+MNMUZ4frH/N5IS3xSV/1zfndkeeyZ9OMm2atXJv2LfoOkOQ7h+jf9FklL1Jz0kydL+mf9Lv3LflMAAFZQOCDUBQAAMBsAnQEqgAEtAD5tMpRIpCKhoSV0CsiADYlqbt5mAd4B9ACYReBUR9//afSQ5d7Z/YmS7tiifdy+fT0S/oL2AOdj5gP2u9UT/f/7T/Ve7H+veob/WP9x6vHqc+gx5cnsZf3z/t/ut7Z9zVgADn0M5r0j7AfRc/XL2AP1ADNHnpbw1M3NerpB/1RHwqJe2bgRxZJqvnbWXhGrhquG7rOn+89fGyRNtgLPi+VP9BnULrjdpB3atkYTsdQeSUvvywKfl8dXiFVbFxbhwwui6X7Ig462Ah8DiNVw1O1SA1zWaeRsrAD+/QHzA5VsVyPD5aPalYEjX8zyIRS/8iM96kJGGZ2KfQeGjXmiEvEASpry/ueOgd1Pfp6FedxXFXC0CSQ22ztm0Dn/+N0XDoK/r7FPhCJJoMQ3f2TG4y57M6sX/CKllXyNv7Rz3v/br//mjj1XqRXT/LceOsnv4f/jZ6InQj9o8s3Tk/pl/STN8DqDVZn6xS0jJt+4tNnjLBlJaKvcY39EshJwcjL5siedEO5J8rrQ5IeXfoiBn/vxOEETuJ/4CgPqq9F9nQFGmm9oS1Tl5GKXK270LECBFiEKPX9vDKXHckcmFUrKqBoV7Wf2CgYqr5LmdN4wbZ4f0fpucHeovHtpjn1wWvK76LorytFx//WTWCaVRQlj/W253IEXZ/EZ/ZRytR7PvFP5/12FNa+XjEN3Or1PmmnS8XcirOvNeUsOLaTvFLU5WnTtbUgYjtg4QJ/oPH/tub6gurp7AsXJt//wZ4n/yAnsBAc2+2qY362xYk306hedC3C8NWiQbWIp3J3MK0MMmAp9aAcnXvazbdrvtDgl+aCDA46PZR/MWrZezs5D11lIG8MvNfpzVZkjhUDugydHOMJyHq5UdpT5B9ga0NEnTe1n7NeNINeL4b6JOxHeyTrHErmF1o/p+w8Ilaee5V0b1AzDb+K1KaMuipmf7H1iEUodpcrDcVs5Pwfr/CIJqNoJH4RKr0SQVXHnqpNXtKd1jgqmk5Dq0hU6bxr4gTs1EZ09Ph8neN/z4ry2AfysC6PRYa3DxTdqX1kvJt1wm4L+9AJzvNH0AkWacpa+TMIIWSrlZ+5J8idCj5ieFRAN3VIVIvIgl3kDicqRkNOg6ShjMAnngV2y72vW41nnkNR9jLQrZsgD7E/4L+f//+cyuncsn68lHO6z99Lq3jw7e+j+IovQ63ll0A8Aux14XF6OUMVxWnsx6YrtoW1q6Q+BSZC3uS3y3rLHMtHq+SWQS7BXVs7bHcld2L1AX214TkI6wtVX2xpEKfb6OrrdasZJmhIVj3q0E/Lw3J55BAhShF6Y0rks+bEnE28iQXcfyQn2y9A5DqewIBzoeHYMZM6fn5U/sdd4oDRb8EOWuYPS29QKlbjxHc2Axyj9XrUW12ybLoCXIT817yZ5m5qHuCQIiiH8fNWcluPI0emg+QL0vPRK36VrwBa1HOvF1OvOio6knjTzNtnOvFYz2k570KOPzFMqeEOqhWSHO691tBzEr78Ws76rVLPebE7RZtXx2xygSeNwaxE/k2WJxSe5sXYy72GNrcdewDZCJHY+y6eLfWFsH+kaDYBCPcfsvOhfMIIwq+ptxaniENYpLkVaH2L1mcQngtJMgKwaazYK3+YD70YTgtQK2IIrpMG0QcZJghCX4IAW96avVwN7OD2fV5K1ziZWEmLtoCMV7Iahs3kfnyRyDDVx52pDsjCkOxlkveJxxpF5kjjl9W5pFvD2z4Yo2xCVdMk0ufph2Jqcrgn4X8URU5y4HrLmX6dJY9YMqNIlLpfZPMg/It9bzcQ8ncv4N/YoiDt9s5Jbwd0TrtF11ied1HhDgCqK01lchKBtuLU4jj587DAfBNQsOy0AkqYfZJG5Cj1EKOZAF8YRkdb7ip9hjeT1BqbtRKR4BR5coy8Nntz68ZKrjSXNuPzN3ct1bHv6ZKP8xdjwAAAAAAB1+f2Yzy0zUvAAAAAAAAAAAA==" alt="Onchain Logo" width="320" style="display:block; width:320px; max-width:100%; height:auto; border:0;">
+                        <div contenteditable="true" style="font-size:13px; line-height:20px; color:#5c6f84; margin-top:8px;">安全、自托管、链上资产服务通知</div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr data-edit-row="true">
+                <td style="background:#0D2B6A; padding:22px 36px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">
+                    <tr><td>
+                      <div contenteditable="true" data-auto-fit-title="true" data-base-font-size="28" style="font-size:28px; line-height:36px; font-weight:700; color:#ffffff; margin:0; white-space:nowrap; display:block; overflow:visible;">Onchain Wallet 服务提醒</div>
+                      <div contenteditable="true" style="font-size:14px; line-height:22px; color:#dbe8f8; margin-top:8px;">请查看以下账户说明、安全建议与后续支持方式</div>
+                    </td></tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr data-edit-row="true">
+                <td style="padding:32px 36px 10px 36px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">
+                    <tr><td style="padding:0;">
+                      <div contenteditable="true" style="font-size:16px; line-height:28px; color:#17324d;">尊敬的用户，您好！感谢您使用 Onchain Wallet。为了帮助您更好地管理链上资产、了解钱包使用状态并及时获取支持，我们特此向您发送本次服务通知。近期，我们已对相关服务流程、账户安全提示以及常见使用场景说明进行了整理，以便您在日常使用过程中更清晰地掌握钱包访问、资产管理、网络切换、授权风险与客服支持等重点信息。请您在查看本邮件内容后，结合自己的使用情况，确认当前钱包环境、设备登录状态以及交易签名习惯是否符合安全要求。</div>
+                    </td></tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr data-edit-row="true">
+                <td style="padding:14px 36px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f5f9ff; border:1px solid #d7e3f4; border-radius:14px;">
+                    <tr>
+                      <td style="padding:20px 22px;" data-edit-padding="true">
+                        <div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:10px;">温馨提示</div>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                          <tr><td valign="top" style="width:18px; padding-top:8px;"><span style="display:block; width:7px; height:7px; background:#0D2B6A; border-radius:50%;"></span></td><td contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">请仅通过您确认安全的设备与网络环境访问钱包。</td></tr>
+                          <tr><td valign="top" style="width:18px; padding-top:8px;"><span style="display:block; width:7px; height:7px; background:#0D2B6A; border-radius:50%;"></span></td><td contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">请妥善保管助记词与私钥，不要向任何人透露。</td></tr>
+                          <tr><td valign="top" style="width:18px; padding-top:8px;"><span style="display:block; width:7px; height:7px; background:#0D2B6A; border-radius:50%;"></span></td><td contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">在签名或授权前，请仔细核对地址、金额与合约内容。</td></tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr data-edit-row="true">
+                <td style="padding:14px 36px 6px 36px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">
+                    <tr>
+                      <td style="padding-right:8px;" width="50%" valign="top">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;">
+                          <tr><td style="padding:18px 18px 16px 18px;">
+                            <div contenteditable="true" style="font-size:17px; line-height:24px; font-weight:700; color:#0D2B6A; margin-bottom:8px;">账户与资产管理</div>
+                            <div contenteditable="true" style="font-size:14px; line-height:24px; color:#5c6f84;">如您近期完成了充值、转账、网络切换或代币添加操作，建议再次核对资产页面中的网络、币种、地址与交易状态。</div>
+                          </td></tr>
+                        </table>
+                      </td>
+                      <td style="padding-left:8px;" width="50%" valign="top">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;">
+                          <tr><td style="padding:18px 18px 16px 18px;">
+                            <div contenteditable="true" style="font-size:17px; line-height:24px; font-weight:700; color:#0D2B6A; margin-bottom:8px;">连接与授权安全</div>
+                            <div contenteditable="true" style="font-size:14px; line-height:24px; color:#5c6f84;">当钱包连接第三方 DApp 或合约时，请务必确认目标站点、授权对象及权限范围。</div>
+                          </td></tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr data-edit-row="true">
+                <td style="padding:14px 36px 6px 36px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;">
+                    <tr>
+                      <td style="padding:20px 22px;" data-edit-padding="true">
+                        <div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:10px;">进一步说明</div>
+                        <div contenteditable="true" style="font-size:15px; line-height:27px; color:#17324d;">如果您在使用过程中遇到资产未及时更新、交易长时间待确认、DApp 无法连接、页面显示异常、网络切换失败、签名请求无法识别或设备更换后的恢复问题，请不要重复进行高风险操作。建议先记录相关页面截图、交易哈希、钱包地址及发生时间，然后通过支持入口提交问题，以便客服团队更快定位情况并提供协助。</div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr data-edit-row="true">
+                <td align="center" style="padding:28px 36px 18px 36px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" data-edit-block="true" style="margin:0 auto;">
+                    <tr><td align="center">
+                      <a href="https://example.com/support" contenteditable="true" style="display:inline-block; background:#0D2B6A; color:#ffffff; text-decoration:none; font-size:22px; line-height:22px; font-weight:700; padding:16px 40px; border-radius:999px; letter-spacing:0.2px;">点击联系客服 →</a>
+                    </td></tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr id="footerRow" data-edit-row="true">
+                <td style="padding:8px 36px 34px 36px; text-align:center;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">
+                    <tr><td>
+                      <div contenteditable="true" style="font-size:13px; line-height:22px; color:#5c6f84;">如您不需要处理本通知，可忽略此邮件。建议在任何情况下都不要向他人透露助记词或私钥。</div>
+                      <div contenteditable="true" style="font-size:12px; line-height:20px; color:#7a8ea8; margin-top:10px;">© Onchain Wallet Service Center</div>
+                    </td></tr>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="heightResizer" class="height-resizer" title="按住上下拖动，调整选中板块高度"></div>
+  <div id="widthResizer" class="width-resizer" title="按住左右拖动，调整选中板块宽度"></div>
+  <div id="imageResizer" class="image-resizer" title="按住斜向拖动，调整选中图片宽高"></div>
+</div>
+
+<script>
+let selectedBlock = null;
+let lastEditable = null;
+let savedTextRange = null;
+let isHeightResizing = false;
+let isWidthResizing = false;
+let isImageResizing = false;
+let resizeStartX = 0;
+let resizeStartY = 0;
+let resizeStartHeight = 0;
+let resizeStartWidth = 0;
+let resizeParentWidth = 0;
+let resizeImageEl = null;
+let resizeStartImageWidth = 0;
+let resizeStartImageHeight = 0;
+let themeColor = '#0D2B6A';
+let lastThemePalette = null;
+const initialMainColors = ['#0d2b6a', '#0a3f8c', '#034481'];
+const initialLightColors = ['#f5f9ff', '#eef4fb', '#dfeaf5', '#eaf1f9'];
+const initialLineColors = ['#d7e3f4', '#cedcec', '#d8e2ef', '#c9d7e7'];
+let historyStack = [];
+let historyIndex = -1;
+let isRestoringHistory = false;
+let historyTimer = null;
+let historyObserver = null;
+const HISTORY_LIMIT = 80;
+
+
+function getEmailRoot(){
+  return document.getElementById('emailRoot');
+}
+
+function snapshotHtmlForHistory(){
+  const root = getEmailRoot();
+  if(!root) return '';
+  const clone = root.cloneNode(true);
+  clone.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));
+  return clone.innerHTML;
+}
+
+function updateHistoryButtons(){
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  if(undoBtn) undoBtn.disabled = historyIndex <= 0;
+  if(redoBtn) redoBtn.disabled = historyIndex < 0 || historyIndex >= historyStack.length - 1;
+}
+
+function pushHistorySnapshot(force){
+  if(isRestoringHistory) return;
+  const html = snapshotHtmlForHistory();
+  if(!html) return;
+  if(!force && historyStack[historyIndex] === html){
+    updateHistoryButtons();
+    return;
+  }
+  if(historyIndex >= 0 && historyStack[historyIndex] === html){
+    updateHistoryButtons();
+    return;
+  }
+  if(historyIndex < historyStack.length - 1){
+    historyStack = historyStack.slice(0, historyIndex + 1);
+  }
+  historyStack.push(html);
+  if(historyStack.length > HISTORY_LIMIT){
+    historyStack.shift();
+  }else{
+    historyIndex++;
+  }
+  if(historyStack.length === HISTORY_LIMIT) historyIndex = historyStack.length - 1;
+  updateHistoryButtons();
+}
+
+function scheduleHistorySnapshot(){
+  if(isRestoringHistory) return;
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(()=>{
+    ensureAutoFitTitleMarkers();
+    fitAllAutoTitles();
+    pushHistorySnapshot(false);
+  }, 260);
+}
+
+function restoreHistory(index){
+  const root = getEmailRoot();
+  if(!root || index < 0 || index >= historyStack.length) return;
+  isRestoringHistory = true;
+  root.innerHTML = historyStack[index];
+  historyIndex = index;
+  selectedBlock = null;
+  lastEditable = null;
+  savedTextRange = null;
+  normalizeEmailResponsiveWidths();
+  ensureAutoFitTitleMarkers();
+  fitAllAutoTitles();
+  syncEditorChromeOnly();
+  clearSelection();
+  updateHistoryButtons();
+  setTimeout(()=>{ isRestoringHistory = false; }, 0);
+}
+
+function undoEditor(){
+  if(historyIndex <= 0){
+    flash('已经是第一步');
+    return;
+  }
+  restoreHistory(historyIndex - 1);
+  flash('已返回上一步');
+}
+
+function redoEditor(){
+  if(historyIndex >= historyStack.length - 1){
+    flash('已经是最新一步');
+    return;
+  }
+  restoreHistory(historyIndex + 1);
+  flash('已前进一步');
+}
+
+function initHistory(){
+  const root = getEmailRoot();
+  if(!root) return;
+  pushHistorySnapshot(true);
+  if(historyObserver) historyObserver.disconnect();
+  historyObserver = new MutationObserver(()=>scheduleHistorySnapshot());
+  historyObserver.observe(root, {subtree:true, childList:true, attributes:true, characterData:true});
+  updateHistoryButtons();
+}
+
+function ensureAutoFitTitleMarkers(){
+  const mainBody = document.getElementById('mainBody');
+  if(!mainBody) return;
+  let marked = mainBody.querySelector('[data-auto-fit-title="true"]');
+  if(!marked){
+    const rows = Array.from(mainBody.querySelectorAll('tr[data-edit-row="true"]'));
+    for(const row of rows){
+      const td = row.querySelector(':scope > td');
+      const bg = td ? colorToHex(td.style.backgroundColor) : '';
+      const first = row.querySelector('[contenteditable="true"]');
+      const color = first ? colorToHex(first.style.color) : '';
+      const weight = first ? (first.style.fontWeight || window.getComputedStyle(first).fontWeight || '') : '';
+      if(first && (bg && bg !== '#ffffff') && (color === '#ffffff' || /700|bold/i.test(weight))){
+        marked = first;
+        break;
+      }
+    }
+  }
+  if(marked){
+    marked.setAttribute('data-auto-fit-title', 'true');
+    if(!marked.getAttribute('data-base-font-size')){
+      const size = parseFloat(marked.style.fontSize || window.getComputedStyle(marked).fontSize || '28') || 28;
+      marked.setAttribute('data-base-font-size', String(size));
+    }
+    marked.style.whiteSpace = 'nowrap';
+    marked.style.display = 'block';
+    marked.style.overflow = 'visible';
+  }
+}
+
+function setAutoTitleFont(el, size){
+  if(!el) return;
+  const px = Math.max(8, Math.round(size));
+  el.style.fontSize = px + 'px';
+  el.style.lineHeight = Math.max(px + 2, Math.round(px * 1.22)) + 'px';
+}
+
+function fitAutoTitle(el){
+  if(!el) return;
+  el.style.whiteSpace = 'nowrap';
+  el.style.display = 'block';
+  el.style.overflow = 'visible';
+  const parent = el.parentElement;
+  if(!parent) return;
+  const base = parseFloat(el.getAttribute('data-base-font-size') || el.style.fontSize || window.getComputedStyle(el).fontSize || '28') || 28;
+  const min = 10;
+  setAutoTitleFont(el, base);
+  const available = Math.max(80, parent.clientWidth || parent.getBoundingClientRect().width || 0);
+  if(!available) return;
+  let size = base;
+  let guard = 0;
+  while(el.scrollWidth > available && size > min && guard < 80){
+    size -= 1;
+    setAutoTitleFont(el, size);
+    guard++;
+  }
+}
+
+function fitAllAutoTitles(){
+  document.querySelectorAll('[data-auto-fit-title="true"]').forEach(fitAutoTitle);
+}
+
+
+function isBlankEditable(el){
+  if(!el) return true;
+  const text = (el.textContent || '').replace(/\u00a0/g, ' ').trim();
+  const html = (el.innerHTML || '')
+    .replace(/<br\s*\/?\s*>/gi, '')
+    .replace(/&nbsp;/gi, '')
+    .replace(/\s+/g, '')
+    .trim();
+  return !text && !html;
+}
+
+function markInfoTableTitles(scope){
+  const root = scope || document;
+  const pads = root.querySelectorAll ? root.querySelectorAll('[data-edit-padding="true"]') : [];
+  pads.forEach(pad => {
+    const children = Array.from(pad.children || []);
+    for(let i = 0; i < children.length - 1; i++){
+      const title = children[i];
+      const table = children[i + 1];
+      if(!title || !table) continue;
+      const isTitle = title.matches && title.matches('div[contenteditable="true"]');
+      const style = ((table.getAttribute && table.getAttribute('style')) || '').toLowerCase();
+      const looksInfoTable = table.tagName === 'TABLE' && (style.includes('border-collapse') || table.querySelector('td[style*="width:34%"], td[style*="width: 34%"]'));
+      if(isTitle && looksInfoTable){
+        title.setAttribute('data-info-table-title', 'true');
+        if(!title.getAttribute('data-original-font-size')) title.setAttribute('data-original-font-size', title.style.fontSize || '18px');
+        if(!title.getAttribute('data-original-line-height')) title.setAttribute('data-original-line-height', title.style.lineHeight || '26px');
+        if(!title.getAttribute('data-original-margin-bottom')) title.setAttribute('data-original-margin-bottom', title.style.marginBottom || '12px');
+      }
+    }
+  });
+}
+
+function normalizeInfoTableTitleDisplay(scope){
+  const root = scope || document;
+  markInfoTableTitles(root);
+  const titles = root.querySelectorAll ? root.querySelectorAll('[data-info-table-title="true"]') : [];
+  titles.forEach(title => {
+    if(isBlankEditable(title)){
+      title.setAttribute('data-title-empty', 'true');
+      title.style.display = 'none';
+      title.style.marginBottom = '0';
+      title.style.padding = '0';
+      title.style.height = '0';
+      title.style.minHeight = '0';
+      title.style.lineHeight = '0';
+      title.style.fontSize = '0';
+    }else{
+      if(title.getAttribute('data-title-empty') === 'true'){
+        title.style.display = '';
+        title.style.height = '';
+        title.style.minHeight = '';
+        title.style.padding = '';
+        title.style.fontSize = title.getAttribute('data-original-font-size') || '18px';
+        title.style.lineHeight = title.getAttribute('data-original-line-height') || '26px';
+        title.style.marginBottom = title.getAttribute('data-original-margin-bottom') || '12px';
+        title.removeAttribute('data-title-empty');
+      }
+    }
+  });
+}
+
+
+function getInfoTables(scope){
+  const root = scope || document;
+  const tables = root.querySelectorAll ? Array.from(root.querySelectorAll('table')) : [];
+  return tables.filter(tbl => {
+    if(tbl.getAttribute('data-info-table') === 'true') return true;
+    const rows = Array.from(tbl.rows || []);
+    if(!rows.length) return false;
+    let hits = 0;
+    rows.forEach(row => {
+      const cells = Array.from(row.cells || []);
+      if(cells.length >= 2 && cells[0].getAttribute('contenteditable') === 'true' && cells[1].getAttribute('contenteditable') === 'true'){
+        const st = ((cells[0].getAttribute('style') || '') + ' ' + (cells[1].getAttribute('style') || '')).toLowerCase();
+        if(st.includes('font-weight:700') || st.includes('font-weight: 700') || st.includes('width:34') || st.includes('width: 34') || st.includes('data-info-label')) hits++;
+      }
+    });
+    return hits >= 2;
+  });
+}
+
+function normalizeInfoTableRowLayout(scope){
+  const tables = getInfoTables(scope || document);
+  tables.forEach(tbl => {
+    tbl.setAttribute('data-info-table', 'true');
+    const rows = Array.from(tbl.rows || []).filter(row => {
+      const cells = Array.from(row.cells || []);
+      return cells.length >= 2 && cells[0].getAttribute('contenteditable') === 'true' && cells[1].getAttribute('contenteditable') === 'true';
+    });
+    if(!rows.length) return;
+
+    rows.forEach(row => {
+      row.style.height = '';
+      const label = row.cells[0];
+      const value = row.cells[1];
+      if(!label || !value) return;
+
+      label.setAttribute('data-info-label', 'true');
+      value.setAttribute('data-info-value', 'true');
+
+      label.style.width = '38%';
+      label.style.whiteSpace = 'nowrap';
+      label.style.wordBreak = 'keep-all';
+      label.style.overflowWrap = 'normal';
+      label.style.verticalAlign = 'middle';
+      label.setAttribute('valign', 'middle');
+
+      value.style.whiteSpace = 'normal';
+      value.style.wordBreak = 'break-word';
+      value.style.overflowWrap = 'break-word';
+      value.style.verticalAlign = 'middle';
+      value.setAttribute('valign', 'middle');
+
+      label.style.height = '';
+      value.style.height = '';
+      label.style.minHeight = '';
+      value.style.minHeight = '';
+    });
+
+    if(!document.body.contains(tbl)) return;
+    let maxHeight = 0;
+    rows.forEach(row => {
+      const h = Math.ceil(row.getBoundingClientRect().height || row.offsetHeight || 0);
+      if(h > maxHeight) maxHeight = h;
+    });
+    if(maxHeight > 0){
+      rows.forEach(row => {
+        row.style.height = maxHeight + 'px';
+        if(row.cells[0]) row.cells[0].style.height = maxHeight + 'px';
+        if(row.cells[1]) row.cells[1].style.height = maxHeight + 'px';
+      });
+    }
+  });
+}
+
+function normalizeHex(hex){
+  if(!hex) return '#0D2B6A';
+  hex = String(hex).trim();
+  if(/^#[0-9a-fA-F]{3}$/.test(hex)){
+    hex = '#' + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+  }
+  if(!/^#[0-9a-fA-F]{6}$/.test(hex)) return '#0D2B6A';
+  return hex.toUpperCase();
+}
+
+function hexToRgb(hex){
+  hex = normalizeHex(hex).slice(1);
+  return {
+    r: parseInt(hex.slice(0,2),16),
+    g: parseInt(hex.slice(2,4),16),
+    b: parseInt(hex.slice(4,6),16)
+  };
+}
+
+function rgbToHex(r,g,b){
+  return '#' + [r,g,b].map(v => Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+
+function mix(hex1, hex2, amount){
+  const a = hexToRgb(hex1), b = hexToRgb(hex2);
+  return rgbToHex(a.r + (b.r-a.r)*amount, a.g + (b.g-a.g)*amount, a.b + (b.b-a.b)*amount);
+}
+
+function colorToHex(value){
+  if(!value) return '';
+  value = String(value).trim();
+  if(/^#[0-9a-fA-F]{3,6}$/.test(value)) return normalizeHex(value).toLowerCase();
+  const m = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+  if(m) return rgbToHex(+m[1], +m[2], +m[3]).toLowerCase();
+  return '';
+}
+
+function buildThemePalette(hex){
+  const main = normalizeHex(hex);
+  return {
+    main,
+    dark: mix(main, '#000000', 0.18),
+    canvas: mix(main, '#FFFFFF', 0.94),
+    light: mix(main, '#FFFFFF', 0.92),
+    light2: mix(main, '#FFFFFF', 0.88),
+    line: mix(main, '#FFFFFF', 0.72),
+    softText: mix(main, '#5F7185', 0.45)
+  };
+}
+
+function openThemeColorPicker(){
+  const input = document.getElementById('themeColorCtl');
+  if(input) input.click();
+}
+
+async function pickScreenColor(){
+  if(!window.EyeDropper){
+    alert('当前浏览器不支持采色笔。请用新版 Chrome 或 Edge 打开这个 HTML，或者直接使用旁边的色板选择颜色。');
+    return;
+  }
+  try{
+    const eyeDropper = new EyeDropper();
+    const result = await eyeDropper.open();
+    if(result && result.sRGBHex) setThemeColor(result.sRGBHex);
+  }catch(e){
+    // 用户按 Esc 取消时不提示错误
+  }
+}
+
+function isAnyColor(hex, list){
+  if(!hex) return false;
+  hex = hex.toLowerCase();
+  return list.map(c => c.toLowerCase()).includes(hex);
+}
+
+function recolorInlineElement(el, palette, oldPalette){
+  const st = el.style;
+  if(!st) return;
+  const oldMainList = [oldPalette && oldPalette.main, themeColor, ...initialMainColors].filter(Boolean).map(c => normalizeHex(c).toLowerCase());
+  const oldLightList = [oldPalette && oldPalette.light, oldPalette && oldPalette.light2, oldPalette && oldPalette.canvas, ...initialLightColors].filter(Boolean).map(c => normalizeHex(c).toLowerCase());
+  const oldLineList = [oldPalette && oldPalette.line, ...initialLineColors].filter(Boolean).map(c => normalizeHex(c).toLowerCase());
+
+  const bg = colorToHex(st.backgroundColor);
+  if(bg && isAnyColor(bg, oldMainList)) st.backgroundColor = palette.main;
+  if(bg && isAnyColor(bg, oldLightList)) st.backgroundColor = palette.light;
+
+  const color = colorToHex(st.color);
+  if(color && isAnyColor(color, oldMainList)) st.color = palette.main;
+
+  const borderColor = colorToHex(st.borderColor);
+  if(borderColor && isAnyColor(borderColor, oldLineList)) st.borderColor = palette.line;
+
+  if(st.border && oldLineList.some(c => st.border.toLowerCase().includes(c))){
+    st.border = st.border.replace(/#[0-9a-fA-F]{3,6}/g, palette.line);
+  }
+}
+
+function applyThemeToEmail(){
+  const palette = buildThemePalette(themeColor);
+  const oldPalette = lastThemePalette || buildThemePalette('#0D2B6A');
+
+  document.documentElement.style.setProperty('--blue', palette.main);
+  document.documentElement.style.setProperty('--blue2', palette.dark);
+  document.documentElement.style.setProperty('--light', palette.canvas);
+  document.documentElement.style.setProperty('--line', palette.line);
+
+  const input = document.getElementById('themeColorCtl');
+  if(input) input.value = normalizeHex(themeColor);
+
+  const canvas = document.getElementById('emailCanvas');
+  if(!canvas) return;
+  canvas.style.backgroundColor = palette.canvas;
+
+  // 所有圆角内容板块：随主题色变成浅色背景和淡色边框
+  canvas.querySelectorAll('table').forEach(tbl => {
+    const radius = tbl.style.borderRadius || '';
+    const border = tbl.style.border || '';
+    const tableStyle = (tbl.getAttribute('style') || '').toLowerCase();
+    const isOuterMailCard = (tbl.style.overflow || '').includes('hidden') && (tbl.getAttribute('width') === '640' || tbl.getAttribute('width') === '100%' || tableStyle.includes('max-width:640px') || tableStyle.includes('max-width: 640px'));
+    if(isOuterMailCard){
+      tbl.style.borderColor = palette.line;
+      return;
+    }
+    if(radius && border){
+      tbl.style.backgroundColor = palette.light;
+      tbl.style.borderColor = palette.line;
+    }
+  });
+
+  canvas.querySelectorAll('*').forEach(el => recolorInlineElement(el, palette, oldPalette));
+
+  // 顶部标题蓝条和所有按钮使用深色主题色
+  const editRows = Array.from(document.querySelectorAll('#mainBody > tr[data-edit-row="true"]'));
+  if(editRows[1]){
+    const heroTd = editRows[1].querySelector(':scope > td');
+    if(heroTd) heroTd.style.backgroundColor = palette.main;
+  }
+  canvas.querySelectorAll('a').forEach(a => {
+    if(a.style.backgroundColor || a.getAttribute('href')) a.style.backgroundColor = palette.main;
+  });
+
+  // 蓝点列表圆点
+  canvas.querySelectorAll('span').forEach(span => {
+    if(span.style.borderRadius === '50%' && span.style.width === '7px') span.style.backgroundColor = palette.main;
+  });
+
+  // 标题文字：除白色标题外，使用主题深色
+  canvas.querySelectorAll('[contenteditable="true"]').forEach(el => {
+    const c = colorToHex(el.style.color);
+    if(c && c !== '#ffffff' && (isAnyColor(c, initialMainColors) || (oldPalette && c === normalizeHex(oldPalette.main).toLowerCase()) || c === normalizeHex(themeColor).toLowerCase())){
+      el.style.color = palette.main;
+    }
+  });
+
+  // 编辑器本身的主按钮/顶部条也跟随主题色，方便看当前色
+  const topLine = document.querySelector('.topline');
+  if(topLine) topLine.style.backgroundColor = palette.main;
+  document.querySelectorAll('.toolbar .primary').forEach(btn => {
+    btn.style.backgroundColor = palette.main;
+    btn.style.borderColor = palette.main;
+  });
+  ['heightResizer','widthResizer','imageResizer'].forEach(id => {
+    const handle = document.getElementById(id);
+    if(handle) handle.style.backgroundColor = palette.main;
+  });
+
+  lastThemePalette = palette;
+  positionHeightResizer();
+}
+
+function setThemeColor(hex){
+  themeColor = normalizeHex(hex);
+  applyThemeToEmail();
+  flash('主题色已更新，所有板块已自动变成对应淡色');
+}
+
+function normalizeEmailResponsiveWidths(){
+  const canvas = document.getElementById('emailCanvas');
+  if(!canvas) return;
+  // 编辑器里用手机宽度预览，但复制出去的邮件仍保留响应式结构：电脑可到 640px，手机自动缩窄。
+  canvas.style.width = '100%';
+  canvas.style.maxWidth = '760px';
+  canvas.style.margin = '0 auto';
+  const mainCard = findMainCard(canvas);
+  if(mainCard){
+    mainCard.setAttribute('width','100%');
+    mainCard.style.width = '100%';
+    mainCard.style.maxWidth = '640px';
+  }
+}
+
+function setMobilePreviewWidth(px){
+  const n = parseInt(px, 10);
+  if(!Number.isFinite(n) || n < 260) return;
+  document.documentElement.style.setProperty('--mobilePreviewWidth', n + 'px');
+  const ctl = document.getElementById('mobileWidthCtl');
+  if(ctl) ctl.value = String(n);
+  fitAllAutoTitles();
+  positionHeightResizer();
+  flash('手机预览宽度已调整为 ' + n + 'px');
+}
+
+function getTopLogoImg(){
+  const mainBody = document.getElementById('mainBody');
+  return mainBody ? mainBody.querySelector('img') : null;
+}
+
+function uploadTopLogo(input){
+  const file = input && input.files && input.files[0];
+  if(!file) return;
+  if(!file.type || !file.type.startsWith('image/')){
+    alert('请选择图片文件，例如 PNG、JPG、WEBP。');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = getTopLogoImg();
+    if(!img){
+      alert('没有找到顶部 Logo 位置。');
+      return;
+    }
+    img.src = e.target.result;
+    img.alt = file.name.replace(/\.[^.]+$/, '') || '自定义 Logo';
+    img.style.display = 'block';
+    img.style.maxWidth = '100%';
+    img.style.height = 'auto';
+    const currentWidth = parseInt(img.style.width || img.getAttribute('width') || '320', 10) || 320;
+    img.setAttribute('width', String(currentWidth));
+    img.style.width = currentWidth + 'px';
+    flash('顶部 Logo 已替换');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function closestBlock(el){
+  return el.closest && el.closest('[data-edit-block="true"]');
+}
+
+function clearSelection(){
+  document.querySelectorAll('[data-edit-block="true"]').forEach(b=>b.classList.remove('selected'));
+  selectedBlock = null;
+  lastEditable = null;
+  savedTextRange = null;
+  const heightCtl = document.getElementById('heightCtl');
+  if(heightCtl) heightCtl.value = '';
+  const fontCustomCtl = document.getElementById('fontCustomCtl');
+  if(fontCustomCtl) fontCustomCtl.value = '';
+  positionHeightResizer();
+}
+
+document.addEventListener('click', function(e){
+  if(e.target.closest('.appbar')) return;
+  if(e.target.closest('#heightResizer') || e.target.closest('#widthResizer') || e.target.closest('#imageResizer')) return;
+  const editable = e.target.closest && e.target.closest('[contenteditable="true"]');
+  const block = closestBlock(e.target);
+  if(block){
+    if(editable) lastEditable = editable;
+    selectBlock(block);
+    if(editable) syncFontControls(getElementFontSize(editable));
+  }else{
+    clearSelection();
+  }
+});
+
+// 记录最后点过/正在编辑的文字。这样点击上方工具栏后，字号仍然会作用在刚才那段文字上，
+// 包括顶部蓝色背景里的大标题、按钮文字、列表文字等。
+document.addEventListener('focusin', function(e){
+  const editable = e.target.closest && e.target.closest('[contenteditable="true"]');
+  if(!editable) return;
+  lastEditable = editable;
+  const block = closestBlock(editable);
+  if(block) selectBlock(block);
+  syncFontControls(getElementFontSize(editable));
+});
+
+document.addEventListener('keyup', function(e){
+  const editable = e.target.closest && e.target.closest('[contenteditable="true"]');
+  if(editable){
+    lastEditable = editable;
+    syncFontControls(getElementFontSize(editable));
+  }
+});
+
+document.addEventListener('input', function(e){
+  const editable = e.target.closest && e.target.closest('[contenteditable="true"]');
+  if(!editable) return;
+  lastEditable = editable;
+  if(editable.getAttribute('data-auto-fit-title') === 'true') fitAutoTitle(editable);
+  if(editable.getAttribute('data-info-table-title') === 'true') normalizeInfoTableTitleDisplay(document);
+  if(editable.closest && editable.closest('table')) normalizeInfoTableRowLayout(document);
+  scheduleHistorySnapshot();
+}, true);
+
+
+function editableFromNode(node){
+  if(!node) return null;
+  if(node.nodeType !== 1) node = node.parentElement;
+  if(!node || !node.closest) return null;
+  const editable = node.closest('[contenteditable="true"]');
+  return editable && document.getElementById('emailCanvas').contains(editable) ? editable : null;
+}
+
+function saveCurrentTextRange(){
+  const sel = window.getSelection && window.getSelection();
+  if(!sel || !sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const editable = editableFromNode(range.commonAncestorContainer);
+  if(!editable) return;
+  lastEditable = editable;
+  savedTextRange = range.cloneRange();
+}
+
+document.addEventListener('selectionchange', saveCurrentTextRange);
+document.addEventListener('mouseup', saveCurrentTextRange, true);
+document.addEventListener('keyup', saveCurrentTextRange, true);
+
+function rangeIsInsideEditable(range, editable){
+  if(!range || !editable) return false;
+  let node = range.commonAncestorContainer;
+  if(node.nodeType !== 1) node = node.parentElement;
+  return node === editable || editable.contains(node);
+}
+
+function getTargetEditableForStatus(){
+  if(lastEditable && document.contains(lastEditable)) return lastEditable;
+  if(selectedBlock){
+    const editable = selectedBlock.querySelector('[contenteditable="true"]');
+    if(editable) return editable;
+  }
+  return document.querySelector('#emailCanvas [contenteditable="true"]');
+}
+
+function openStatusPicker(){
+  const editable = getTargetEditableForStatus();
+  if(!editable) return alert('请先点击邮件里要插入状态的文字位置。');
+  lastEditable = editable;
+  const modal = document.getElementById('statusModal');
+  if(modal) modal.classList.add('show');
+}
+
+function closeStatusPicker(e){
+  if(e && e.target && e.target.id !== 'statusModal') return;
+  const modal = document.getElementById('statusModal');
+  if(modal) modal.classList.remove('show');
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeStatusPicker();
+});
+
+function insertStatusPreset(icon, text, color){
+  insertStatusBadge(icon, text, color);
+  closeStatusPicker();
+}
+
+function insertCustomStatus(){
+  const icon = (document.getElementById('statusIconCtl') || {}).value || '✅';
+  const text = (document.getElementById('statusTextCtl') || {}).value || '';
+  const color = (document.getElementById('statusColorCtl') || {}).value || themeColor || '#0D2B6A';
+  insertStatusBadge(icon, text, color);
+  closeStatusPicker();
+}
+
+function insertStatusBadge(icon, text, color){
+  const editable = getTargetEditableForStatus();
+  if(!editable) return alert('请先点击邮件里要插入状态的文字位置。');
+  const c = normalizeHex(color || themeColor || '#0D2B6A');
+  const bg = mix(c, '#FFFFFF', 0.90);
+  const border = mix(c, '#FFFFFF', 0.62);
+  const label = String(text || '').trim();
+  const badge = document.createElement('span');
+  badge.setAttribute('data-status-badge', 'true');
+  badge.setAttribute('contenteditable', 'false');
+  badge.style.display = 'inline-block';
+  badge.style.verticalAlign = 'baseline';
+  badge.style.whiteSpace = 'nowrap';
+  badge.style.backgroundColor = bg;
+  badge.style.color = c;
+  badge.style.border = '1px solid ' + border;
+  badge.style.borderRadius = '999px';
+  badge.style.padding = label ? '1px 7px' : '1px 6px';
+  badge.style.margin = '0 2px';
+  badge.style.fontSize = '0.86em';
+  badge.style.lineHeight = '1.55';
+  badge.style.fontWeight = '700';
+  badge.textContent = icon + (label ? ' ' + label : '');
+
+  const spacer = document.createTextNode('\u00A0');
+  const sel = window.getSelection();
+  let range = savedTextRange && rangeIsInsideEditable(savedTextRange, editable) ? savedTextRange.cloneRange() : null;
+  if(!range){
+    range = document.createRange();
+    range.selectNodeContents(editable);
+    range.collapse(false);
+  }
+  range.deleteContents();
+  range.insertNode(spacer);
+  range.insertNode(badge);
+  const after = document.createRange();
+  after.setStartAfter(spacer);
+  after.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(after);
+  savedTextRange = after.cloneRange();
+  lastEditable = editable;
+  editable.focus();
+  scheduleHistorySnapshot();
+  flash('状态标识已插入');
+}
+
+function selectBlock(block){
+  document.querySelectorAll('[data-edit-block="true"]').forEach(b=>b.classList.remove('selected'));
+  selectedBlock = block;
+  selectedBlock.classList.add('selected');
+  const w = selectedBlock.style.width || selectedBlock.getAttribute('width') || '100%';
+  const widthCtl = document.getElementById('widthCtl');
+  if(widthCtl && ['100%','92%','84%','76%','68%'].includes(w)) widthCtl.value = w;
+  const heightCtl = document.getElementById('heightCtl');
+  const h = getBlockHeight(selectedBlock);
+  if(heightCtl) heightCtl.value = h ? String(h) : '';
+  const editable = (lastEditable && selectedBlock.contains(lastEditable)) ? lastEditable : selectedBlock.querySelector('[contenteditable="true"]');
+  if(editable){
+    syncFontControls(getElementFontSize(editable));
+    if(editable.getAttribute('data-auto-fit-title') === 'true') fitAutoTitle(editable);
+  }
+  positionHeightResizer();
+}
+
+function getRow(block){
+  return block ? block.closest('tr[data-edit-row="true"]') : null;
+}
+
+function insertBeforeFooter(rowHtml){
+  const footer = document.getElementById('footerRow');
+  const temp = document.createElement('tbody');
+  temp.innerHTML = rowHtml.trim();
+  const row = temp.firstElementChild;
+  footer.parentNode.insertBefore(row, footer);
+  wireNewRow(row);
+  const block = row.querySelector('[data-edit-block="true"]');
+  if(block) selectBlock(block);
+  applyThemeToEmail();
+  normalizeInfoTableRowLayout(document);
+}
+
+function insertAfterSelected(rowHtml){
+  const temp = document.createElement('tbody');
+  temp.innerHTML = rowHtml.trim();
+  const row = temp.firstElementChild;
+  const selectedRow = getRow(selectedBlock);
+  if(selectedRow && selectedRow.id !== 'footerRow'){
+    selectedRow.parentNode.insertBefore(row, selectedRow.nextSibling);
+    wireNewRow(row);
+    const block = row.querySelector('[data-edit-block="true"]');
+    if(block) selectBlock(block);
+    applyThemeToEmail();
+    normalizeInfoTableRowLayout(document);
+  }else{
+    insertBeforeFooter(row.outerHTML);
+  }
+}
+
+function wireNewRow(row){
+  row.querySelectorAll('[contenteditable="true"]').forEach(el=>{
+    el.addEventListener('focus', ()=>{});
+  });
+  normalizeInfoTableTitleDisplay(row);
+  normalizeInfoTableRowLayout(row);
+}
+
+function normalizeDynamicCount(value, fallback, max){
+  const cleaned = parseInt(String(value == null ? '' : value).replace(/[^0-9]/g, ''), 10);
+  if(!Number.isFinite(cleaned) || cleaned < 1) return null;
+  return Math.min(cleaned, max || 20);
+}
+
+let blockCountModalState = null;
+
+function setCountModalValue(value){
+  const input = document.getElementById('countModalInput');
+  if(!input || !blockCountModalState) return;
+  const count = normalizeDynamicCount(value, blockCountModalState.defaultValue, blockCountModalState.max);
+  if(count) input.value = count;
+  updateCountQuickActive();
+}
+
+function updateCountQuickActive(){
+  const input = document.getElementById('countModalInput');
+  const wrap = document.getElementById('countQuickChoices');
+  if(!input || !wrap) return;
+  const value = String(input.value || '');
+  wrap.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-count') === value));
+}
+
+function openBlockCountModal(options){
+  return new Promise(resolve => {
+    const modal = document.getElementById('countModal');
+    const title = document.getElementById('countModalTitle');
+    const sub = document.getElementById('countModalSub');
+    const input = document.getElementById('countModalInput');
+    const choices = document.getElementById('countQuickChoices');
+    const error = document.getElementById('countModalError');
+    if(!modal || !input){
+      resolve(null);
+      return;
+    }
+    const state = Object.assign({title:'选择数量', sub:'请输入需要添加的数量', defaultValue:3, max:20, quick:[2,3,4,5,6,8,10]}, options || {});
+    blockCountModalState = {resolve, defaultValue:state.defaultValue, max:state.max};
+    if(title) title.textContent = state.title;
+    if(sub) sub.textContent = state.sub + '（最多 ' + state.max + '）';
+    if(error) error.textContent = '';
+    input.min = '1';
+    input.max = String(state.max);
+    input.value = String(state.defaultValue || 3);
+    if(choices){
+      choices.innerHTML = '';
+      (state.quick || []).filter(n => n >= 1 && n <= state.max).forEach(n => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = n + ' 个';
+        btn.setAttribute('data-count', String(n));
+        btn.onclick = () => setCountModalValue(n);
+        choices.appendChild(btn);
+      });
+    }
+    updateCountQuickActive();
+    modal.classList.add('show');
+    setTimeout(()=>{ input.focus(); input.select(); }, 30);
+  });
+}
+
+function closeBlockCountModal(confirmed, e){
+  if(e && e.target && e.target.id !== 'countModal') return;
+  const modal = document.getElementById('countModal');
+  if(modal) modal.classList.remove('show');
+  if(blockCountModalState){
+    const resolve = blockCountModalState.resolve;
+    blockCountModalState = null;
+    if(!confirmed && resolve) resolve(null);
+  }
+}
+
+function confirmBlockCountModal(){
+  const input = document.getElementById('countModalInput');
+  const error = document.getElementById('countModalError');
+  if(!blockCountModalState || !input) return;
+  const count = normalizeDynamicCount(input.value, blockCountModalState.defaultValue, blockCountModalState.max);
+  if(!count){
+    if(error) error.textContent = '请输入大于 0 的数字。';
+    input.focus();
+    return;
+  }
+  const resolve = blockCountModalState.resolve;
+  const modal = document.getElementById('countModal');
+  if(modal) modal.classList.remove('show');
+  blockCountModalState = null;
+  if(resolve) resolve(count);
+}
+
+function stepBlockCount(delta){
+  const input = document.getElementById('countModalInput');
+  if(!input || !blockCountModalState) return;
+  const current = normalizeDynamicCount(input.value, blockCountModalState.defaultValue, blockCountModalState.max) || blockCountModalState.defaultValue || 1;
+  const next = Math.max(1, Math.min(blockCountModalState.max || 20, current + delta));
+  input.value = next;
+  updateCountQuickActive();
+}
+
+function handleCountModalKey(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    confirmBlockCountModal();
+  }
+  if(e.key === 'Escape'){
+    e.preventDefault();
+    closeBlockCountModal(false);
+  }
+  setTimeout(updateCountQuickActive, 0);
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && blockCountModalState) closeBlockCountModal(false);
+});
+
+async function askBlockCount(title, defaultValue, max, sub){
+  return await openBlockCountModal({
+    title,
+    sub: sub || '请输入这个板块需要添加的项目数量',
+    defaultValue: defaultValue || 3,
+    max: max || 20,
+    quick: [2,3,4,5,6,8,10,12,15,20]
+  });
+}
+
+async function addBlock(type){
+  let row;
+  if(type === 'bullets'){
+    const count = await askBlockCount('蓝点列表需要几项？', 3, 20, '选择要生成的蓝点列表项数量');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'infoCard'){
+    row = snippets[type]('1');
+  } else if(type === 'infoTable'){
+    const count = await askBlockCount('信息表格需要几行？', 4, 20, '选择表格里要生成的行数');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'steps'){
+    const count = await askBlockCount('编号步骤需要几步？', 3, 12, '选择步骤数量，添加后每一步文字都可以直接改');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'timeline'){
+    const count = await askBlockCount('时间线需要几项？', 3, 12, '选择时间线节点数量');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'transaction'){
+    const count = await askBlockCount('交易信息需要几行？', 4, 20, '选择交易信息明细行数');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'checklist'){
+    const count = await askBlockCount('检查清单需要几行？', 3, 20, '选择检查清单项目数量，左侧符号之后可点击更换');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'documentList'){
+    const count = await askBlockCount('材料列表需要几行？', 4, 20, '选择材料列表项目数量，左侧方格之后可点击切换');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'actionList'){
+    const count = await askBlockCount('行动清单需要几行？', 3, 20, '选择行动清单项目数量');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else if(type === 'faq'){
+    const count = await askBlockCount('问答需要几组？', 2, 10, '选择问答组数');
+    if(count === null) return;
+    row = snippets[type](count);
+  } else {
+    row = snippets[type]();
+  }
+  insertAfterSelected(row);
+}
+function placeholderImageData(){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420"><rect width="900" height="420" rx="24" fill="#eef4fb"/><rect x="30" y="30" width="840" height="360" rx="22" fill="#ffffff" stroke="#d7e3f4" stroke-width="3"/><circle cx="240" cy="170" r="52" fill="#0D2B6A" opacity="0.16"/><path d="M150 305 L310 205 L410 275 L500 220 L750 305 Z" fill="#0D2B6A" opacity="0.18"/><text x="450" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0D2B6A">点击“替换选中图片”上传图片</text><text x="450" y="226" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#5f7185">可调整宽度、圆角、对齐方式</text></svg>`;
+  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+}
+
+const snippets = {
+  title: () => `<tr data-edit-row="true"><td style="padding:18px 36px 6px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td><div contenteditable="true" style="font-size:24px; line-height:32px; font-weight:700; color:#0D2B6A;">这里输入蓝色加粗标题</div><div contenteditable="true" style="font-size:14px; line-height:22px; color:#5c6f84; margin-top:4px;">这里可以输入一行副标题，也可以删除这行文字。</div></td></tr></table></td></tr>`,
+  text: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:10px;">新的内容标题</div><div contenteditable="true" style="font-size:15px; line-height:27px; color:#17324d;">这里输入新的正文内容。你可以把这里改成通知说明、服务流程、账户状态、操作建议或其他需要发送给收件人的内容。</div></td></tr></table></td></tr>`,
+  notice: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f5f9ff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:10px;">温馨提示</div><div contenteditable="true" style="font-size:15px; line-height:27px; color:#17324d;">这里输入提示内容。可以用于说明注意事项、下一步操作、客服回复时间、材料准备要求等。</div></td></tr></table></td></tr>`,
+  bullets: (count = 3) => {
+    const labels = ['第一条说明文字。','第二条说明文字。','第三条说明文字。','第四条说明文字。','第五条说明文字。','第六条说明文字。','第七条说明文字。','第八条说明文字。','第九条说明文字。','第十条说明文字。'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const text = labels[i] || `第${i + 1}条说明文字。`;
+      rows += `<tr><td valign="top" style="width:18px; padding-top:8px;"><span style="display:block; width:7px; height:7px; background:#0D2B6A; border-radius:50%;"></span></td><td contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">${text}</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f5f9ff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:10px;">蓝点列表标题</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr></table></td></tr>`;
+  },
+  cards: () => `<tr data-edit-row="true"><td style="padding:14px 36px 6px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td style="padding-right:8px;" width="50%" valign="top"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:18px 18px 16px 18px;"><div contenteditable="true" style="font-size:17px; line-height:24px; font-weight:700; color:#0D2B6A; margin-bottom:8px;">左侧小标题</div><div contenteditable="true" style="font-size:14px; line-height:24px; color:#5c6f84;">这里输入左侧说明内容。</div></td></tr></table></td><td style="padding-left:8px;" width="50%" valign="top"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:18px 18px 16px 18px;"><div contenteditable="true" style="font-size:17px; line-height:24px; font-weight:700; color:#0D2B6A; margin-bottom:8px;">右侧小标题</div><div contenteditable="true" style="font-size:14px; line-height:24px; color:#5c6f84;">这里输入右侧说明内容。</div></td></tr></table></td></tr></table></td></tr>`,
+  button: () => `<tr data-edit-row="true"><td align="center" style="padding:24px 36px 18px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" data-edit-block="true" style="margin:0 auto;"><tr><td align="center"><a href="https://example.com/support" contenteditable="true" style="display:inline-block; background:#0D2B6A; color:#ffffff; text-decoration:none; font-size:20px; line-height:22px; font-weight:700; padding:15px 36px; border-radius:999px; letter-spacing:0.2px;">新的按钮 →</a></td></tr></table></td></tr>`,
+  image: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td align="center" style="padding:20px 22px;" data-edit-padding="true"><img data-editor-image="true" src="${placeholderImageData()}" alt="图片" width="100%" style="display:block; width:100%; max-width:100%; height:auto; border:0; border-radius:14px; margin:0 auto;"><div contenteditable="true" style="font-size:13px; line-height:22px; color:#5c6f84; margin-top:10px; text-align:center;">图片说明文字，可删除或修改。</div></td></tr></table></td></tr>`,
+  divider: () => `<tr data-edit-row="true"><td style="padding:16px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td style="border-top:1px solid #d7e3f4; line-height:1px; font-size:1px; height:1px;">&nbsp;</td></tr></table></td></tr>`,
+  spacer: () => `<tr data-edit-row="true"><td style="padding:0 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" height="36" data-custom-height="36" style="width:100%; margin:0 auto; height:36px;"><tr><td height="36" style="height:36px; line-height:36px; font-size:1px;">&nbsp;</td></tr></table></td></tr>`,
+  infoCard: (kind='1') => {
+    const k = String(kind).trim();
+    const map = {
+      '1': ['普通说明', '这里输入普通说明内容。适合放服务说明、处理范围、材料准备、后续安排等信息。', '说明'],
+      '2': ['成功状态', '这里输入成功状态内容。适合放已完成、已确认、已提交、已更新等状态说明。', '完成'],
+      '3': ['重要提醒', '这里输入重要提醒内容。适合放风险提示、时效要求、操作前确认事项等。', '重要'],
+      '4': ['步骤说明', '第一步：确认信息。\n第二步：准备材料。\n第三步：联系客服或继续下一步操作。', '步骤']
+    };
+    const item = map[k] || map['1'];
+    const body = item[1].split('\n').map(line => `<div contenteditable="true" style="font-size:15px; line-height:27px; color:#17324d;">${line}</div>`).join('');
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f5f9ff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td valign="top" style="width:58px;"><div contenteditable="true" style="background:#0D2B6A; color:#ffffff; font-size:13px; line-height:30px; font-weight:700; text-align:center; border-radius:999px; width:48px;">${item[2]}</div></td><td valign="top"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:8px;">${item[0]}</div>${body}</td></tr></table></td></tr></table></td></tr>`;
+  },
+  multiButtons: () => `<tr data-edit-row="true"><td align="center" style="padding:24px 36px 18px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" data-edit-block="true" style="margin:0 auto;"><tr><td align="center" style="padding:0 5px 8px 5px;"><a href="https://example.com/action" contenteditable="true" style="display:inline-block; background:#0D2B6A; color:#ffffff; text-decoration:none; font-size:17px; line-height:20px; font-weight:700; padding:13px 26px; border-radius:999px; letter-spacing:0.2px;">主按钮 →</a></td><td align="center" style="padding:0 5px 8px 5px;"><a href="https://example.com/details" contenteditable="true" style="display:inline-block; background:#ffffff; color:#0D2B6A; text-decoration:none; font-size:17px; line-height:20px; font-weight:700; padding:12px 25px; border-radius:999px; border:1px solid #0D2B6A; letter-spacing:0.2px;">次按钮</a></td></tr></table></td></tr>`,
+  infoTable: (count=4) => {
+    const names = ['账户状态','处理时间','服务类型','备注说明','参考编号','联系人','到期时间','下一步'];
+    let rows = '';
+    for(let i=0;i<count;i++){
+      rows += `<tr><td contenteditable="true" data-info-label="true" valign="middle" style="width:38%; padding:12px 14px; border-bottom:1px solid #d7e3f4; font-size:14px; line-height:22px; color:#5c6f84; font-weight:700; white-space:nowrap; word-break:keep-all; overflow-wrap:normal; vertical-align:middle;">${names[i] || '项目' + (i+1)}</td><td contenteditable="true" data-info-value="true" valign="middle" style="padding:12px 14px; border-bottom:1px solid #d7e3f4; font-size:14px; line-height:22px; color:#17324d; white-space:normal; word-break:break-word; overflow-wrap:break-word; vertical-align:middle;">这里输入内容</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" data-info-table-title="true" data-original-font-size="18px" data-original-line-height="26px" data-original-margin-bottom="12px" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:12px;">信息概览</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-info-table="true" style="border-collapse:collapse; background:#ffffff; border:1px solid #d7e3f4; border-radius:10px; overflow:hidden;">${rows}</table></td></tr></table></td></tr>`;
+  },
+  importantAlert: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#fff7ed; border:1px solid #fed7aa; border-left:6px solid #f97316; border-radius:14px;"><tr><td style="padding:18px 20px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#9a3412; margin-bottom:6px;">重点提醒</div><div contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">这里填写需要用户优先阅读的重点信息，例如账户安全、处理时限、材料要求或下一步操作说明。</div></td></tr></table></td></tr>`,
+  successNotice: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f0fdf4; border:1px solid #bbf7d0; border-left:6px solid #16a34a; border-radius:14px;"><tr><td style="padding:18px 20px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#166534; margin-bottom:6px;">处理已完成</div><div contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">相关信息已成功确认。您可以继续查看下方说明，或根据邮件中的按钮进入下一步。</div></td></tr></table></td></tr>`,
+  warningNotice: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#fef2f2; border:1px solid #fecaca; border-left:6px solid #dc2626; border-radius:14px;"><tr><td style="padding:18px 20px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#991b1b; margin-bottom:6px;">重要警告</div><div contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">请不要向任何第三方透露验证码、助记词、私钥或账户密码。若您无法确认来源，请先暂停操作并联系支持团队。</div></td></tr></table></td></tr>`,
+  steps: (count = 3) => {
+    count = normalizeDynamicCount(count, 3, 12) || 3;
+    const labels = ['第一步：确认账户、设备或交易信息是否准确。','第二步：准备截图、交易编号、地址或其它证明材料。','第三步：根据提示完成核对，并等待进一步回复。','第四步：补充缺失信息或确认下一步处理方式。','第五步：保存处理结果和后续联系记录。'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const text = labels[i] || `第${i + 1}步：在这里输入新的步骤说明。`;
+      rows += `<tr><td valign="top" style="width:34px;"><div style="width:24px;height:24px;border-radius:50%;background:#0D2B6A;color:#fff;text-align:center;font-size:13px;line-height:24px;font-weight:700;">${i + 1}</div></td><td contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '12px'};">${text}</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:12px;">操作步骤</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr></table></td></tr>`;
+  },
+  timeline: (count = 3) => {
+    count = normalizeDynamicCount(count, 3, 12) || 3;
+    const labels = ['<b>第一阶段：</b>信息接收与初步核对。','<b>第二阶段：</b>补充材料并确认处理范围。','<b>第三阶段：</b>完成审核并给出下一步说明。','<b>第四阶段：</b>持续跟进处理状态。','<b>第五阶段：</b>归档结果和后续提醒。'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const text = labels[i] || `<b>第${i + 1}阶段：</b>在这里输入时间线说明。`;
+      rows += `<tr><td valign="top" style="width:22px;padding-top:7px;"><span style="display:block;width:10px;height:10px;border-radius:50%;background:#0D2B6A;"></span></td><td contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '12px'};border-left:1px solid #d7e3f4;padding-left:14px;">${text}</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:12px;">处理时间线</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr></table></td></tr>`;
+  },
+  quote: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f8fbff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div style="font-size:34px;line-height:24px;color:#0D2B6A;font-weight:700;">“</div><div contenteditable="true" style="font-size:16px; line-height:28px; color:#17324d; font-style:italic;">这里可以放一段重点引用、说明性文字、客户须知或官方声明，让内容更醒目。</div><div contenteditable="true" style="font-size:13px; line-height:22px; color:#5c6f84; margin-top:8px;">— Onchain Wallet Service Center</div></td></tr></table></td></tr>`,
+  stats: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td style="padding-right:6px;" width="33.33%"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;text-align:center;"><div contenteditable="true" style="font-size:22px;line-height:28px;font-weight:700;color:#0D2B6A;">98%</div><div contenteditable="true" style="font-size:12px;line-height:18px;color:#5c6f84;">完成率</div></td></tr></table></td><td style="padding:0 3px;" width="33.33%"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;text-align:center;"><div contenteditable="true" style="font-size:22px;line-height:28px;font-weight:700;color:#0D2B6A;">24h</div><div contenteditable="true" style="font-size:12px;line-height:18px;color:#5c6f84;">预计时间</div></td></tr></table></td><td style="padding-left:6px;" width="33.33%"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;text-align:center;"><div contenteditable="true" style="font-size:22px;line-height:28px;font-weight:700;color:#0D2B6A;">3</div><div contenteditable="true" style="font-size:12px;line-height:18px;color:#5c6f84;">待办事项</div></td></tr></table></td></tr></table></td></tr>`,
+  transaction: (count = 4) => {
+    count = normalizeDynamicCount(count, 4, 20) || 4;
+    const labels = ['交易状态','交易时间','交易编号','交易金额','交易地址','网络类型','交易哈希','确认数量','备注','处理人员'];
+    const values = ['Pending Review','July 9, 2026, 11:30 AM ET','20948717','$100,000.00','0x0000000000000000000000000000000000000000','Ethereum Mainnet','0x0000000000000000000000000000000000000000000000000000000000000000','12 Confirmations','等待进一步核对','Support Team'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const bottom = i === count - 1 ? '' : 'border-bottom:1px solid #d7e3f4;';
+      rows += `<tr><td contenteditable="true" data-info-label="true" valign="middle" style="width:38%;padding:12px 14px;${bottom}font-size:14px;line-height:22px;color:#5c6f84;font-weight:700;white-space:nowrap;">${labels[i] || `字段${i + 1}`}</td><td contenteditable="true" data-info-value="true" valign="middle" style="padding:12px 14px;${bottom}font-size:14px;line-height:22px;color:#17324d;word-break:break-word;">${values[i] || '在这里输入对应内容'}</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" data-info-table-title="true" data-original-font-size="18px" data-original-line-height="26px" data-original-margin-bottom="12px" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">交易信息</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-info-table="true" style="border-collapse:collapse;background:#ffffff;border:1px solid #d7e3f4;border-radius:10px;overflow:hidden;">${rows}</table></td></tr></table></td></tr>`;
+  },
+  amountSummary: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#0D2B6A; border-radius:16px;"><tr><td style="padding:22px 24px;" data-edit-padding="true"><div contenteditable="true" style="font-size:14px;line-height:22px;color:#dbe8f8;margin-bottom:6px;">金额摘要</div><div contenteditable="true" style="font-size:32px;line-height:40px;font-weight:700;color:#ffffff;">$100,000.00</div><div contenteditable="true" style="font-size:13px;line-height:22px;color:#dbe8f8;margin-top:8px;">这里可以填写余额、转账金额、服务费、预计返还金额或其它金额说明。</div></td></tr></table></td></tr>`,
+  addressBox: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:10px;">地址 / 哈希</div><div contenteditable="true" style="font-family:Consolas,Monaco,monospace;font-size:13px;line-height:22px;color:#17324d;background:#f5f9ff;border:1px solid #d7e3f4;border-radius:10px;padding:12px;word-break:break-all;">0x0000000000000000000000000000000000000000</div><div contenteditable="true" style="font-size:13px;line-height:22px;color:#5c6f84;margin-top:8px;">这里可以填写地址说明、链名称或核验备注。</div></td></tr></table></td></tr>`,
+  checklist: (count = 3) => {
+    count = normalizeDynamicCount(count, 3, 20) || 3;
+    const labels = ['确认钱包地址、网络和资产类型。','保存交易哈希、截图和时间记录。','等待进一步审核或客服回复。','核对收件人信息和通知内容。','确认所有材料已经备份。'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const icon = i < 2 ? '✓' : '•';
+      const color = i < 2 ? '#16a34a' : '#f59e0b';
+      const text = labels[i] || `检查事项 ${i + 1}`;
+      rows += `<tr><td data-check-marker="true" tabindex="0" title="点击选择清单符号" style="width:24px;font-size:16px;line-height:26px;color:${color};cursor:pointer;text-align:center;user-select:none;">${icon}</td><td contenteditable="true" style="font-size:15px;line-height:26px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '6px'};">${text}</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">检查清单</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr></table></td></tr>`;
+  },
+  threeCards: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td style="padding-right:6px;" width="33.33%" valign="top"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:15px;line-height:22px;font-weight:700;color:#0D2B6A;">安全</div><div contenteditable="true" style="font-size:13px;line-height:21px;color:#5c6f84;margin-top:6px;">保护助记词与设备。</div></td></tr></table></td><td style="padding:0 3px;" width="33.33%" valign="top"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:15px;line-height:22px;font-weight:700;color:#0D2B6A;">核验</div><div contenteditable="true" style="font-size:13px;line-height:21px;color:#5c6f84;margin-top:6px;">检查地址与授权。</div></td></tr></table></td><td style="padding-left:6px;" width="33.33%" valign="top"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:15px;line-height:22px;font-weight:700;color:#0D2B6A;">支持</div><div contenteditable="true" style="font-size:13px;line-height:21px;color:#5c6f84;margin-top:6px;">提交问题和材料。</div></td></tr></table></td></tr></table></td></tr>`,
+  progress: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:8px;">当前进度</div><div contenteditable="true" style="font-size:14px;line-height:22px;color:#5c6f84;margin-bottom:10px;">审核与资料确认已完成 <span data-progress-number="true">70%</span></div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-progress-bar="true" title="点击进度条任意位置即可调整百分比" style="background:#e8eef6;border-radius:999px;overflow:hidden;cursor:pointer;"><tr><td data-progress-fill="true" style="width:70%;height:12px;background:#0D2B6A;border-radius:999px;"></td><td style="height:12px;"></td></tr></table><div contenteditable="true" style="font-size:12px;line-height:20px;color:#7a8ea8;margin-top:8px;">点击上方进度条的任意位置，可直接调整百分比。</div></td></tr></table></td></tr>`,
+  faq: (count = 2) => {
+    count = normalizeDynamicCount(count, 2, 10) || 2;
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      rows += `<div contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;font-weight:700;">Q${i + 1}：这里输入问题标题</div><div contenteditable="true" style="font-size:14px;line-height:24px;color:#5c6f84;margin-bottom:${i === count - 1 ? '0' : '10px'};">A：这里输入对应回答内容。</div>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">常见问题</div>${rows}</td></tr></table></td></tr>`;
+  },
+  contact: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">联系方式</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td contenteditable="true" style="font-size:15px;line-height:26px;color:#17324d;padding-bottom:8px;">客服邮箱：support@example.com</td></tr><tr><td contenteditable="true" style="font-size:15px;line-height:26px;color:#17324d;padding-bottom:8px;">服务时间：Monday – Friday, 9:00 AM – 6:00 PM ET</td></tr><tr><td contenteditable="true" style="font-size:15px;line-height:26px;color:#17324d;">备用联系：请通过官方入口提交工单。</td></tr></table></td></tr></table></td></tr>`,
+  signature: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td style="padding:6px 0 0 0;"><div contenteditable="true" style="font-size:15px;line-height:26px;color:#17324d;">Best regards,</div><div contenteditable="true" style="font-size:17px;line-height:26px;color:#0D2B6A;font-weight:700;margin-top:4px;">Onchain Wallet Service Center</div><div contenteditable="true" style="font-size:13px;line-height:22px;color:#5c6f84;">Customer Support & Security Notification Team</div></td></tr></table></td></tr>`,
+  plainText: () => `<tr data-edit-row="true"><td style="padding:12px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td><div contenteditable="true" style="font-size:15px;line-height:27px;color:#17324d;">这里是纯文字板块，没有气泡、边框和背景。适合放普通说明、正文段落、补充备注或邮件过渡文字。</div></td></tr></table></td></tr>`,
+  sectionHeader: () => `<tr data-edit-row="true"><td style="padding:18px 36px 8px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td><div contenteditable="true" style="font-size:20px;line-height:28px;font-weight:700;color:#0D2B6A;">分节标题</div><div style="height:2px;background:#0D2B6A;width:54px;border-radius:99px;margin-top:8px;"></div></td></tr></table></td></tr>`,
+  twoColumnText: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td width="50%" valign="top" style="padding-right:12px;"><div contenteditable="true" style="font-size:17px;line-height:24px;font-weight:700;color:#0D2B6A;margin-bottom:8px;">左侧说明</div><div contenteditable="true" style="font-size:14px;line-height:24px;color:#5c6f84;">这里输入左侧较短说明。</div></td><td width="50%" valign="top" style="padding-left:12px;border-left:1px solid #d7e3f4;"><div contenteditable="true" style="font-size:17px;line-height:24px;font-weight:700;color:#0D2B6A;margin-bottom:8px;">右侧说明</div><div contenteditable="true" style="font-size:14px;line-height:24px;color:#5c6f84;">这里输入右侧较短说明。</div></td></tr></table></td></tr></table></td></tr>`,
+  actionList: (count = 3) => {
+    count = normalizeDynamicCount(count, 3, 20) || 3;
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      rows += `<tr><td style="width:28px;vertical-align:top;"><span style="display:inline-block;width:20px;height:20px;border-radius:6px;background:#0D2B6A;color:#fff;text-align:center;font-size:12px;line-height:20px;font-weight:700;">${i + 1}</span></td><td contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '8px'};">需要完成的行动事项 ${i + 1}</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f5f9ff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">行动清单</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr></table></td></tr>`;
+  },
+  documentList: (count = 4) => {
+    count = normalizeDynamicCount(count, 4, 20) || 4;
+    const labels = ['身份证明文件或账户资料','交易截图或付款凭证','钱包地址、交易哈希或订单编号','与平台/客服沟通记录'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      rows += `<tr><td data-document-marker="true" data-checked="true" tabindex="0" title="单击切换选中/空方格" style="width:26px;font-size:17px;line-height:25px;color:#0D2B6A;cursor:pointer;text-align:center;user-select:none;">☑</td><td contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '7px'};">${labels[i] || `补充材料 ${i + 1}`}</td></tr>`;
+    }
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">所需材料</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr></table></td></tr>`;
+  },
+  caseStatus: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">案件状态</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="33.33%" style="padding-right:8px;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">当前阶段</div><div contenteditable="true" style="font-size:16px;line-height:24px;font-weight:700;color:#17324d;">初步审核</div></td><td width="33.33%" style="padding:0 8px;border-left:1px solid #d7e3f4;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">优先级</div><div contenteditable="true" style="font-size:16px;line-height:24px;font-weight:700;color:#17324d;">High</div></td><td width="33.33%" style="padding-left:8px;border-left:1px solid #d7e3f4;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">下一步</div><div contenteditable="true" style="font-size:16px;line-height:24px;font-weight:700;color:#17324d;">补充材料</div></td></tr></table></td></tr></table></td></tr>`,
+  receipt: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">收据摘要</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td contenteditable="true" style="font-size:14px;line-height:22px;color:#5c6f84;padding:8px 0;border-bottom:1px solid #d7e3f4;">项目</td><td contenteditable="true" align="right" style="font-size:14px;line-height:22px;color:#17324d;padding:8px 0;border-bottom:1px solid #d7e3f4;font-weight:700;">金额</td></tr><tr><td contenteditable="true" style="font-size:14px;line-height:22px;color:#5c6f84;padding:8px 0;border-bottom:1px solid #d7e3f4;">Transaction Amount</td><td contenteditable="true" align="right" style="font-size:14px;line-height:22px;color:#17324d;padding:8px 0;border-bottom:1px solid #d7e3f4;">$100,000.00</td></tr><tr><td contenteditable="true" style="font-size:15px;line-height:24px;color:#17324d;padding:10px 0;font-weight:700;">Total</td><td contenteditable="true" align="right" style="font-size:18px;line-height:26px;color:#0D2B6A;padding:10px 0;font-weight:700;">$100,000.00</td></tr></table></td></tr></table></td></tr>`,
+  metricGrid: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;"><tr><td width="50%" style="padding-right:6px;padding-bottom:8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">指标一</div><div contenteditable="true" style="font-size:22px;line-height:30px;font-weight:700;color:#0D2B6A;">98%</div></td></tr></table></td><td width="50%" style="padding-left:6px;padding-bottom:8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">指标二</div><div contenteditable="true" style="font-size:22px;line-height:30px;font-weight:700;color:#0D2B6A;">24h</div></td></tr></table></td></tr><tr><td width="50%" style="padding-right:6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">指标三</div><div contenteditable="true" style="font-size:22px;line-height:30px;font-weight:700;color:#0D2B6A;">12</div></td></tr></table></td><td width="50%" style="padding-left:6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">指标四</div><div contenteditable="true" style="font-size:22px;line-height:30px;font-weight:700;color:#0D2B6A;">OK</div></td></tr></table></td></tr></table></td></tr>`,
+  compareTable: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">对比说明</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid #d7e3f4;border-radius:10px;overflow:hidden;"><tr><td contenteditable="true" style="width:34%;padding:10px 12px;background:#f5f9ff;font-size:14px;font-weight:700;color:#17324d;">项目</td><td contenteditable="true" style="width:33%;padding:10px 12px;background:#f5f9ff;font-size:14px;font-weight:700;color:#17324d;">当前</td><td contenteditable="true" style="width:33%;padding:10px 12px;background:#f5f9ff;font-size:14px;font-weight:700;color:#17324d;">建议</td></tr><tr><td contenteditable="true" style="padding:10px 12px;border-top:1px solid #d7e3f4;font-size:14px;color:#5c6f84;">账户状态</td><td contenteditable="true" style="padding:10px 12px;border-top:1px solid #d7e3f4;font-size:14px;color:#17324d;">待确认</td><td contenteditable="true" style="padding:10px 12px;border-top:1px solid #d7e3f4;font-size:14px;color:#17324d;">补充材料</td></tr></table></td></tr></table></td></tr>`,
+  schedule: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:20px 22px;" data-edit-padding="true"><div contenteditable="true" style="font-size:18px;line-height:26px;font-weight:700;color:#0D2B6A;margin-bottom:12px;">日程安排</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td contenteditable="true" style="width:90px;font-size:13px;line-height:22px;color:#0D2B6A;font-weight:700;padding:10px 0;border-bottom:1px solid #d7e3f4;">09:00 AM</td><td contenteditable="true" style="font-size:14px;line-height:22px;color:#17324d;padding:10px 0;border-bottom:1px solid #d7e3f4;">资料接收与初步检查</td></tr><tr><td contenteditable="true" style="width:90px;font-size:13px;line-height:22px;color:#0D2B6A;font-weight:700;padding:10px 0;">02:00 PM</td><td contenteditable="true" style="font-size:14px;line-height:22px;color:#17324d;padding:10px 0;">更新处理状态或发送下一步说明</td></tr></table></td></tr></table></td></tr>`,
+  deadline: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#fff7ed; border:1px solid #fed7aa; border-radius:14px;"><tr><td style="padding:18px 20px;" data-edit-padding="true"><div contenteditable="true" style="font-size:17px;line-height:25px;font-weight:700;color:#c2410c;margin-bottom:6px;">截止提醒</div><div contenteditable="true" style="font-size:14px;line-height:24px;color:#7c2d12;">请在指定时间前完成确认或提交材料，避免处理进度受到影响。</div></td></tr></table></td></tr>`,
+  verificationCode: () => `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:#f5f9ff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td align="center" style="padding:22px 24px;" data-edit-padding="true"><div contenteditable="true" style="font-size:14px;line-height:22px;color:#5c6f84;margin-bottom:8px;">Verification Code</div><div contenteditable="true" style="font-size:34px;line-height:42px;font-weight:700;letter-spacing:8px;color:#0D2B6A;">482913</div><div contenteditable="true" style="font-size:12px;line-height:20px;color:#7a8ea8;margin-top:8px;">此验证码有时间限制，请勿向他人泄露。</div></td></tr></table></td></tr>`,
+
+  footerNote: () => `<tr data-edit-row="true"><td style="padding:12px 36px 18px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; border-top:1px solid #d7e3f4;"><tr><td style="padding:14px 0 0 0;"><div contenteditable="true" style="font-size:12px;line-height:20px;color:#7a8ea8;text-align:center;">本邮件仅用于服务通知与账户安全提醒。请勿向任何人透露助记词、私钥、验证码或登录密码。</div></td></tr></table></td></tr>`
+};
+
+
+function getSelectedImage(){
+  if(!selectedBlock) return null;
+  return selectedBlock.querySelector('img[data-editor-image="true"], img');
+}
+
+function openContentImageUpload(){
+  if(!selectedBlock) return alert('请先选中图片板块');
+  if(!getSelectedImage()) return alert('选中的板块里没有图片。请先添加图片板块或选中已有图片板块。');
+  const input = document.getElementById('contentImageUpload');
+  if(input) input.click();
+}
+
+function uploadContentImage(input){
+  const file = input && input.files && input.files[0];
+  if(!file) return;
+  if(!file.type || !file.type.startsWith('image/')){
+    alert('请选择图片文件，例如 PNG、JPG、WEBP。');
+    input.value = '';
+    return;
+  }
+  const img = getSelectedImage();
+  if(!img){
+    alert('请先选中一个图片板块。');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    img.src = e.target.result;
+    img.alt = file.name.replace(/\.[^.]+$/, '') || '图片';
+    img.setAttribute('data-editor-image', 'true');
+    img.style.display = 'block';
+    img.style.maxWidth = '100%';
+    img.style.height = 'auto';
+    if(!img.style.width) img.style.width = '100%';
+    flash('图片已替换');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function setSelectedImageWidth(value){
+  const img = getSelectedImage();
+  if(!img) return alert('请先选中图片板块');
+  img.style.width = value;
+  img.setAttribute('width', value);
+  img.style.maxWidth = '100%';
+  positionHeightResizer();
+}
+
+function setSelectedImageRadius(value){
+  const img = getSelectedImage();
+  if(!img) return alert('请先选中图片板块');
+  img.style.borderRadius = value;
+}
+
+function setSelectedImageAlign(value){
+  const img = getSelectedImage();
+  if(!img) return alert('请先选中图片板块');
+  const cell = img.closest('td');
+  if(cell){
+    cell.setAttribute('align', value);
+    cell.style.textAlign = value;
+  }
+  img.style.marginLeft = value === 'center' || value === 'right' ? 'auto' : '0';
+  img.style.marginRight = value === 'center' || value === 'left' ? 'auto' : '0';
+}
+
+function setWidth(value){
+  if(!selectedBlock) return alert('请先点击选中一个板块');
+  selectedBlock.style.width = value;
+  selectedBlock.setAttribute('width', value);
+  selectedBlock.style.margin = '0 auto';
+  positionHeightResizer();
+}
+
+function getBlockHeight(block){
+  if(!block) return '';
+  const direct = parseInt(block.getAttribute('data-custom-height') || block.getAttribute('height') || block.style.height || '', 10);
+  return Number.isFinite(direct) && direct > 0 ? direct : '';
+}
+
+function getDirectCells(table){
+  if(!table || table.tagName !== 'TABLE') return [];
+  const tbody = Array.from(table.children).find(el => el.tagName === 'TBODY') || table;
+  const tr = Array.from(tbody.children).find(el => el.tagName === 'TR');
+  return tr ? Array.from(tr.children).filter(el => el.tagName === 'TD' || el.tagName === 'TH') : [];
+}
+
+function applyBlockHeight(px){
+  if(!selectedBlock) return;
+  const height = Math.max(1, Math.round(Number(px) || 0));
+  selectedBlock.style.height = height + 'px';
+  selectedBlock.setAttribute('height', String(height));
+  selectedBlock.setAttribute('data-custom-height', String(height));
+  selectedBlock.style.verticalAlign = 'top';
+  getDirectCells(selectedBlock).forEach(cell => {
+    cell.style.height = height + 'px';
+    cell.setAttribute('height', String(height));
+    cell.setAttribute('valign', 'top');
+    const childTables = Array.from(cell.children).filter(el => el.tagName === 'TABLE');
+    childTables.forEach(t => {
+      t.style.height = height + 'px';
+      t.setAttribute('height', String(height));
+    });
+  });
+  const heightCtl = document.getElementById('heightCtl');
+  if(heightCtl) heightCtl.value = String(height);
+  positionHeightResizer();
+}
+
+function setHeight(value){
+  if(!selectedBlock) return alert('请先点击选中一个板块');
+  if(value === '' || value === null) return;
+  const num = Number(value);
+  if(!Number.isFinite(num) || num <= 0) return;
+  applyBlockHeight(num);
+}
+
+function bumpHeight(amount){
+  if(!selectedBlock) return alert('请先点击选中一个板块');
+  const current = getBlockHeight(selectedBlock) || Math.round(selectedBlock.getBoundingClientRect().height);
+  applyBlockHeight(current + amount);
+}
+
+function setAutoHeight(){
+  if(!selectedBlock) return alert('请先点击选中一个板块');
+  selectedBlock.style.height = '';
+  selectedBlock.removeAttribute('height');
+  selectedBlock.removeAttribute('data-custom-height');
+  getDirectCells(selectedBlock).forEach(cell => {
+    cell.style.height = '';
+    cell.removeAttribute('height');
+    cell.removeAttribute('valign');
+    Array.from(cell.children).filter(el => el.tagName === 'TABLE').forEach(t => {
+      t.style.height = '';
+      t.removeAttribute('height');
+    });
+  });
+  const heightCtl = document.getElementById('heightCtl');
+  if(heightCtl) heightCtl.value = '';
+  positionHeightResizer();
+}
+
+function hideResizeHandles(){
+  ['heightResizer','widthResizer','imageResizer'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+}
+
+function positionHeightResizer(){
+  const heightHandle = document.getElementById('heightResizer');
+  const widthHandle = document.getElementById('widthResizer');
+  const imageHandle = document.getElementById('imageResizer');
+  if(!heightHandle) return;
+  if(!selectedBlock || document.body.classList.contains('preview-mode')){
+    hideResizeHandles();
+    return;
+  }
+  const r = selectedBlock.getBoundingClientRect();
+  if(r.width <= 0 || r.height <= 0){
+    hideResizeHandles();
+    return;
+  }
+  heightHandle.style.display = 'flex';
+  heightHandle.style.left = (r.left + r.width / 2 - 45) + 'px';
+  heightHandle.style.top = (r.bottom + 8) + 'px';
+  if(widthHandle){
+    widthHandle.style.display = 'flex';
+    widthHandle.style.left = (r.right + 8) + 'px';
+    widthHandle.style.top = (r.top + r.height / 2 - 40) + 'px';
+  }
+  if(imageHandle){
+    const img = getSelectedImage();
+    if(img && document.body.contains(img)){
+      const ir = img.getBoundingClientRect();
+      if(ir.width > 0 && ir.height > 0){
+        imageHandle.style.display = 'block';
+        imageHandle.style.left = (ir.right - 8) + 'px';
+        imageHandle.style.top = (ir.bottom - 8) + 'px';
+      }else{
+        imageHandle.style.display = 'none';
+      }
+    }else{
+      imageHandle.style.display = 'none';
+    }
+  }
+}
+
+function startHeightResize(e){
+  if(!selectedBlock) return;
+  e.preventDefault();
+  isHeightResizing = true;
+  const point = e.touches ? e.touches[0] : e;
+  resizeStartY = point.clientY;
+  resizeStartHeight = getBlockHeight(selectedBlock) || Math.round(selectedBlock.getBoundingClientRect().height);
+  document.addEventListener('mousemove', onHeightResize);
+  document.addEventListener('mouseup', stopHeightResize);
+  document.addEventListener('touchmove', onHeightResize, {passive:false});
+  document.addEventListener('touchend', stopHeightResize);
+}
+
+function onHeightResize(e){
+  if(!isHeightResizing || !selectedBlock) return;
+  e.preventDefault();
+  const point = e.touches ? e.touches[0] : e;
+  const nextHeight = Math.max(1, resizeStartHeight + point.clientY - resizeStartY);
+  applyBlockHeight(nextHeight);
+}
+
+function stopHeightResize(){
+  isHeightResizing = false;
+  document.removeEventListener('mousemove', onHeightResize);
+  document.removeEventListener('mouseup', stopHeightResize);
+  document.removeEventListener('touchmove', onHeightResize);
+  document.removeEventListener('touchend', stopHeightResize);
+}
+
+function getBlockResizeParentWidth(block){
+  if(!block) return 0;
+  const parent = block.parentElement;
+  if(!parent) return 0;
+  return parent.getBoundingClientRect().width || parent.clientWidth || 0;
+}
+
+function applyBlockWidthFromPixels(px){
+  if(!selectedBlock) return;
+  const parentWidth = getBlockResizeParentWidth(selectedBlock) || resizeParentWidth || Math.round(selectedBlock.getBoundingClientRect().width);
+  if(!parentWidth) return;
+  const next = Math.max(Math.min(px, parentWidth), Math.min(120, parentWidth));
+  let percent = Math.max(20, Math.min(100, (next / parentWidth) * 100));
+  let value = (Math.round(percent * 10) / 10).toString().replace(/\.0$/, '') + '%';
+  selectedBlock.style.width = value;
+  selectedBlock.setAttribute('width', value);
+  selectedBlock.style.margin = '0 auto';
+  positionHeightResizer();
+}
+
+function startWidthResize(e){
+  if(!selectedBlock) return;
+  e.preventDefault();
+  isWidthResizing = true;
+  const point = e.touches ? e.touches[0] : e;
+  resizeStartX = point.clientX;
+  resizeStartWidth = Math.round(selectedBlock.getBoundingClientRect().width);
+  resizeParentWidth = getBlockResizeParentWidth(selectedBlock) || resizeStartWidth;
+  document.addEventListener('mousemove', onWidthResize);
+  document.addEventListener('mouseup', stopWidthResize);
+  document.addEventListener('touchmove', onWidthResize, {passive:false});
+  document.addEventListener('touchend', stopWidthResize);
+}
+
+function onWidthResize(e){
+  if(!isWidthResizing || !selectedBlock) return;
+  e.preventDefault();
+  const point = e.touches ? e.touches[0] : e;
+  const nextWidth = resizeStartWidth + point.clientX - resizeStartX;
+  applyBlockWidthFromPixels(nextWidth);
+}
+
+function stopWidthResize(){
+  if(isWidthResizing) scheduleHistorySnapshot();
+  isWidthResizing = false;
+  document.removeEventListener('mousemove', onWidthResize);
+  document.removeEventListener('mouseup', stopWidthResize);
+  document.removeEventListener('touchmove', onWidthResize);
+  document.removeEventListener('touchend', stopWidthResize);
+}
+
+function startImageResize(e){
+  const img = getSelectedImage();
+  if(!img) return;
+  e.preventDefault();
+  isImageResizing = true;
+  resizeImageEl = img;
+  const point = e.touches ? e.touches[0] : e;
+  const r = img.getBoundingClientRect();
+  resizeStartX = point.clientX;
+  resizeStartY = point.clientY;
+  resizeStartImageWidth = Math.round(r.width);
+  resizeStartImageHeight = Math.round(r.height);
+  document.addEventListener('mousemove', onImageResize);
+  document.addEventListener('mouseup', stopImageResize);
+  document.addEventListener('touchmove', onImageResize, {passive:false});
+  document.addEventListener('touchend', stopImageResize);
+}
+
+function onImageResize(e){
+  if(!isImageResizing || !resizeImageEl) return;
+  e.preventDefault();
+  const point = e.touches ? e.touches[0] : e;
+  const parent = resizeImageEl.parentElement;
+  const parentWidth = parent ? (parent.getBoundingClientRect().width || parent.clientWidth || 0) : 0;
+  const nextWidth = Math.max(24, resizeStartImageWidth + point.clientX - resizeStartX);
+  const nextHeight = Math.max(24, resizeStartImageHeight + point.clientY - resizeStartY);
+  const finalWidth = parentWidth ? Math.min(nextWidth, parentWidth) : nextWidth;
+  resizeImageEl.style.width = Math.round(finalWidth) + 'px';
+  resizeImageEl.setAttribute('width', String(Math.round(finalWidth)));
+  resizeImageEl.style.height = Math.round(nextHeight) + 'px';
+  resizeImageEl.setAttribute('height', String(Math.round(nextHeight)));
+  resizeImageEl.style.maxWidth = '100%';
+  positionHeightResizer();
+}
+
+function stopImageResize(){
+  if(isImageResizing) scheduleHistorySnapshot();
+  isImageResizing = false;
+  resizeImageEl = null;
+  document.removeEventListener('mousemove', onImageResize);
+  document.removeEventListener('mouseup', stopImageResize);
+  document.removeEventListener('touchmove', onImageResize);
+  document.removeEventListener('touchend', stopImageResize);
+}
+
+function setPadding(value){
+  if(!selectedBlock) return alert('请先点击选中一个板块');
+  const pads = selectedBlock.querySelectorAll('[data-edit-padding="true"]');
+  if(pads.length){ pads.forEach(td=>td.style.padding = value); }
+  else {
+    const td = selectedBlock.querySelector('td');
+    if(td) td.style.padding = value;
+  }
+}
+
+function normalizeFontValue(value){
+  if(value === null || value === undefined) return '';
+  value = String(value).trim();
+  if(!value) return '';
+  if(/^\d+(\.\d+)?$/.test(value)) value += 'px';
+  if(!/^\d+(\.\d+)?px$/.test(value)) return '';
+  return value;
+}
+
+function getElementFontSize(el){
+  if(!el) return '';
+  const inline = el.style && el.style.fontSize ? el.style.fontSize : '';
+  return inline || window.getComputedStyle(el).fontSize || '';
+}
+
+function syncFontControls(value){
+  const normalized = normalizeFontValue(value);
+  const fontCtl = document.getElementById('fontCtl');
+  const custom = document.getElementById('fontCustomCtl');
+  if(fontCtl && normalized){
+    const exists = Array.from(fontCtl.options).some(opt => opt.value === normalized);
+    if(exists) fontCtl.value = normalized;
+  }
+  if(custom && normalized){
+    custom.value = String(parseInt(normalized, 10) || '');
+  }
+}
+
+function applyFontToElement(el, value){
+  if(!el || !value) return;
+  el.style.fontSize = value;
+  const px = parseFloat(value);
+  if(!isNaN(px)){
+    const tag = (el.tagName || '').toLowerCase();
+    const isAutoTitle = el.getAttribute('data-auto-fit-title') === 'true';
+    if(isAutoTitle){
+      el.setAttribute('data-base-font-size', String(px));
+      fitAutoTitle(el);
+    }else{
+      const line = tag === 'a' ? Math.max(px, Math.round(px * 1.15)) : Math.round(px * 1.45);
+      el.style.lineHeight = line + 'px';
+    }
+  }
+}
+
+function getCurrentEditable(){
+  const sel = document.getSelection && document.getSelection();
+  const target = sel && sel.anchorNode;
+  const editableFromSelection = target && target.nodeType
+    ? (target.nodeType === 1 ? target.closest('[contenteditable="true"]') : target.parentElement && target.parentElement.closest('[contenteditable="true"]'))
+    : null;
+  if(editableFromSelection && selectedBlock && selectedBlock.contains(editableFromSelection)) return editableFromSelection;
+  if(lastEditable && selectedBlock && selectedBlock.contains(lastEditable)) return lastEditable;
+  return null;
+}
+
+function setFontSize(value){
+  value = normalizeFontValue(value);
+  if(!value) return;
+  if(!selectedBlock) return alert('请先点击选中一个板块');
+  const editable = getCurrentEditable();
+  if(editable){
+    applyFontToElement(editable, value);
+    lastEditable = editable;
+  }else{
+    selectedBlock.querySelectorAll('[contenteditable="true"]').forEach(el => applyFontToElement(el, value));
+  }
+  syncFontControls(value);
+}
+
+function restoreSavedTextSelection(){
+  const sel = window.getSelection && window.getSelection();
+  if(!sel || !savedTextRange) return false;
+  const editable = getTargetEditableForStatus();
+  if(!editable || !rangeIsInsideEditable(savedTextRange, editable)) return false;
+  sel.removeAllRanges();
+  sel.addRange(savedTextRange);
+  lastEditable = editable;
+  return true;
+}
+
+function getEditableFromCurrentSelection(){
+  const sel = window.getSelection && window.getSelection();
+  if(!sel || !sel.rangeCount) return null;
+  const range = sel.getRangeAt(0);
+  return editableFromNode(range.commonAncestorContainer);
+}
+
+function applyColorToEditableOrBlock(color){
+  const editable = getCurrentEditable() || lastEditable;
+  if(editable && document.getElementById('emailCanvas').contains(editable)){
+    editable.style.color = color;
+    lastEditable = editable;
+    return true;
+  }
+  if(selectedBlock){
+    selectedBlock.querySelectorAll('[contenteditable="true"]').forEach(el => { el.style.color = color; });
+    return true;
+  }
+  return false;
+}
+
+function applySelectedTextColor(color){
+  const input = document.getElementById('textColorCtl');
+  const chosen = normalizeHex(color || (input && input.value) || themeColor || '#17324d');
+  if(input) input.value = chosen;
+
+  restoreSavedTextSelection();
+  const sel = window.getSelection && window.getSelection();
+  const editable = getEditableFromCurrentSelection();
+
+  if(sel && sel.rangeCount && editable && !sel.isCollapsed){
+    document.execCommand('foreColor', false, chosen);
+    lastEditable = editable;
+    saveCurrentTextRange();
+  }else if(!applyColorToEditableOrBlock(chosen)){
+    alert('请先选中文字，或先点击选中一个文字板块');
+    return;
+  }
+  scheduleHistorySnapshot();
+}
+
+function formatText(type){
+  restoreSavedTextSelection();
+  if(type === 'bold') document.execCommand('bold', false, null);
+  if(type === 'blue') applySelectedTextColor(themeColor);
+  scheduleHistorySnapshot();
+}
+
+function editSelectedLink(){
+  const block = selectedBlock;
+  if(!block) return alert('请先点击选中按钮板块');
+  const links = Array.from(block.querySelectorAll('a'));
+  if(!links.length) return alert('选中的板块里没有按钮链接');
+  let link = links[0];
+  if(links.length > 1){
+    const options = links.map((a, i) => `${i + 1}=${(a.textContent || '按钮').trim()}`).join('，');
+    const input = prompt('这个板块有多个按钮，请输入要修改第几个链接：' + options, '1');
+    if(input === null) return;
+    const n = parseInt(String(input).replace(/[^0-9]/g, ''), 10);
+    if(!Number.isFinite(n) || n < 1 || n > links.length) return alert('请输入 1 到 ' + links.length + ' 之间的数字');
+    link = links[n - 1];
+  }
+  const url = prompt('请输入按钮跳转链接：', link.getAttribute('href') || 'https://');
+  if(url) link.setAttribute('href', url);
+}
+
+function moveBlock(direction){
+  const row = getRow(selectedBlock);
+  if(!row || row.id === 'footerRow') return alert('请先选中要移动的板块');
+  const parent = row.parentNode;
+  if(direction < 0){
+    let prev = row.previousElementSibling;
+    while(prev && !prev.matches('tr[data-edit-row="true"]')) prev = prev.previousElementSibling;
+    if(prev) parent.insertBefore(row, prev);
+  }else{
+    let next = row.nextElementSibling;
+    while(next && !next.matches('tr[data-edit-row="true"]')) next = next.nextElementSibling;
+    if(next && next.id !== 'footerRow') parent.insertBefore(next, row);
+    else if(next && next.id === 'footerRow') parent.insertBefore(row, next.nextSibling);
+  }
+}
+
+function deleteBlock(){
+  const row = getRow(selectedBlock);
+  if(!row) return alert('请先选中一个板块');
+  if(row.id === 'footerRow') return alert('底部版权板块建议保留；需要删除可以直接清空文字。');
+  if(confirm('确定删除这个板块吗？')){
+    row.remove();
+    selectedBlock = null;
+    positionHeightResizer();
+  }
+}
+
+function cleanClone(){
+  normalizeInfoTableTitleDisplay(document);
+  normalizeInfoTableRowLayout(document);
+  const clone = document.getElementById('emailCanvas').cloneNode(true);
+  clone.querySelectorAll('[data-info-table-title="true"]').forEach(title=>{
+    if(isBlankEditable(title)) title.remove();
+  });
+  clone.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));
+  clone.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));
+  clone.querySelectorAll('[data-edit-block]').forEach(el=>el.removeAttribute('data-edit-block'));
+  clone.querySelectorAll('[data-edit-row]').forEach(el=>el.removeAttribute('data-edit-row'));
+  clone.querySelectorAll('[data-edit-padding]').forEach(el=>el.removeAttribute('data-edit-padding'));
+  clone.querySelectorAll('[data-custom-height]').forEach(el=>el.removeAttribute('data-custom-height'));
+  clone.querySelectorAll('[data-auto-fit-title]').forEach(el=>el.removeAttribute('data-auto-fit-title'));
+  clone.querySelectorAll('[data-base-font-size]').forEach(el=>el.removeAttribute('data-base-font-size'));
+  clone.querySelectorAll('[data-editor-image]').forEach(el=>el.removeAttribute('data-editor-image'));
+  clone.querySelectorAll('[data-progress-bar]').forEach(el=>{el.removeAttribute('data-progress-bar'); el.removeAttribute('title');});
+  clone.querySelectorAll('[data-progress-fill]').forEach(el=>el.removeAttribute('data-progress-fill'));
+  clone.querySelectorAll('[data-progress-number]').forEach(el=>el.removeAttribute('data-progress-number'));
+  clone.querySelectorAll('[data-check-marker]').forEach(el=>{el.removeAttribute('data-check-marker'); el.removeAttribute('title'); el.removeAttribute('tabindex'); el.style.cursor = ''; el.style.userSelect = '';});
+  clone.querySelectorAll('[data-document-marker]').forEach(el=>{el.removeAttribute('data-document-marker'); el.removeAttribute('data-checked'); el.removeAttribute('title'); el.removeAttribute('tabindex'); el.style.cursor = ''; el.style.userSelect = '';});
+  clone.querySelectorAll('[data-status-badge]').forEach(el=>el.removeAttribute('data-status-badge'));
+  clone.querySelectorAll('[data-info-table-title]').forEach(el=>el.removeAttribute('data-info-table-title'));
+  clone.querySelectorAll('[data-info-table]').forEach(el=>el.removeAttribute('data-info-table'));
+  clone.querySelectorAll('[data-info-label]').forEach(el=>el.removeAttribute('data-info-label'));
+  clone.querySelectorAll('[data-info-value]').forEach(el=>el.removeAttribute('data-info-value'));
+  clone.querySelectorAll('[data-title-empty]').forEach(el=>el.removeAttribute('data-title-empty'));
+  clone.querySelectorAll('[data-original-font-size]').forEach(el=>el.removeAttribute('data-original-font-size'));
+  clone.querySelectorAll('[data-original-line-height]').forEach(el=>el.removeAttribute('data-original-line-height'));
+  clone.querySelectorAll('[data-original-margin-bottom]').forEach(el=>el.removeAttribute('data-original-margin-bottom'));
+  clone.querySelectorAll('*').forEach(el=>{
+    el.removeAttribute('class');
+    el.removeAttribute('id');
+    el.removeAttribute('spellcheck');
+  });
+  return clone;
+}
+
+async function copyForGmail(){
+  const clone = cleanClone();
+  const html = clone.outerHTML;
+  const text = clone.innerText || clone.textContent || '';
+  try{
+    if(navigator.clipboard && window.ClipboardItem){
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([html], {type:'text/html'}),
+          'text/plain': new Blob([text], {type:'text/plain'})
+        })
+      ]);
+      flash('已复制，现在去 Gmail 正文粘贴即可');
+    }else{
+      fallbackCopy(html);
+    }
+  }catch(e){
+    fallbackCopy(html);
+  }
+}
+
+function outputPdf(){
+  ensureAutoFitTitleMarkers();
+  fitAllAutoTitles();
+  const clone = cleanClone();
+  const palette = buildThemePalette(themeColor);
+  const printWindow = window.open('', '_blank', 'width=900,height=1000');
+  if(!printWindow){
+    alert('浏览器阻止了打印窗口，请允许此页面打开弹窗后再试。');
+    return;
+  }
+
+  const printHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title></title>
+<style>
+  @page{size:A4;margin:0!important;}
+  *{box-sizing:border-box;}
+  html,body{margin:0!important;padding:0!important;background:#ffffff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{font-family:Arial,Helvetica,'Microsoft YaHei','PingFang SC',sans-serif;color:#17324d;}
+  .pdf-wrap{width:100%;margin:0 auto;background:${palette.canvas};}
+  table{border-spacing:0;}
+  img{max-width:100%;height:auto;}
+  @media print{html,body,.pdf-wrap{margin:0!important;padding:0!important;} .pdf-wrap{width:210mm;min-height:297mm;}}
+</style>
+</head>
+<body>
+  <div class="pdf-wrap">${clone.outerHTML}</div>
+</body>
+</html>`;
+
+  printWindow.document.open();
+  printWindow.document.write(printHtml);
+  printWindow.document.close();
+
+  let printed = false;
+  const startPrint = ()=>{
+    if(printed) return;
+    printed = true;
+    printWindow.focus();
+    setTimeout(()=>printWindow.print(), 250);
+  };
+  printWindow.onafterprint = ()=>printWindow.close();
+  if(printWindow.document.readyState === 'complete') startPrint();
+  else printWindow.onload = startPrint;
+}
+
+function fallbackCopy(html){
+  const temp = document.createElement('div');
+  temp.contentEditable = 'true';
+  temp.style.position = 'fixed';
+  temp.style.left = '-9999px';
+  temp.innerHTML = html;
+  document.body.appendChild(temp);
+  const range = document.createRange();
+  range.selectNodeContents(temp);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  document.execCommand('copy');
+  document.body.removeChild(temp);
+  flash('已复制，现在去 Gmail 正文粘贴即可');
+}
+
+function flash(msg){
+  const el = document.getElementById('copyStatus');
+  el.textContent = msg;
+  setTimeout(()=> el.textContent = '', 3500);
+}
+
+function togglePreview(){
+  document.body.classList.toggle('preview-mode');
+  document.getElementById('statusText').textContent = document.body.classList.contains('preview-mode') ? '预览模式：按 Esc 返回编辑' : '编辑模式';
+  positionHeightResizer();
+}
+
+window.addEventListener('scroll', positionHeightResizer, true);
+window.addEventListener('resize', ()=>{ fitAllAutoTitles(); positionHeightResizer(); });
+const heightHandle = document.getElementById('heightResizer');
+if(heightHandle){
+  heightHandle.addEventListener('mousedown', startHeightResize);
+  heightHandle.addEventListener('touchstart', startHeightResize, {passive:false});
+}
+const widthHandle = document.getElementById('widthResizer');
+if(widthHandle){
+  widthHandle.addEventListener('mousedown', startWidthResize);
+  widthHandle.addEventListener('touchstart', startWidthResize, {passive:false});
+}
+const imageHandle = document.getElementById('imageResizer');
+if(imageHandle){
+  imageHandle.addEventListener('mousedown', startImageResize);
+  imageHandle.addEventListener('touchstart', startImageResize, {passive:false});
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && document.body.classList.contains('preview-mode')) togglePreview();
+});
+
+
+function openCleanHtmlUpload(){
+  const input = document.getElementById('cleanHtmlUpload');
+  if(input) input.click();
+}
+
+function syncEditorChromeOnly(){
+  const palette = buildThemePalette(themeColor);
+  document.documentElement.style.setProperty('--blue', palette.main);
+  document.documentElement.style.setProperty('--blue2', palette.dark);
+  document.documentElement.style.setProperty('--light', palette.canvas);
+  document.documentElement.style.setProperty('--line', palette.line);
+  const input = document.getElementById('themeColorCtl');
+  if(input) input.value = normalizeHex(themeColor);
+  const topLine = document.querySelector('.topline');
+  if(topLine) topLine.style.backgroundColor = palette.main;
+  document.querySelectorAll('.toolbar .primary').forEach(btn => {
+    btn.style.backgroundColor = palette.main;
+    btn.style.borderColor = palette.main;
+  });
+  ['heightResizer','widthResizer','imageResizer'].forEach(id => {
+    const handle = document.getElementById(id);
+    if(handle) handle.style.backgroundColor = palette.main;
+  });
+}
+
+function findImportedCanvas(doc){
+  if(!doc) return null;
+  const byId = doc.getElementById && doc.getElementById('emailCanvas');
+  if(byId) return byId;
+  const tables = Array.from(doc.querySelectorAll ? doc.querySelectorAll('table') : []);
+  return tables.find(t => {
+    const style = (t.getAttribute('style') || '').toLowerCase();
+    return style.includes('max-width:760px') || style.includes('max-width: 760px');
+  }) || tables[0] || null;
+}
+
+function findMainCard(canvas){
+  if(!canvas) return null;
+  const tables = Array.from(canvas.querySelectorAll('table'));
+  return tables.find(t => {
+    const style = (t.getAttribute('style') || '').toLowerCase();
+    return t.getAttribute('width') === '640' || style.includes('width:640px') || style.includes('width: 640px') || style.includes('max-width:640px') || style.includes('max-width: 640px');
+  }) || tables[0] || null;
+}
+
+function detectThemeColorFromCanvas(){
+  const canvas = document.getElementById('emailCanvas');
+  if(!canvas) return '';
+  const button = canvas.querySelector('a[style*="background"]');
+  const buttonColor = button ? colorToHex(button.style.backgroundColor) : '';
+  if(buttonColor) return buttonColor;
+  const rows = Array.from(canvas.querySelectorAll('tr'));
+  for(const row of rows){
+    const td = row.querySelector(':scope > td');
+    const bg = td ? colorToHex(td.style.backgroundColor) : '';
+    if(bg && bg !== '#ffffff') return bg;
+  }
+  return '';
+}
+
+function markImportedRowsEditable(){
+  const canvas = document.getElementById('emailCanvas');
+  if(!canvas) throw new Error('没有找到邮件画布');
+
+  let root = canvas.tBodies && canvas.tBodies[0] ? canvas.tBodies[0] : canvas.querySelector('tbody');
+  if(root) root.id = 'emailRoot';
+
+  const mainCard = findMainCard(canvas);
+  if(!mainCard) throw new Error('没有找到邮件主体卡片');
+  const mainBody = mainCard.tBodies && mainCard.tBodies[0] ? mainCard.tBodies[0] : mainCard.querySelector('tbody');
+  if(!mainBody) throw new Error('没有找到邮件主体内容');
+  mainBody.id = 'mainBody';
+
+  // 清理可能残留的编辑状态，再重新绑定可编辑结构
+  mainBody.querySelectorAll('[data-edit-row], [data-edit-block], [data-edit-padding], [data-custom-height]').forEach(el => {
+    el.removeAttribute('data-edit-row');
+    el.removeAttribute('data-edit-block');
+    el.removeAttribute('data-edit-padding');
+    el.removeAttribute('data-custom-height');
+  });
+  mainBody.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+
+  const rows = Array.from(mainBody.children).filter(el => el.tagName && el.tagName.toLowerCase() === 'tr');
+  rows.forEach((row, index) => {
+    row.setAttribute('data-edit-row', 'true');
+    if(row.id && row.id !== 'footerRow') row.removeAttribute('id');
+    const text = (row.textContent || '').trim();
+    if(index === rows.length - 1 || text.includes('©')) row.id = 'footerRow';
+
+    const firstTd = Array.from(row.children).find(el => el.tagName && el.tagName.toLowerCase() === 'td');
+    if(!firstTd) return;
+    const directTable = Array.from(firstTd.children).find(el => el.tagName && el.tagName.toLowerCase() === 'table');
+    const block = directTable || firstTd.querySelector('table') || firstTd;
+    block.setAttribute('data-edit-block', 'true');
+
+    const padCell = block.querySelector('td[style*="padding"]');
+    if(padCell) padCell.setAttribute('data-edit-padding', 'true');
+  });
+
+  // 下载出的干净HTML没有 contenteditable，这里恢复文字可直接点击编辑
+  mainBody.querySelectorAll('div,p,a').forEach(el => {
+    if((el.textContent || '').trim() || el.tagName.toLowerCase() === 'a'){
+      el.setAttribute('contenteditable', 'true');
+      el.setAttribute('spellcheck', 'false');
+    }
+  });
+  mainBody.querySelectorAll('td').forEach(td => {
+    const text = (td.textContent || '').trim();
+    if(!text) return;
+    if(td.querySelector('table,img,div,p,a,span')) return;
+    td.setAttribute('contenteditable', 'true');
+    td.setAttribute('spellcheck', 'false');
+  });
+  ensureAutoFitTitleMarkers();
+  normalizeInfoTableTitleDisplay(document);
+  fitAllAutoTitles();
+}
+
+function importCleanHtml(input){
+  const file = input && input.files && input.files[0];
+  if(!file) return;
+  if(!confirm('打开这个干净HTML会覆盖当前正在编辑的内容，确定继续吗？')){
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const html = String(e.target.result || '');
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const importedCanvas = findImportedCanvas(doc);
+      if(!importedCanvas) throw new Error('没有在文件中找到可识别的邮件HTML内容');
+
+      const canvas = document.getElementById('emailCanvas');
+      canvas.innerHTML = importedCanvas.innerHTML;
+      const importedStyle = importedCanvas.getAttribute('style');
+      if(importedStyle) canvas.setAttribute('style', importedStyle);
+      canvas.id = 'emailCanvas';
+
+      markImportedRowsEditable();
+      normalizeEmailResponsiveWidths();
+      clearSelection();
+      normalizeInfoTableRowLayout(document);
+
+      const detected = detectThemeColorFromCanvas();
+      if(detected){
+        themeColor = normalizeHex(detected);
+        lastThemePalette = buildThemePalette(themeColor);
+        syncEditorChromeOnly();
+      }
+      document.body.classList.remove('preview-mode');
+      document.getElementById('statusText').textContent = '编辑模式';
+      positionHeightResizer();
+      historyStack = [];
+      historyIndex = -1;
+      initHistory();
+      flash('已打开干净HTML，现在可以继续编辑');
+    }catch(err){
+      alert('打开失败：' + (err && err.message ? err.message : err));
+    }finally{
+      input.value = '';
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function saveDraft(){
+  localStorage.setItem('onchain_email_editor_draft', document.getElementById('emailRoot').innerHTML);
+  flash('已保存到本浏览器本地');
+}
+
+function loadDraft(){
+  const draft = localStorage.getItem('onchain_email_editor_draft');
+  if(!draft) return alert('没有找到本地草稿');
+  if(confirm('读取草稿会覆盖当前页面内容，确定吗？')){
+    document.getElementById('emailRoot').innerHTML = draft;
+    normalizeEmailResponsiveWidths();
+    selectedBlock = null;
+    savedTextRange = null;
+    ensureAutoFitTitleMarkers();
+    normalizeInfoTableTitleDisplay(document);
+    normalizeInfoTableRowLayout(document);
+    fitAllAutoTitles();
+    applyThemeToEmail();
+    historyStack = [];
+    historyIndex = -1;
+    initHistory();
+    flash('已读取本地草稿');
+  }
+}
+
+function downloadCleanHtml(){
+  const clone = cleanClone();
+  const full = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Onchain Email</title></head><body style="margin:0;padding:0;background:${buildThemePalette(themeColor).canvas};">${clone.outerHTML}</body></html>`;
+  const blob = new Blob([full], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'onchain_gmail_clean_template.html';
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  a.remove();
+}
+
+
+function getAddBlockPreviewTitle(type){
+  const names = {
+    plainText:'纯文字板块',
+    title:'蓝色加粗标题',
+    sectionHeader:'分节标题',
+    text:'文字卡片',
+    notice:'温馨提示板块',
+    bullets:'蓝点列表',
+    cards:'双栏板块',
+    threeCards:'三栏卡片',
+    twoColumnText:'左右说明',
+    image:'图片板块',
+    divider:'分割线',
+    spacer:'空白间距',
+    infoCard:'提示卡片',
+    multiButtons:'双按钮',
+    infoTable:'信息表格',
+    button:'按钮',
+    importantAlert:'重点提醒',
+    successNotice:'成功通知',
+    warningNotice:'警告通知',
+    steps:'编号步骤',
+    timeline:'时间线',
+    checklist:'检查清单',
+    actionList:'行动清单',
+    documentList:'材料列表',
+    quote:'引用说明',
+    stats:'数据摘要',
+    metricGrid:'指标网格',
+    transaction:'交易信息',
+    caseStatus:'案件状态',
+    receipt:'收据摘要',
+    amountSummary:'金额摘要',
+    addressBox:'地址哈希',
+    progress:'进度条',
+    compareTable:'对比表',
+    schedule:'日程安排',
+    deadline:'截止提醒',
+    verificationCode:'验证码',
+    faq:'问答板块',
+    contact:'联系方式',
+    signature:'签名区',
+    footerNote:'页脚说明'
+  };
+  return names[type] || '新板块';
+}
+function buildAddBlockPreviewRow(type){
+  if(!snippets || !snippets[type]) return '';
+  if(type === 'bullets') return snippets[type](3);
+  if(type === 'infoCard') return snippets[type]('1');
+  if(type === 'infoTable') return snippets[type](4);
+  if(type === 'steps') return snippets[type](3);
+  if(type === 'timeline') return snippets[type](3);
+  if(type === 'transaction') return snippets[type](4);
+  if(type === 'checklist') return snippets[type](3);
+  if(type === 'documentList') return snippets[type](4);
+  if(type === 'actionList') return snippets[type](3);
+  if(type === 'faq') return snippets[type](2);
+  return snippets[type]();
+}
+function getAddBlockPreviewPopover(){
+  let pop = document.getElementById('addBlockPreviewPopover');
+  if(pop) return pop;
+  pop = document.createElement('div');
+  pop.id = 'addBlockPreviewPopover';
+  pop.className = 'add-block-preview-popover';
+  pop.innerHTML = '<div class="add-block-preview-title"><b></b><span>悬停预览</span></div><div class="add-block-preview-frame"><div class="add-block-preview-scale"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; background:#ffffff; border:1px solid #d7e3f4; border-radius:14px; overflow:hidden;"><tbody></tbody></table></div></div>';
+  document.body.appendChild(pop);
+  return pop;
+}
+
+function stripPreviewEditingState(scope){
+  if(!scope) return;
+  scope.querySelectorAll('[contenteditable="true"]').forEach(el => {
+    el.setAttribute('contenteditable', 'false');
+    el.setAttribute('tabindex', '-1');
+  });
+  scope.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+}
+
+function positionAddBlockPreview(btn){
+  const pop = document.getElementById('addBlockPreviewPopover');
+  if(!pop || !btn) return;
+  const r = btn.getBoundingClientRect();
+  const margin = 10;
+  const popW = pop.offsetWidth || 360;
+  const popH = pop.offsetHeight || 260;
+  let left = r.left;
+  let top = r.bottom + margin;
+  if(left + popW > window.innerWidth - margin) left = window.innerWidth - popW - margin;
+  if(left < margin) left = margin;
+  if(top + popH > window.innerHeight - margin) top = r.top - popH - margin;
+  if(top < margin) top = margin;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+
+function showAddBlockPreview(btn, type){
+  if(document.body.classList.contains('preview-mode')) return;
+  const pop = getAddBlockPreviewPopover();
+  const title = pop.querySelector('.add-block-preview-title b');
+  const body = pop.querySelector('tbody');
+  if(title) title.textContent = '将添加：' + getAddBlockPreviewTitle(type);
+  if(body){
+    body.innerHTML = buildAddBlockPreviewRow(type);
+    stripPreviewEditingState(body);
+  }
+  pop.classList.add('show');
+  positionAddBlockPreview(btn);
+}
+
+function hideAddBlockPreview(){
+  const pop = document.getElementById('addBlockPreviewPopover');
+  if(pop) pop.classList.remove('show');
+}
+
+function initAddBlockHoverPreview(){
+  document.querySelectorAll('.toolbar button[onclick^="addBlock"]').forEach(btn => {
+    const m = (btn.getAttribute('onclick') || '').match(/addBlock\('([^']+)'\)/);
+    if(!m) return;
+    const type = m[1];
+    let timer = null;
+    btn.addEventListener('mouseenter', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => showAddBlockPreview(btn, type), 120);
+    });
+    btn.addEventListener('mousemove', () => positionAddBlockPreview(btn));
+    btn.addEventListener('mouseleave', () => {
+      clearTimeout(timer);
+      hideAddBlockPreview();
+    });
+    btn.addEventListener('click', hideAddBlockPreview);
+  });
+  window.addEventListener('scroll', hideAddBlockPreview, true);
+  window.addEventListener('resize', hideAddBlockPreview);
+}
+
+function clampProgressPercent(value){
+  const n = Math.round(Number(value));
+  if(!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, n));
+}
+
+function updateProgressBar(bar, percent){
+  if(!bar) return;
+  percent = clampProgressPercent(percent);
+  const fill = bar.querySelector('[data-progress-fill="true"]');
+  if(fill){
+    fill.style.width = percent + '%';
+    const rest = fill.nextElementSibling;
+    if(rest) rest.style.width = (100 - percent) + '%';
+  }
+  const block = closestBlock(bar) || (bar.closest && bar.closest('[data-edit-block="true"]'));
+  const number = block ? block.querySelector('[data-progress-number="true"]') : null;
+  if(number) number.textContent = percent + '%';
+}
+
+function initProgressBarEditing(){
+  document.addEventListener('click', function(e){
+    const bar = e.target.closest && e.target.closest('[data-progress-bar="true"]');
+    const canvas = document.getElementById('emailCanvas');
+    if(!bar || !canvas || !canvas.contains(bar) || document.body.classList.contains('preview-mode')) return;
+    const rect = bar.getBoundingClientRect();
+    if(!rect.width) return;
+    const percent = clampProgressPercent(((e.clientX - rect.left) / rect.width) * 100);
+    updateProgressBar(bar, percent);
+    scheduleHistorySnapshot();
+    flash('进度已调整为 ' + percent + '%');
+  }, true);
+}
+
+let activeCheckMarker = null;
+
+function getMarkerChoicePopover(){
+  let pop = document.getElementById('markerChoicePopover');
+  if(pop) return pop;
+  pop = document.createElement('div');
+  pop.id = 'markerChoicePopover';
+  pop.className = 'marker-choice-popover';
+  pop.innerHTML = `
+    <button type="button" data-marker-option="✓" data-marker-color="#16a34a"><span class="marker-icon" style="color:#16a34a;">✓</span><span>对号 / 已完成</span></button>
+    <button type="button" data-marker-option="●" data-marker-color="#0D2B6A"><span class="marker-icon" style="color:#0D2B6A;">●</span><span>圆点 / 进行中</span></button>
+    <button type="button" data-marker-option="!" data-marker-color="#f59e0b"><span class="marker-icon" style="color:#f59e0b;">!</span><span>感叹号 / 重点</span></button>
+    <button type="button" data-marker-option="✕" data-marker-color="#dc2626"><span class="marker-icon" style="color:#dc2626;">✕</span><span>叉号 / 未通过</span></button>
+    <button type="button" data-marker-option="○" data-marker-color="#64748b"><span class="marker-icon" style="color:#64748b;">○</span><span>空心圆 / 待确认</span></button>
+    <button type="button" data-marker-option="" data-marker-color="#64748b"><span class="marker-icon" style="color:#64748b;">空</span><span>清空符号</span></button>`;
+  document.body.appendChild(pop);
+  return pop;
+}
+
+function hideMarkerChoicePopover(){
+  const pop = document.getElementById('markerChoicePopover');
+  if(pop) pop.classList.remove('show');
+  activeCheckMarker = null;
+}
+
+function positionMarkerChoicePopover(pop, marker){
+  if(!pop || !marker) return;
+  const r = marker.getBoundingClientRect();
+  const margin = 10;
+  const popW = pop.offsetWidth || 188;
+  const popH = pop.offsetHeight || 220;
+  let left = r.right + margin;
+  let top = r.top - 8;
+  if(left + popW > window.innerWidth - margin) left = r.left - popW - margin;
+  if(left < margin) left = margin;
+  if(top + popH > window.innerHeight - margin) top = window.innerHeight - popH - margin;
+  if(top < margin) top = margin;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+
+function showChecklistMarkerPicker(marker){
+  const pop = getMarkerChoicePopover();
+  activeCheckMarker = marker;
+  pop.classList.add('show');
+  positionMarkerChoicePopover(pop, marker);
+}
+
+function applyChecklistMarker(marker, icon, color){
+  if(!marker) return;
+  marker.textContent = icon || '';
+  marker.style.color = color || '#64748b';
+  scheduleHistorySnapshot();
+  flash('清单符号已更新');
+}
+
+function toggleDocumentMarker(marker){
+  if(!marker) return;
+  const checked = marker.getAttribute('data-checked') !== 'false';
+  if(checked){
+    marker.textContent = '☐';
+    marker.setAttribute('data-checked', 'false');
+    marker.style.color = '#64748b';
+  }else{
+    marker.textContent = '☑';
+    marker.setAttribute('data-checked', 'true');
+    marker.style.color = themeColor || '#0D2B6A';
+  }
+  scheduleHistorySnapshot();
+  flash(checked ? '已切换为空方格' : '已切换为选中');
+}
+
+function initSelectableListMarkers(){
+  document.addEventListener('click', function(e){
+    const canvas = document.getElementById('emailCanvas');
+    const pop = document.getElementById('markerChoicePopover');
+    const option = e.target.closest && e.target.closest('[data-marker-option]');
+    if(option && pop && pop.contains(option)){
+      e.preventDefault();
+      e.stopPropagation();
+      applyChecklistMarker(activeCheckMarker, option.getAttribute('data-marker-option'), option.getAttribute('data-marker-color'));
+      hideMarkerChoicePopover();
+      return;
+    }
+
+    const documentMarker = e.target.closest && e.target.closest('[data-document-marker="true"]');
+    if(documentMarker && canvas && canvas.contains(documentMarker) && !document.body.classList.contains('preview-mode')){
+      e.preventDefault();
+      e.stopPropagation();
+      const block = closestBlock(documentMarker);
+      if(block) selectBlock(block);
+      hideMarkerChoicePopover();
+      toggleDocumentMarker(documentMarker);
+      return;
+    }
+
+    const checkMarker = e.target.closest && e.target.closest('[data-check-marker="true"]');
+    if(checkMarker && canvas && canvas.contains(checkMarker) && !document.body.classList.contains('preview-mode')){
+      e.preventDefault();
+      e.stopPropagation();
+      const block = closestBlock(checkMarker);
+      if(block) selectBlock(block);
+      showChecklistMarkerPicker(checkMarker);
+      return;
+    }
+
+    if(!pop || !e.target.closest || !e.target.closest('#markerChoicePopover')) hideMarkerChoicePopover();
+  }, true);
+
+  document.addEventListener('keydown', function(e){
+    const marker = e.target.closest && e.target.closest('[data-document-marker="true"], [data-check-marker="true"]');
+    if(!marker || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    if(marker.getAttribute('data-document-marker') === 'true') toggleDocumentMarker(marker);
+    else showChecklistMarkerPicker(marker);
+  });
+  window.addEventListener('scroll', hideMarkerChoicePopover, true);
+  window.addEventListener('resize', hideMarkerChoicePopover);
+}
+
+normalizeEmailResponsiveWidths();
+setMobilePreviewWidth(430);
+applyThemeToEmail();
+ensureAutoFitTitleMarkers();
+normalizeInfoTableTitleDisplay(document);
+normalizeInfoTableRowLayout(document);
+fitAllAutoTitles();
+initHistory();
+initAddBlockHoverPreview();
+initProgressBarEditing();
+initSelectableListMarkers();
+
+/* === Enhanced block options and interactions: added by ChatGPT === */
+(function(){
+  function safeCount(value, def, max){
+    if(typeof normalizeDynamicCount === 'function') return normalizeDynamicCount(value, def, max) || def;
+    const n = parseInt(value, 10);
+    return Number.isFinite(n) && n > 0 ? Math.min(n, max || 20) : def;
+  }
+
+  function outerCard(inner, opts){
+    opts = opts || {};
+    const bg = opts.bg || '#ffffff';
+    const border = opts.border || '1px solid #d7e3f4';
+    const radius = opts.radius || '14px';
+    const pad = opts.pad || '20px 22px';
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto; background:${bg}; border:${border}; border-radius:${radius};"><tr><td style="padding:${pad};" data-edit-padding="true">${inner}</td></tr></table></td></tr>`;
+  }
+
+  function simpleTitle(title){
+    return `<div contenteditable="true" style="font-size:18px; line-height:26px; font-weight:700; color:#0D2B6A; margin-bottom:12px;">${title}</div>`;
+  }
+
+  function gridCells(count, columns, renderCell){
+    count = safeCount(count, columns, 24);
+    columns = Math.max(1, columns || 2);
+    let rows = '';
+    for(let i = 0; i < count; i += columns){
+      rows += '<tr>';
+      for(let j = 0; j < columns; j++){
+        const idx = i + j;
+        const width = (100 / columns).toFixed(2).replace(/\.00$/, '') + '%';
+        const pr = j === columns - 1 ? '0' : '6px';
+        const pl = j === 0 ? '0' : '6px';
+        const pb = i + columns >= count ? '0' : '10px';
+        if(idx < count){
+          rows += `<td width="${width}" valign="top" style="padding:${j===0?'0':pl} ${pr} ${pb} ${j===0?'0':pl};">${renderCell(idx)}</td>`;
+        }else{
+          rows += `<td width="${width}" style="padding:${j===0?'0':pl} ${pr} ${pb} ${j===0?'0':pl};">&nbsp;</td>`;
+        }
+      }
+      rows += '</tr>';
+    }
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table>`;
+  }
+
+  function clickableMarker(icon, color, defaultIcon, extraStyle){
+    const cleanIcon = String(icon || '').replace(/"/g, '&quot;');
+    const cleanDefault = String(defaultIcon || icon || '').replace(/"/g, '&quot;');
+    return `data-check-marker="true" data-default-icon="${cleanDefault}" tabindex="0" title="点击选择符号" style="${extraStyle || ''}color:${color || '#0D2B6A'};cursor:pointer;user-select:none;"`;
+  }
+
+  snippets.bullets = (count = 3) => {
+    count = safeCount(count, 3, 20);
+    const labels = ['第一条说明文字。','第二条说明文字。','第三条说明文字。','第四条说明文字。','第五条说明文字。','第六条说明文字。','第七条说明文字。','第八条说明文字。','第九条说明文字。','第十条说明文字。'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const text = labels[i] || `第${i + 1}条说明文字。`;
+      rows += `<tr><td valign="top" style="width:22px; padding-top:5px;"><span ${clickableMarker('●', '#0D2B6A', '●', 'display:inline-block;width:16px;height:18px;font-size:14px;line-height:18px;text-align:center;')}>●</span></td><td contenteditable="true" style="font-size:15px; line-height:26px; color:#17324d;">${text}</td></tr>`;
+    }
+    return outerCard(`${simpleTitle('蓝点列表标题')}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table>`, {bg:'#f5f9ff'});
+  };
+
+  snippets.cards = (count = 2) => {
+    count = safeCount(count, 2, 12);
+    const titles = ['左侧小标题','右侧小标题','第三个标题','第四个标题','第五个标题','第六个标题'];
+    const body = gridCells(count, 2, i => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff; border:1px solid #d7e3f4; border-radius:14px;"><tr><td style="padding:18px 18px 16px 18px;"><div contenteditable="true" style="font-size:17px; line-height:24px; font-weight:700; color:#0D2B6A; margin-bottom:8px;">${titles[i] || `第${i + 1}个标题`}</div><div contenteditable="true" style="font-size:14px; line-height:24px; color:#5c6f84;">这里输入第 ${i + 1} 个说明内容。</div></td></tr></table>`);
+    return `<tr data-edit-row="true"><td style="padding:14px 36px 6px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">${body}</table></td></tr>`;
+  };
+
+  snippets.threeCards = (count = 3) => {
+    count = safeCount(count, 3, 12);
+    const body = gridCells(count, 3, i => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:15px;line-height:22px;font-weight:700;color:#0D2B6A;margin-bottom:6px;">卡片 ${i + 1}</div><div contenteditable="true" style="font-size:13px;line-height:21px;color:#5c6f84;">这里输入简短说明。</div></td></tr></table>`);
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">${body}</table></td></tr>`;
+  };
+
+  snippets.multiButtons = (count = 2) => {
+    count = safeCount(count, 2, 6);
+    let rows = '';
+    for(let i = 0; i < count; i += 2){
+      rows += '<tr>';
+      for(let j = 0; j < 2; j++){
+        const idx = i + j;
+        if(idx < count){
+          const primary = idx === 0;
+          rows += `<td align="center" style="padding:0 5px 8px 5px;"><a href="https://example.com/action${idx+1}" contenteditable="true" style="display:inline-block; background:${primary ? '#0D2B6A' : '#ffffff'}; color:${primary ? '#ffffff' : '#0D2B6A'}; text-decoration:none; font-size:16px; line-height:20px; font-weight:700; padding:13px 24px; border-radius:999px; border:1px solid #0D2B6A;">按钮 ${idx + 1}</a></td>`;
+        }else{
+          rows += '<td>&nbsp;</td>';
+        }
+      }
+      rows += '</tr>';
+    }
+    return `<tr data-edit-row="true"><td align="center" style="padding:24px 36px 18px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" data-edit-block="true" style="margin:0 auto;">${rows}</table></td></tr>`;
+  };
+
+  snippets.stats = (count = 3) => {
+    count = safeCount(count, 3, 12);
+    const nums = ['98%','24h','3','12','OK','$100K'];
+    const names = ['完成率','预计时间','待办事项','确认数量','状态','金额'];
+    const body = gridCells(count, 3, i => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;text-align:center;"><div contenteditable="true" style="font-size:22px;line-height:28px;font-weight:700;color:#0D2B6A;">${nums[i] || i + 1}</div><div contenteditable="true" style="font-size:12px;line-height:18px;color:#5c6f84;">${names[i] || `指标${i + 1}`}</div></td></tr></table>`);
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">${body}</table></td></tr>`;
+  };
+
+  snippets.metricGrid = (count = 4) => {
+    count = safeCount(count, 4, 12);
+    const values = ['98%','24h','12','OK','$100K','High'];
+    const body = gridCells(count, 2, i => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #d7e3f4;border-radius:14px;"><tr><td style="padding:16px;"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">指标 ${i + 1}</div><div contenteditable="true" style="font-size:22px;line-height:30px;font-weight:700;color:#0D2B6A;">${values[i] || '—'}</div></td></tr></table>`);
+    return `<tr data-edit-row="true"><td style="padding:14px 36px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" data-edit-block="true" style="width:100%; margin:0 auto;">${body}</table></td></tr>`;
+  };
+
+  snippets.steps = (count = 3) => {
+    count = safeCount(count, 3, 12);
+    const labels = ['第一步：确认账户、设备或交易信息是否准确。','第二步：准备截图、交易编号、地址或其它证明材料。','第三步：根据提示完成核对，并等待进一步回复。','第四步：补充缺失信息或确认下一步处理方式。','第五步：保存处理结果和后续联系记录。'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const text = labels[i] || `第${i + 1}步：在这里输入新的步骤说明。`;
+      rows += `<tr><td valign="top" style="width:34px;"><div ${clickableMarker(String(i + 1), '#ffffff', String(i + 1), 'width:24px;height:24px;border-radius:50%;background:#0D2B6A;text-align:center;font-size:13px;line-height:24px;font-weight:700;')}>${i + 1}</div></td><td contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '12px'};">${text}</td></tr>`;
+    }
+    return outerCard(`${simpleTitle('操作步骤')}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table>`);
+  };
+
+  snippets.timeline = (count = 3) => {
+    count = safeCount(count, 3, 12);
+    const labels = ['<b>第一阶段：</b>信息接收与初步核对。','<b>第二阶段：</b>补充材料并确认处理范围。','<b>第三阶段：</b>完成审核并给出下一步说明。','<b>第四阶段：</b>持续跟进处理状态。','<b>第五阶段：</b>归档结果和后续提醒。'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const text = labels[i] || `<b>第${i + 1}阶段：</b>在这里输入时间线说明。`;
+      rows += `<tr><td valign="top" style="width:26px;padding-top:5px;"><span ${clickableMarker('●', '#0D2B6A', '●', 'display:inline-block;width:18px;height:18px;font-size:14px;line-height:18px;text-align:center;')}>●</span></td><td contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '12px'};border-left:1px solid #d7e3f4;padding-left:14px;">${text}</td></tr>`;
+    }
+    return outerCard(`${simpleTitle('处理时间线')}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table>`);
+  };
+
+  snippets.actionList = (count = 3) => {
+    count = safeCount(count, 3, 20);
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      rows += `<tr><td style="width:30px;vertical-align:top;"><span ${clickableMarker(String(i + 1), '#ffffff', String(i + 1), 'display:inline-block;width:20px;height:20px;border-radius:6px;background:#0D2B6A;text-align:center;font-size:12px;line-height:20px;font-weight:700;')}>${i + 1}</span></td><td contenteditable="true" style="font-size:15px;line-height:25px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '8px'};">需要完成的行动事项 ${i + 1}</td></tr>`;
+    }
+    return outerCard(`${simpleTitle('行动清单')}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table>`, {bg:'#f5f9ff'});
+  };
+
+  snippets.caseStatus = (count = 4) => {
+    count = safeCount(count, 4, 12);
+    const labels = ['当前阶段','优先级','下一步','负责人','更新时间','备注'];
+    const values = ['初步审核','High','补充材料','Support Team','July 9, 2026','等待确认'];
+    let rows = '';
+    for(let i = 0; i < count; i += 2){
+      rows += '<tr>';
+      for(let j = 0; j < 2; j++){
+        const idx = i + j;
+        const pad = j === 0 ? 'padding-right:8px;' : 'padding-left:8px;border-left:1px solid #d7e3f4;';
+        if(idx < count){
+          const isFirst = idx === 0;
+          rows += `<td width="50%" valign="top" style="${pad}padding-bottom:${i + 2 >= count ? '0' : '12px'};"><div contenteditable="true" style="font-size:12px;line-height:18px;color:#7a8ea8;">${labels[idx] || `项目${idx + 1}`}</div><div ${isFirst ? 'data-status-cycle="true" title="点击切换状态标签"' : 'contenteditable="true"'} style="display:inline-block;margin-top:3px;font-size:15px;line-height:22px;font-weight:700;color:${isFirst ? '#0D2B6A' : '#17324d'};background:${isFirst ? '#eef4fb' : 'transparent'};border-radius:999px;padding:${isFirst ? '2px 10px' : '0'};cursor:${isFirst ? 'pointer' : 'text'};">${values[idx] || '在这里输入内容'}</div></td>`;
+        }else{
+          rows += '<td width="50%">&nbsp;</td>';
+        }
+      }
+      rows += '</tr>';
+    }
+    return outerCard(`${simpleTitle('案件状态')}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows}</table>`);
+  };
+
+  snippets.receipt = (count = 3) => {
+    count = safeCount(count, 3, 15);
+    const names = ['Transaction Amount','Service Fee','Adjustment','Network Fee','Refund Amount'];
+    const amounts = ['$100,000.00','$0.00','$0.00','$0.00','$100,000.00'];
+    let rows = `<tr><td contenteditable="true" style="font-size:14px;line-height:22px;color:#5c6f84;padding:8px 0;border-bottom:1px solid #d7e3f4;">项目</td><td contenteditable="true" align="right" style="font-size:14px;line-height:22px;color:#17324d;padding:8px 0;border-bottom:1px solid #d7e3f4;font-weight:700;">金额</td></tr>`;
+    for(let i = 0; i < count; i++){
+      rows += `<tr><td contenteditable="true" style="font-size:14px;line-height:22px;color:#5c6f84;padding:8px 0;border-bottom:1px solid #d7e3f4;">${names[i] || `项目 ${i + 1}`}</td><td contenteditable="true" align="right" style="font-size:14px;line-height:22px;color:#17324d;padding:8px 0;border-bottom:1px solid #d7e3f4;">${amounts[i] || '$0.00'}</td></tr>`;
+    }
+    rows += `<tr><td contenteditable="true" style="font-size:15px;line-height:24px;color:#17324d;padding:10px 0;font-weight:700;">Total</td><td contenteditable="true" align="right" style="font-size:18px;line-height:26px;color:#0D2B6A;padding:10px 0;font-weight:700;">$100,000.00</td></tr>`;
+    return outerCard(`${simpleTitle('收据摘要')}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${rows}</table>`);
+  };
+
+  snippets.compareTable = (count = 2) => {
+    count = safeCount(count, 2, 12);
+    let rows = `<tr><td contenteditable="true" style="width:34%;padding:10px 12px;background:#f5f9ff;font-size:14px;font-weight:700;color:#17324d;">项目</td><td contenteditable="true" style="width:33%;padding:10px 12px;background:#f5f9ff;font-size:14px;font-weight:700;color:#17324d;">当前</td><td contenteditable="true" style="width:33%;padding:10px 12px;background:#f5f9ff;font-size:14px;font-weight:700;color:#17324d;">建议</td></tr>`;
+    for(let i = 0; i < count; i++){
+      rows += `<tr><td contenteditable="true" style="padding:10px 12px;border-top:1px solid #d7e3f4;font-size:14px;color:#5c6f84;">项目 ${i + 1}</td><td contenteditable="true" style="padding:10px 12px;border-top:1px solid #d7e3f4;font-size:14px;color:#17324d;">当前状态</td><td contenteditable="true" style="padding:10px 12px;border-top:1px solid #d7e3f4;font-size:14px;color:#17324d;">建议处理方式</td></tr>`;
+    }
+    return outerCard(`${simpleTitle('对比说明')}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid #d7e3f4;border-radius:10px;overflow:hidden;">${rows}</table>`);
+  };
+
+  snippets.schedule = (count = 2) => {
+    count = safeCount(count, 2, 12);
+    const times = ['09:00 AM','11:30 AM','02:00 PM','04:30 PM'];
+    const texts = ['资料接收与初步检查','补充信息确认','更新处理状态或发送下一步说明','完成归档或后续提醒'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      const bottom = i === count - 1 ? '' : 'border-bottom:1px solid #d7e3f4;';
+      rows += `<tr><td contenteditable="true" style="width:90px;font-size:13px;line-height:22px;color:#0D2B6A;font-weight:700;padding:10px 0;${bottom}">${times[i] || 'Time'}</td><td contenteditable="true" style="font-size:14px;line-height:22px;color:#17324d;padding:10px 0;${bottom}">${texts[i] || `日程事项 ${i + 1}`}</td></tr>`;
+    }
+    return outerCard(`${simpleTitle('日程安排')}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows}</table>`);
+  };
+
+  snippets.contact = (count = 3) => {
+    count = safeCount(count, 3, 10);
+    const lines = ['客服邮箱：support@example.com','服务时间：Monday – Friday, 9:00 AM – 6:00 PM ET','备用联系：请通过官方入口提交工单。','官方网站：https://example.com','联系电话：+1 (000) 000-0000'];
+    let rows = '';
+    for(let i = 0; i < count; i++){
+      rows += `<tr><td contenteditable="true" style="font-size:15px;line-height:26px;color:#17324d;padding-bottom:${i === count - 1 ? '0' : '8px'};">${lines[i] || `联系方式 ${i + 1}：在这里输入内容`}</td></tr>`;
+    }
+    return outerCard(`${simpleTitle('联系方式')}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table>`);
+  };
+
+  const enhancedCountConfigs = {
+    bullets: ['蓝点列表需要几项？', 3, 20, '选择要生成的蓝点列表项数量，左侧符号添加后可点击更换'],
+    cards: ['双栏板块需要几个卡片？', 2, 12, '每行显示 2 个卡片'],
+    threeCards: ['三栏卡片需要几个？', 3, 12, '每行显示 3 个卡片'],
+    multiButtons: ['按钮组需要几个按钮？', 2, 6, '适合放一个或多个跳转按钮'],
+    infoTable: ['信息表格需要几行？', 4, 20, '选择表格里要生成的行数'],
+    steps: ['编号步骤需要几步？', 3, 12, '每一步左侧数字添加后可点击更换符号'],
+    timeline: ['时间线需要几项？', 3, 12, '每个时间线节点左侧圆点添加后可点击更换'],
+    transaction: ['交易信息需要几行？', 4, 20, '选择交易信息明细行数'],
+    checklist: ['检查清单需要几行？', 3, 20, '左侧符号添加后可点击更换'],
+    documentList: ['材料列表需要几行？', 4, 20, '左侧方格添加后可单击切换选中/空方格'],
+    actionList: ['行动清单需要几行？', 3, 20, '左侧编号添加后可点击更换符号'],
+    faq: ['问答需要几组？', 2, 10, '选择问答组数'],
+    stats: ['数据摘要需要几个指标？', 3, 12, '每行最多显示 3 个指标'],
+    metricGrid: ['指标网格需要几个指标？', 4, 12, '每行显示 2 个指标'],
+    caseStatus: ['案件状态需要几个字段？', 4, 12, '第一个状态标签添加后可点击切换状态'],
+    receipt: ['收据摘要需要几项明细？', 3, 15, '不包含表头和 Total 行'],
+    compareTable: ['对比表需要几行内容？', 2, 12, '不包含表头'],
+    schedule: ['日程安排需要几行？', 2, 12, '选择日程事项数量'],
+    contact: ['联系方式需要几行？', 3, 10, '选择联系方式行数']
+  };
+
+  addBlock = async function(type){
+    let row;
+    const cfg = enhancedCountConfigs[type];
+    if(cfg){
+      const count = await askBlockCount(cfg[0], cfg[1], cfg[2], cfg[3]);
+      if(count === null) return;
+      row = snippets[type](count);
+    }else if(type === 'infoCard'){
+      row = snippets[type]('1');
+    }else{
+      row = snippets[type]();
+    }
+    insertAfterSelected(row);
+  };
+
+  buildAddBlockPreviewRow = function(type){
+    if(!snippets || !snippets[type]) return '';
+    const cfg = enhancedCountConfigs[type];
+    if(cfg) return snippets[type](cfg[1]);
+    if(type === 'infoCard') return snippets[type]('1');
+    return snippets[type]();
+  };
+
+  getMarkerChoicePopover = function(){
+    let pop = document.getElementById('markerChoicePopover');
+    if(!pop){
+      pop = document.createElement('div');
+      pop.id = 'markerChoicePopover';
+      pop.className = 'marker-choice-popover';
+      document.body.appendChild(pop);
+    }
+    pop.innerHTML = `
+      <button type="button" data-marker-option="__default__" data-marker-color="#0D2B6A"><span class="marker-icon" style="color:#0D2B6A;">原</span><span>还原默认符号/编号</span></button>
+      <button type="button" data-marker-option="✓" data-marker-color="#16a34a"><span class="marker-icon" style="color:#16a34a;">✓</span><span>对号 / 已完成</span></button>
+      <button type="button" data-marker-option="☑" data-marker-color="#16a34a"><span class="marker-icon" style="color:#16a34a;">☑</span><span>选中方格</span></button>
+      <button type="button" data-marker-option="☐" data-marker-color="#64748b"><span class="marker-icon" style="color:#64748b;">☐</span><span>空方格</span></button>
+      <button type="button" data-marker-option="●" data-marker-color="#0D2B6A"><span class="marker-icon" style="color:#0D2B6A;">●</span><span>圆点 / 进行中</span></button>
+      <button type="button" data-marker-option="!" data-marker-color="#f59e0b"><span class="marker-icon" style="color:#f59e0b;">!</span><span>感叹号 / 重点</span></button>
+      <button type="button" data-marker-option="✕" data-marker-color="#dc2626"><span class="marker-icon" style="color:#dc2626;">✕</span><span>叉号 / 未通过</span></button>
+      <button type="button" data-marker-option="○" data-marker-color="#64748b"><span class="marker-icon" style="color:#64748b;">○</span><span>空心圆 / 待确认</span></button>
+      <button type="button" data-marker-option="" data-marker-color="#64748b"><span class="marker-icon" style="color:#64748b;">空</span><span>清空符号</span></button>`;
+    return pop;
+  };
+
+  applyChecklistMarker = function(marker, icon, color){
+    if(!marker) return;
+    if(icon === '__default__'){
+      icon = marker.getAttribute('data-default-icon') || marker.textContent || '•';
+      color = marker.style.color || themeColor || '#0D2B6A';
+    }
+    marker.textContent = icon || '';
+    marker.style.color = color || '#64748b';
+    if(marker.style.backgroundColor && (icon === '✓' || icon === '☑' || icon === '!' || icon === '✕' || icon === '○' || icon === '●')){
+      // Keep numbered circles/buttons visually consistent unless the user clears them.
+      marker.style.backgroundColor = icon === '' ? 'transparent' : (themeColor || '#0D2B6A');
+      marker.style.color = '#ffffff';
+    }
+    scheduleHistorySnapshot();
+    flash('符号已更新');
+  };
+
+  function cycleStatusBadge(badge){
+    const states = [
+      ['初步审核', '#0D2B6A', '#eef4fb'],
+      ['处理中', '#2563eb', '#dbeafe'],
+      ['待补充', '#f59e0b', '#fff7ed'],
+      ['已完成', '#16a34a', '#f0fdf4'],
+      ['未通过', '#dc2626', '#fef2f2']
+    ];
+    let idx = parseInt(badge.getAttribute('data-status-index') || '0', 10);
+    idx = Number.isFinite(idx) ? (idx + 1) % states.length : 0;
+    const st = states[idx];
+    badge.setAttribute('data-status-index', String(idx));
+    badge.textContent = st[0];
+    badge.style.color = st[1];
+    badge.style.backgroundColor = st[2];
+    scheduleHistorySnapshot();
+    flash('状态标签已切换为：' + st[0]);
+  }
+
+  function initEnhancedBlockInteractions(){
+    document.addEventListener('click', function(e){
+      const canvas = document.getElementById('emailCanvas');
+      const badge = e.target.closest && e.target.closest('[data-status-cycle="true"]');
+      if(badge && canvas && canvas.contains(badge) && !document.body.classList.contains('preview-mode')){
+        e.preventDefault();
+        e.stopPropagation();
+        const block = closestBlock(badge);
+        if(block) selectBlock(block);
+        cycleStatusBadge(badge);
+        return;
+      }
+    }, true);
+  }
+
+  const oldCleanClone = cleanClone;
+  cleanClone = function(){
+    const clone = oldCleanClone();
+    clone.querySelectorAll('[data-default-icon]').forEach(el=>el.removeAttribute('data-default-icon'));
+    clone.querySelectorAll('[data-status-cycle]').forEach(el=>{el.removeAttribute('data-status-cycle'); el.removeAttribute('data-status-index'); el.removeAttribute('title'); el.style.cursor='';});
+    clone.querySelectorAll('[data-check-marker]').forEach(el=>{el.removeAttribute('data-check-marker'); el.removeAttribute('title'); el.removeAttribute('tabindex'); el.style.cursor=''; el.style.userSelect='';});
+    return clone;
+  };
+
+  initEnhancedBlockInteractions();
+})();
+/* === End enhanced block options and interactions === */
+
+</script>
+</body>
+</html>

@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tether-Konsole für gerichtliche Sperren</title>
+  <link id="pageFavicon" rel="icon" href="Tether.png" />
+  <style>
+    :root {
+      --green: #26a17b;
+      --green-deep: #1f8a69;
+      --green-soft: #e8f6f2;
+      --ink: #1a2e35;
+      --text: #334e57;
+      --muted: #7a8f96;
+      --line: #e5efec;
+      --bg: #f5fbf9;
+      --card: #ffffff;
+      --panel: #eef7f4;
+      --alert-bg: #ffeceb;
+      --alert-border: #ff9c8a;
+      --alert-text: #c81e1e;
+      --shadow: 0 18px 40px rgba(0,0,0,0.06);
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --edit-hover: rgba(38, 161, 123, 0.12);
+      --edit-focus: rgba(38, 161, 123, 0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(38, 161, 123, 0.06), transparent 24%),
+        linear-gradient(180deg, #fcfefe 0%, #f7fbfa 38%, #f3f9f7 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 290px 1fr;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, #0f2f2e 0%, #123836 100%);
+      color: rgba(255,255,255,0.92);
+      padding: 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 18px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: rgba(255,255,255,0.62);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .side-group-title {
+      font-size: 12px;
+      color: rgba(255,255,255,0.48);
+      padding: 10px 12px 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .side-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .side-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      color: rgba(255,255,255,0.78);
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .side-item.active {
+      background: rgba(96, 194, 168, 0.14);
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(96, 194, 168, 0.2);
+    }
+
+    .side-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.9;
+      flex: 0 0 auto;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 28px;
+      position: relative;
+    }
+
+    .main::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto auto;
+      width: 420px;
+      height: 420px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(38,161,123,0.08) 0 22%, transparent 23%),
+        radial-gradient(circle at 70% 20%, rgba(38,161,123,0.08) 0 13%, transparent 14%),
+        linear-gradient(135deg, transparent 0 44%, rgba(38,161,123,0.05) 44% 56%, transparent 56% 100%);
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .topbar {
+      background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(250,253,252,0.96) 100%);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226,236,232,0.95);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -50px;
+      width: 220px;
+      height: 220px;
+      background:
+        radial-gradient(circle, rgba(38,161,123,0.09) 0 30%, transparent 31%),
+        linear-gradient(135deg, transparent 0 46%, rgba(38,161,123,0.06) 46% 56%, transparent 56% 100%);
+      pointer-events: none;
+    }
+
+    .topbar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .eyebrow {
+      color: var(--green-deep);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .page-title {
+      font-size: 34px;
+      font-weight: 700;
+      color: #1d2b30;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .chip-btn {
+      border: 1px solid #d7e8e2;
+      background: #fff;
+      color: var(--green-deep);
+      padding: 11px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 6px 14px rgba(16, 42, 67, 0.04);
+    }
+
+    .chip-btn.primary {
+      background: linear-gradient(135deg, #18a89d 0%, var(--green) 60%, var(--green-deep) 100%);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(38, 161, 123, 0.18);
+    }
+
+    .search-panel {
+      background: linear-gradient(135deg, #ffffff 0%, #f4faf7 100%);
+      border: 1px solid #dfe9e5;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1.25fr 0.9fr 160px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .field,
+    .field-select {
+      width: 100%;
+      min-height: 50px;
+      border: 1px solid #dbe7e2;
+      border-radius: 14px;
+      background: #fff;
+      padding: 0 16px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .field::placeholder { color: #9aa7b2; }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.96);
+      border: 1px solid #e4ece8;
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      right: -30px;
+      bottom: -30px;
+      width: 180px;
+      height: 180px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(38,161,123,0.05) 0 34%, transparent 35%),
+        linear-gradient(135deg, transparent 0 45%, rgba(38,161,123,0.04) 45% 55%, transparent 55% 100%);
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .card-head {
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .subline {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #ffeceb;
+      color: #c81e1e;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid #ffb4a8;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.35;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .hero-address {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      border: 1px solid #e0ebe7;
+      background: var(--panel);
+      border-radius: 16px;
+      margin-bottom: 18px;
+    }
+
+    .hero-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--green-deep);
+      margin-bottom: 8px;
+    }
+
+    .hero-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .mini-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .mini-link {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #d7e6e0;
+      color: var(--green-deep);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid #e4ece8;
+      background: #fff;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-value {
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .alert-box {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid var(--alert-border);
+      background: var(--alert-bg);
+      color: var(--alert-text);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 14px;
+      align-items: center;
+      position: relative;
+    }
+
+    .timeline-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#ff5a4f 0%,#c81e1e 100%);
+      box-shadow: 0 0 0 4px rgba(200,30,30,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
+    }
+
+    .timeline-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid #e3ebe7;
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fff;
+    }
+
+    .timeline-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .timeline-title {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .timeline-time {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .timeline-desc {
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .table-card {
+      margin-top: 22px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 0 2px 2px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      min-width: 1280px;
+    }
+
+    thead th {
+      background: #f7fbfa;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 14px 12px;
+      border-bottom: 1px solid #e7efec;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      color: var(--text);
+      background: #fff;
+      padding: 16px 12px;
+      border-bottom: 1px solid #edf2f1;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    th, td {
+      text-align: left;
+      overflow: hidden;
+    }
+
+    th:nth-child(1), td:nth-child(1) { width: 22%; }
+    th:nth-child(2), td:nth-child(2) { width: 10%; }
+    th:nth-child(3), td:nth-child(3) { width: 10%; }
+    th:nth-child(4), td:nth-child(4) { width: 10%; text-align: center; }
+    th:nth-child(5), td:nth-child(5) { width: 16%; }
+    th:nth-child(6), td:nth-child(6) { width: 12%; text-align: right; }
+    th:nth-child(7), td:nth-child(7) { width: 10%; }
+    th:nth-child(8), td:nth-child(8) { width: 10%; }
+
+    .table-cell {
+      display: block;
+      width: 100%;
+      white-space: normal;
+      overflow: visible;
+      word-break: break-all;
+    }
+
+    .table-cell.center { text-align: center; }
+    .table-cell.right { text-align: right; }
+
+    tbody tr:hover td { background: #fbfefd; }
+
+    .amount-in { color: #16795d; font-weight: 700; }
+    .amount-out { color: #b54733; font-weight: 700; }
+
+    .table-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eff8f5;
+      color: #0f8a66;
+      border: 1px solid #d3eee4;
+      font-size: 12px;
+      font-weight: 700;
+      min-width: 56px;
+    }
+
+    .table-badge.out {
+      background: #fff3ef;
+      color: #c2513b;
+      border-color: #ffd2c8;
+    }
+
+    .table-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f4faf7;
+      border: 1px solid #d9ebe4;
+      color: #286b5a;
+      font-size: 12px;
+      font-weight: 600;
+      max-width: 100%;
+    }
+
+    .table-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f8fbfa;
+      border: 1px solid #e2ece8;
+      color: #486581;
+      font-size: 12px;
+      font-weight: 600;
+      max-width: 100%;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin-top: 18px;
+      padding: 0 4px;
+    }
+
+    .editable {
+      outline: none;
+      border-radius: 6px;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+      min-width: 8px;
+    }
+
+    .editable:hover { background: var(--edit-hover); }
+    .editable:focus {
+      background: #fff;
+      box-shadow: 0 0 0 2px var(--edit-focus);
+    }
+
+    .editable-inline { display: inline-block; padding: 2px 5px; }
+    .editable-block { display: block; width: 100%; padding: 4px 6px; }
+
+    @media (max-width: 1180px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .main { padding: 16px; }
+      .panel-grid { grid-template-columns: 1fr; }
+      .search-row { grid-template-columns: 1fr; }
+      .topbar, .hero-address { flex-direction: column; align-items: flex-start; }
+      .card-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .card-head > :last-child {
+        align-self: flex-start;
+      }
+      .metrics { grid-template-columns: 1fr; }
+      .top-actions, .mini-links { justify-content: flex-start; }
+    }
+
+    @media (max-width: 640px) {
+      .page-title {
+        font-size: 28px;
+      }
+      .chip-btn,
+      .mini-link,
+      .status-pill {
+        width: 100%;
+      }
+      .top-actions {
+        width: 100%;
+      }
+      .top-actions > * {
+        width: 100%;
+        text-align: center;
+      }
+      .timeline-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+
+    /* ===== 2026 enterprise UI refinement ===== */
+    :root {
+      --shadow: 0 10px 28px rgba(18, 52, 48, 0.075);
+      --shadow-hover: 0 14px 34px rgba(18, 52, 48, 0.11);
+      --line-strong: #d8e5e1;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background:
+        linear-gradient(90deg, rgba(38,161,123,.025) 1px, transparent 1px),
+        linear-gradient(rgba(38,161,123,.025) 1px, transparent 1px),
+        #f4f8f7;
+      background-size: 28px 28px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    ::selection { background: rgba(38,161,123,.2); color: #173632; }
+
+    .shell { grid-template-columns: 276px minmax(0, 1fr); }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      padding: 22px 16px 18px;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(63,197,159,.12), transparent 28%),
+        linear-gradient(180deg, #0b2927 0%, #0c302e 46%, #092523 100%);
+      box-shadow: 10px 0 32px rgba(7, 35, 32, .10);
+      z-index: 3;
+    }
+
+    .brand {
+      gap: 13px;
+      padding: 5px 8px 20px;
+      margin-bottom: 16px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+
+    .brand-mark img { width: 29px !important; height: 29px !important; }
+    .brand-title { font-size: 16px; line-height: 1.25; letter-spacing: -.01em; }
+    .brand-subtitle { font-size: 10px; letter-spacing: .12em; }
+
+    .side-group-title {
+      padding: 12px 11px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+    }
+
+    .side-nav { gap: 4px; }
+
+    .side-item {
+      min-height: 43px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      border: 1px solid transparent;
+      transition: .18s ease;
+    }
+
+    .side-item:hover {
+      color: #fff;
+      background: rgba(255,255,255,.055);
+      border-color: rgba(255,255,255,.055);
+      transform: translateX(2px);
+    }
+
+    .side-item.active {
+      position: relative;
+      background: linear-gradient(90deg, rgba(38,161,123,.22), rgba(38,161,123,.08));
+      box-shadow: inset 0 0 0 1px rgba(91,213,177,.17);
+    }
+
+    .side-item.active::before {
+      content: "";
+      position: absolute;
+      left: -16px;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: #48c89f;
+    }
+
+    .side-dot {
+      width: 6px;
+      height: 6px;
+      opacity: .66;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.035);
+    }
+
+    .side-item.active .side-dot {
+      background: #59d1ac;
+      opacity: 1;
+      box-shadow: 0 0 0 4px rgba(89,209,172,.10);
+    }
+
+    .sidebar-system {
+      margin-top: auto;
+      padding: 13px 12px 12px;
+      border: 1px solid rgba(255,255,255,.075);
+      border-radius: 12px;
+      background: rgba(255,255,255,.035);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    }
+
+    .system-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,.82);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .system-indicator {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #53d6ad;
+      box-shadow: 0 0 0 4px rgba(83,214,173,.09);
+    }
+
+    .system-clock-label {
+      margin-top: 11px;
+      font-size: 10px;
+      color: rgba(255,255,255,.42);
+      letter-spacing: .04em;
+    }
+
+    .system-clock {
+      margin-top: 3px;
+      color: rgba(255,255,255,.88);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .025em;
+    }
+
+    .main {
+      padding: 24px 28px 34px;
+      max-width: 1900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .main::before { opacity: .42; }
+
+    .topbar {
+      padding: 22px 24px;
+      border-radius: 18px;
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .topbar::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #34b58d, #208b6b);
+    }
+
+    .topbar-left { gap: 5px; min-width: 0; }
+    .eyebrow { font-size: 10px; letter-spacing: .13em; }
+    .page-title { font-size: clamp(28px, 2.5vw, 36px); font-weight: 750; }
+    .topbar .subline { max-width: 900px; line-height: 1.55; }
+
+    .top-actions { gap: 8px; position: relative; z-index: 1; }
+
+    .chip-btn {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      box-shadow: none;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .chip-btn:hover {
+      transform: translateY(-1px);
+      border-color: #bcd9cf;
+      box-shadow: 0 6px 16px rgba(20,75,63,.08);
+    }
+
+    .chip-btn.primary {
+      background: linear-gradient(135deg, #2ab388 0%, #218c6d 100%);
+      box-shadow: 0 8px 18px rgba(38,161,123,.16);
+    }
+
+    .search-panel {
+      padding: 12px;
+      border-radius: 15px;
+      border-color: var(--line-strong);
+      box-shadow: 0 6px 20px rgba(18,52,48,.05);
+      margin-bottom: 18px;
+      background: rgba(255,255,255,.84);
+      backdrop-filter: blur(8px);
+    }
+
+    .search-row { grid-template-columns: 1.35fr .9fr 176px; gap: 10px; }
+
+    .field,
+    .field-select {
+      min-height: 46px;
+      border-radius: 10px;
+      border-color: #d8e5e1;
+      font-size: 13px;
+      box-shadow: 0 1px 2px rgba(14,58,49,.025);
+      transition: .16s ease;
+    }
+
+    .field:focus,
+    .field-select:focus {
+      border-color: rgba(38,161,123,.55);
+      box-shadow: 0 0 0 3px rgba(38,161,123,.10);
+    }
+
+    .panel-grid { gap: 18px; margin-bottom: 18px; }
+
+    .card {
+      border-radius: 17px;
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow);
+      transition: box-shadow .18s ease, transform .18s ease;
+    }
+
+    @media (hover:hover) and (pointer:fine) {
+      .card:hover { box-shadow: var(--shadow-hover); }
+    }
+
+    .card::before { opacity: .35; }
+
+    .card-head {
+      padding: 17px 19px;
+      background: linear-gradient(180deg, #fff 0%, #fbfdfc 100%);
+      border-bottom-color: #e5ece9;
+    }
+
+    .card-title { font-size: 16px; letter-spacing: -.01em; }
+    .subline { font-size: 12px; line-height: 1.55; }
+
+    .status-pill {
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      letter-spacing: .01em;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+    }
+
+    .card-body { padding: 18px; }
+
+    .hero-address {
+      padding: 15px 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #edf8f4 0%, #f7fbfa 100%);
+      border-color: #d9e9e3;
+      margin-bottom: 15px;
+    }
+
+    .hero-label { font-size: 10px; letter-spacing: .11em; }
+    .hero-value { font-size: 18px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: -.02em; }
+
+    .mini-link {
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-size: 11px;
+      background: rgba(255,255,255,.86);
+    }
+
+    .metrics { gap: 10px; }
+
+    .metric {
+      min-height: 92px;
+      padding: 14px;
+      border-radius: 11px;
+      border-color: #e0eae6;
+      background: linear-gradient(180deg, #fff 0%, #fcfefd 100%);
+      box-shadow: 0 1px 2px rgba(14,58,49,.02);
+    }
+
+    .metric-label { font-size: 10px; letter-spacing: .075em; margin-bottom: 7px; }
+    .metric-value { font-size: 15px; line-height: 1.55; }
+    .metric-value.auto-time { color: #166f57; font-variant-numeric: tabular-nums; }
+
+    .alert-box {
+      margin-top: 14px;
+      border-radius: 11px;
+      padding: 14px 15px;
+      line-height: 1.65;
+      font-size: 12px;
+      background: linear-gradient(180deg, #fff2ef 0%, #ffebe8 100%);
+      border-color: #ffc0b5;
+    }
+
+    .timeline { gap: 10px; }
+
+    .timeline-item {
+      grid-template-columns: 14px minmax(0, 1fr);
+      gap: 11px;
+      align-items: stretch;
+    }
+
+    .timeline-item:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 20px;
+      bottom: -13px;
+      width: 1px;
+      background: #e4c1bb;
+    }
+
+    .timeline-dot {
+      width: 11px;
+      height: 11px;
+      margin-top: 18px;
+      background: #d84b3d;
+      box-shadow: 0 0 0 4px rgba(216,75,61,.09);
+      z-index: 1;
+    }
+
+    .timeline-card {
+      border-radius: 11px;
+      padding: 12px 13px;
+      background: linear-gradient(180deg, #fff 0%, #fdfefd 100%);
+    }
+
+    .timeline-head { margin-bottom: 6px; align-items: center; }
+    .timeline-title { font-size: 13px; }
+    .timeline-time { font-size: 10px; font-weight: 650; font-variant-numeric: tabular-nums; }
+    .timeline-desc { font-size: 12px; line-height: 1.6; }
+
+    .table-card { margin-top: 0; }
+    .table-wrap { scrollbar-width: thin; scrollbar-color: #bed9d0 transparent; }
+    .table-wrap::-webkit-scrollbar { height: 9px; }
+    .table-wrap::-webkit-scrollbar-thumb { background: #c7ddd5; border-radius: 8px; border: 2px solid #fff; }
+
+    table { min-width: 1250px; }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 12px 11px;
+      background: #f4f8f7;
+      border-bottom-color: #dfe8e5;
+      font-size: 10px;
+      letter-spacing: .07em;
+    }
+
+    tbody td { padding: 13px 11px; font-size: 12px; }
+    tbody tr:hover td { background: #f8fcfa; }
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .table-badge,
+    .table-status,
+    .table-tag {
+      border-radius: 7px;
+      font-size: 10px;
+      line-height: 1.3;
+    }
+
+    .footer-note { margin-top: 14px; }
+
+    .editable {
+      cursor: text;
+      transition: background .14s ease, box-shadow .14s ease;
+    }
+
+    .editable:hover { background: rgba(38,161,123,.055); }
+    .editable:focus { background: #fff; box-shadow: 0 0 0 2px rgba(38,161,123,.22); }
+
+    @media (max-width: 1180px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        height: auto;
+        position: relative;
+        display: block;
+        padding-bottom: 16px;
+      }
+      .sidebar-system { margin-top: 18px; }
+      .main { padding: 18px; }
+    }
+
+    @media (max-width: 900px) {
+      .main { padding: 14px; }
+      .topbar { padding: 18px; }
+      .search-row { grid-template-columns: 1fr; }
+      .panel-grid { gap: 14px; }
+    }
+
+    @media (max-width: 640px) {
+      .page-title { font-size: 27px; }
+      .topbar { border-radius: 14px; }
+      .card { border-radius: 14px; }
+      .card-body, .card-head { padding-left: 14px; padding-right: 14px; }
+      .hero-value { font-size: 14px; }
+    }
+
+  
+
+    /* ===== Prop label + export styles ===== */
+    .export-pdf-btn {
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .prop-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #e8c87a;
+      background: #fff8e7;
+      color: #7a5a10;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+
+    .prop-disclosure {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid #ead7a6;
+      border-radius: 10px;
+      background: #fffaf0;
+      color: #6b5a31;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .print-report { display: none; }
+
+    @media print {
+      @page { size: Letter landscape; margin: 0; }
+
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .shell { display: none !important; }
+      .print-report { display: block !important; }
+
+      .print-page {
+        position: relative;
+        width: 11in;
+        min-height: 8.5in;
+        padding: .48in .52in .46in;
+        background: #fff;
+        color: #243c3a;
+        break-after: page;
+        page-break-after: always;
+        overflow: hidden;
+        font-family: Arial, "Segoe UI", sans-serif;
+      }
+
+      .print-page:last-child {
+        break-after: auto;
+        page-break-after: auto;
+      }
+
+      .print-watermark {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 0;
+        transform: rotate(-24deg);
+        font-size: 46pt;
+        font-weight: 800;
+        letter-spacing: .08em;
+        color: rgba(145, 118, 47, .085);
+        white-space: nowrap;
+      }
+
+      .print-content { position: relative; z-index: 1; }
+
+      .print-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding-bottom: 13px;
+        border-bottom: 2px solid #2b9d7a;
+      }
+
+      .print-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .print-logo {
+        width: 34px;
+        height: 34px;
+        object-fit: contain;
+      }
+
+      .print-brand-title {
+        font-size: 15pt;
+        font-weight: 800;
+        color: #173a35;
+        letter-spacing: -.02em;
+      }
+
+      .print-brand-sub {
+        margin-top: 2px;
+        font-size: 7.5pt;
+        font-weight: 700;
+        color: #71827f;
+        text-transform: uppercase;
+        letter-spacing: .11em;
+      }
+
+      .print-prop-label {
+        border: 1px solid #d7b85f;
+        background: #fff7dc;
+        color: #765d17;
+        padding: 7px 10px;
+        border-radius: 5px;
+        font-size: 7pt;
+        font-weight: 800;
+        letter-spacing: .08em;
+      }
+
+      .print-title-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: end;
+        margin-top: 18px;
+      }
+
+      .print-kicker {
+        color: #258768;
+        font-size: 7pt;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .print-title {
+        margin-top: 5px;
+        color: #172f2d;
+        font-size: 21pt;
+        font-weight: 800;
+        letter-spacing: -.035em;
+      }
+
+      .print-generated {
+        text-align: right;
+        color: #74827f;
+        font-size: 7.5pt;
+        line-height: 1.5;
+      }
+
+      .print-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 9px;
+        margin-top: 17px;
+      }
+
+      .print-summary-card {
+        padding: 10px 11px;
+        border: 1px solid #dfe8e5;
+        background: #f9fcfb;
+        border-radius: 6px;
+      }
+
+      .print-summary-label {
+        font-size: 6.8pt;
+        font-weight: 800;
+        letter-spacing: .075em;
+        text-transform: uppercase;
+        color: #7b8b87;
+      }
+
+      .print-summary-value {
+        margin-top: 5px;
+        font-size: 10pt;
+        font-weight: 800;
+        color: #1d3834;
+        line-height: 1.25;
+        word-break: break-word;
+      }
+
+      .print-section {
+        margin-top: 16px;
+        border: 1px solid #dfe8e5;
+        border-radius: 7px;
+        overflow: hidden;
+      }
+
+      .print-section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        padding: 9px 11px;
+        background: #f2f8f6;
+        border-bottom: 1px solid #dfe8e5;
+      }
+
+      .print-section-title {
+        font-size: 9pt;
+        font-weight: 800;
+        color: #1b3a35;
+      }
+
+      .print-section-meta {
+        font-size: 6.8pt;
+        font-weight: 700;
+        color: #70807d;
+      }
+
+      .print-note {
+        padding: 10px 11px;
+        font-size: 7.3pt;
+        line-height: 1.55;
+        color: #596b67;
+      }
+
+      .print-note strong { color: #384b47; }
+
+      .print-record-table {
+        width: 100%;
+        min-width: 0 !important;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      .print-record-table th,
+      .print-record-table td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        border-bottom: 1px solid #e7eeeb;
+        padding: 6px 6px;
+        vertical-align: middle;
+      }
+
+      .print-record-table th {
+        background: #f5f9f8;
+        color: #70817d;
+        font-size: 6.2pt;
+        font-weight: 800;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+      }
+
+      .print-record-table td {
+        color: #304744;
+        font-size: 6.35pt;
+      }
+
+      .print-record-table tr:last-child td { border-bottom: 0; }
+      .print-record-table .mono { font-family: Consolas, "Courier New", monospace; }
+      .print-record-table .positive { color: #19765a; font-weight: 800; }
+      .print-record-table .negative { color: #a84b3c; font-weight: 800; }
+
+      .print-record-table th:nth-child(1), .print-record-table td:nth-child(1) { width: 22%; }
+      .print-record-table th:nth-child(2), .print-record-table td:nth-child(2) { width: 10%; }
+      .print-record-table th:nth-child(3), .print-record-table td:nth-child(3) { width: 13%; }
+      .print-record-table th:nth-child(4), .print-record-table td:nth-child(4) { width: 8%; }
+      .print-record-table th:nth-child(5), .print-record-table td:nth-child(5) { width: 17%; }
+      .print-record-table th:nth-child(6), .print-record-table td:nth-child(6) { width: 12%; text-align: right; }
+      .print-record-table th:nth-child(7), .print-record-table td:nth-child(7) { width: 8%; }
+      .print-record-table th:nth-child(8), .print-record-table td:nth-child(8) { width: 10%; }
+
+      .print-footer {
+        position: absolute;
+        left: .52in;
+        right: .52in;
+        bottom: .24in;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 7px;
+        border-top: 1px solid #dfe7e4;
+        color: #84918e;
+        font-size: 6.6pt;
+      }
+
+      .print-footer strong { color: #63726f; }
+    }
+
+</style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">
+          <img id="brandLogo" src="Tether.png" style="width:34px;height:34px;display:block;object-fit:contain;" alt="Tether-Logo" />
+        </div>
+        <div class="brand-text">
+          <div class="brand-title editable editable-inline" contenteditable="true">Tether-Konsole für gerichtliche Rechtshilfe</div>
+          <div class="brand-subtitle editable editable-inline" contenteditable="true">Verwaltung von USDT-Sperren</div>
+        </div>
+      </div>
+
+      <div class="side-group-title editable editable-inline" contenteditable="true">Sperrvorgänge</div>
+      <div class="side-nav">
+        <div class="side-item"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">Übersicht</span></div>
+        <div class="side-item active"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">Gerichtlich gesperrte Adresse</span></div>
+        <div class="side-item"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">Liste gesperrter Adressen</span></div>
+        <div class="side-item"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">Zentrum für manuelle Prüfung</span></div>
+        <div class="side-item"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">On-Chain-Unterstützungsprotokoll</span></div>
+      </div>
+
+      <div class="side-group-title editable editable-inline" contenteditable="true" style="margin-top:18px;">Compliance & Recht</div>
+      <div class="side-nav">
+        <div class="side-item"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">Sperrausführungsprotokoll</span></div>
+        <div class="side-item"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">Risikoprüfungsprotokoll</span></div>
+        <div class="side-item"><span class="side-dot"></span><span class="editable editable-inline" contenteditable="true">Berechtigungen & Prüfung</span></div>
+      </div>
+
+      <div class="sidebar-system">
+        <div class="system-row">
+          <span class="system-indicator"></span>
+          <span>System online</span>
+        </div>
+        <div class="system-clock-label">Lokale Arbeitsplatzzeit</div>
+        <div id="workstationClock" class="system-clock">--:--:--</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="eyebrow editable editable-inline" contenteditable="true">Tether Compliance / Gerichtliche Sperre</div>
+          <div class="page-title editable editable-inline" contenteditable="true">Ausführung der USDT-Sperranordnung</div>
+          <div class="subline editable editable-inline" contenteditable="true">Tether hat die betreffenden USDT-Vermögenswerte an dieser Adresse aufgrund eines Rechtshilfeersuchens gesperrt. Nachfolgend finden Sie die Sperrdetails und die On-Chain-Transaktionsdaten.</div>
+        </div>
+        <div class="top-actions">
+          <span class="chip-btn editable editable-inline" contenteditable="true">Sperrübersicht</span>
+          <span class="chip-btn editable editable-inline" contenteditable="true">Rechtsdokumente</span>
+          <button id="exportPdfButton" type="button" class="chip-btn export-pdf-btn">PDF exportieren</button>
+          <span class="chip-btn primary editable editable-inline" contenteditable="true">Sperrstatus: Ausgeführt</span>
+        </div>
+      </div>
+
+      <section class="search-panel">
+        <div class="search-row">
+          <input class="field editable" value="USDT-Adresse / Sperr-ID / ID des Rechtshilfeersuchens eingeben" />
+          <input class="field editable" value="Ethereum-Mainnet / USDT-Contract" />
+          <button class="chip-btn primary editable editable-inline" contenteditable="true" style="width:100%; min-height:50px; border-radius:14px;">Sperrdatensatz suchen</button>
+        </div>
+      </section>
+
+      <section class="panel-grid">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title editable editable-inline" contenteditable="true">Details zur Sperrung der USDT-Adresse</div>
+              <div class="subline editable editable-inline" contenteditable="true">Aktueller Sperrstatus, Ausführungszeitpunkt, rechtliche Grundlage und Höhe der gesperrten Vermögenswerte.</div>
+            </div>
+            <div class="status-pill editable editable-inline" contenteditable="true">Status: Von Tether gesperrt</div>
+          </div>
+          <div class="card-body">
+            <div class="hero-address">
+              <div>
+                <div class="hero-label editable editable-inline" contenteditable="true">Gesperrte Adresse</div>
+                <div class="hero-value editable editable-block" contenteditable="true">0x8a6babc576e8abd7299dca35cccaeb3d134bdeb6</div>
+              </div>
+              <div class="mini-links">
+                <span class="mini-link editable editable-inline" contenteditable="true">Adresse kopieren</span>
+                <span class="mini-link editable editable-inline" contenteditable="true">Sperrdatensatz anzeigen</span>
+                <span class="mini-link editable editable-inline" contenteditable="true">Mitteilung erstellen</span>
+              </div>
+            </div>
+
+            <div class="metrics">
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Fall-ID</div>
+                <div class="metric-value editable editable-inline" contenteditable="true">WC-CRYPTO-1068-0177</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Netzwerk</div>
+                <div class="metric-value editable editable-inline" contenteditable="true">Ethereum / USDT</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Ausführungszeitpunkt</div>
+                <div id="executionTime" class="metric-value editable editable-inline auto-time" contenteditable="true">Lokale Zeit wird geladen…</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Gesperrter Betrag</div>
+                <div class="metric-value editable editable-inline" contenteditable="true">5,628,751.37 USDT</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Rechtliche Grundlage</div>
+                <div class="metric-value editable editable-inline" contenteditable="true">Aufgrund eines Rechtshilfeersuchens sperrte Tether die betreffenden USDT-Vermögenswerte, die dieser Adresse zugeordnet sind, wegen verdächtiger, mutmaßlich betrugsbezogener Geldflüsse.</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Status der Vermögenswerte</div>
+                <div class="metric-value editable editable-inline" contenteditable="true">Die betreffenden USDT-Vermögenswerte an dieser Adresse sind gesperrt und können derzeit nicht transferiert werden.</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Ausführende Stelle</div>
+                <div class="metric-value editable editable-inline" contenteditable="true">Tether Compliance & Rechtsabteilung</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label editable editable-inline" contenteditable="true">Freigabebedingungen</div>
+                <div class="metric-value editable editable-inline" contenteditable="true">Die Sperre kann erst nach Eingang einer gültigen gerichtlichen Freigabemitteilung und Abschluss der internen Prüfung aufgehoben werden.</div>
+              </div>
+            </div>
+
+            <div class="alert-box editable editable-block" contenteditable="true">Die betreffenden USDT-Vermögenswerte, die dieser Adresse zugeordnet sind, wurden von Tether aufgrund eines Rechtshilfeersuchens gesperrt. Während der Sperrfrist dürfen die betroffenen Vermögenswerte weder übertragen, verschoben noch anderweitig darüber verfügt werden, sofern keine gültige Freigabeanweisung vorliegt.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title editable editable-inline" contenteditable="true">Zeitachse der gerichtlichen Tether-Sperre</div>
+              <div class="subline editable editable-inline" contenteditable="true">Chronologie des Bearbeitungsprozesses der gerichtlichen Sperre.</div>
+            </div>
+            <div class="status-pill editable editable-inline" contenteditable="true">Fallstufe: Rechtshilfe</div>
+          </div>
+          <div class="card-body">
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card">
+                  <div class="timeline-head">
+                    <div class="timeline-title editable editable-inline" contenteditable="true">Verdächtige Adresse identifiziert</div>
+                    <div id="identifiedTime" class="timeline-time editable editable-inline auto-time" contenteditable="true">Wird geladen…</div>
+                  </div>
+                  <div class="timeline-desc editable editable-block" contenteditable="true">Das System identifizierte ungewöhnliche USDT-Aggregationsaktivitäten an dieser Adresse und kennzeichnete sie gemäß den Prüfkriterien für Rechtshilfe.</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card">
+                  <div class="timeline-head">
+                    <div class="timeline-title editable editable-inline" contenteditable="true">Rechtshilfeunterlagen geprüft</div>
+                    <div id="reviewedTime" class="timeline-time editable editable-inline auto-time" contenteditable="true">Wird geladen…</div>
+                  </div>
+                  <div class="timeline-desc editable editable-block" contenteditable="true">Nach Prüfung der Rechtshilfeunterlagen genehmigte die Rechts- und Compliance-Abteilung die Sperrung der betreffenden USDT-Vermögenswerte, die dieser Adresse zugeordnet sind.</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card">
+                  <div class="timeline-head">
+                    <div class="timeline-title editable editable-inline" contenteditable="true">Sperre ausgeführt</div>
+                    <div id="freezeTime" class="timeline-time editable editable-inline auto-time" contenteditable="true">Wird geladen…</div>
+                  </div>
+                  <div class="timeline-desc editable editable-block" contenteditable="true">Tether führte die Sperre der betreffenden USDT-Vermögenswerte an der Zieladresse aus und schränkte ausgehende Transfers und Vermögensbewegungen vorübergehend ein.</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card">
+                  <div class="timeline-head">
+                    <div class="timeline-title editable editable-inline" contenteditable="true">Folgeprüfung ausstehend</div>
+                    <div class="timeline-time editable editable-inline" contenteditable="true">Ausstehend</div>
+                  </div>
+                  <div class="timeline-desc editable editable-block" contenteditable="true">Dieser Vorgang befindet sich weiterhin in der gerichtlichen Folgeprüfung. Die Sperre bleibt bestehen, bis eine weitere gerichtliche oder interne Entscheidung vorliegt.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card table-card">
+        <div class="card-head">
+          <div>
+            <div class="card-title editable editable-inline" contenteditable="true">Transaktionsdaten der gesperrten Adresse</div>
+            <div class="subline editable editable-inline" contenteditable="true">Transaktionsdaten der vergangenen 12 Monate.</div>
+          </div>
+          <div id="recordCountPill" class="status-pill">88 Datensätze</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th><span class="table-cell editable editable-block" contenteditable="true">Transaktions-Hash</span></th>
+                <th><span class="table-cell editable editable-block" contenteditable="true">Block</span></th>
+                <th><span class="table-cell editable editable-block" contenteditable="true">Zeit</span></th>
+                <th><span class="table-cell center editable editable-block" contenteditable="true">Richtung</span></th>
+                <th><span class="table-cell editable editable-block" contenteditable="true">Gegenpartei</span></th>
+                <th><span class="table-cell right editable editable-block" contenteditable="true">Betrag</span></th>
+                <th><span class="table-cell editable editable-block" contenteditable="true">On-Chain-Status</span></th>
+                <th><span class="table-cell editable editable-block" contenteditable="true">Kennzeichnung</span></th>
+              </tr>
+            </thead>
+            <tbody id="transactionBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="footer-note editable editable-block" contenteditable="true"></div>
+    </main>
+  </div>
+
+  <section id="printReport" class="print-report" aria-hidden="true"></section>
+
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const RECORD_COUNT = 88;
+      const CASE_ID = 'WC-CRYPTO-1068-0177';
+      const FROZEN_AMOUNT = '5,628,751.37 USDT';
+      let generatedRecords = [];
+      let sessionFreezeAt = null;
+      let resolvedLogoSrc = 'Tether.png';
+
+      const cloneMinusMinutes = (date, minutes) =>
+        new Date(date.getTime() - minutes * 60 * 1000);
+
+      function formatDateTime(date, withSeconds = false) {
+        const options = {
+          month: 'short', day: 'numeric', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: false,
+          timeZoneName: 'short'
+        };
+        if (withSeconds) options.second = '2-digit';
+        return new Intl.DateTimeFormat('de-DE', options).format(date);
+      }
+
+      function formatRecordDate(date) {
+        return new Intl.DateTimeFormat('de-DE', {
+          month: 'short', day: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: false
+        }).format(date);
+      }
+
+      function setGeneratedFreezeTimes() {
+        const openedAt = new Date();
+        const freezeAt = cloneMinusMinutes(openedAt, 60);
+        const reviewedAt = cloneMinusMinutes(freezeAt, 12);
+        const identifiedAt = cloneMinusMinutes(freezeAt, 32);
+        sessionFreezeAt = freezeAt;
+
+        if ($('executionTime')) $('executionTime').textContent = formatDateTime(freezeAt, true);
+        if ($('freezeTime')) $('freezeTime').textContent = formatDateTime(freezeAt, false);
+        if ($('reviewedTime')) $('reviewedTime').textContent = formatDateTime(reviewedAt, false);
+        if ($('identifiedTime')) $('identifiedTime').textContent = formatDateTime(identifiedAt, false);
+      }
+
+      function updateWorkstationClock() {
+        const node = $('workstationClock');
+        if (!node) return;
+        node.textContent = new Intl.DateTimeFormat('de-DE', {
+          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+          second: '2-digit', hour12: false
+        }).format(new Date());
+      }
+
+      function randomFloat(min, max) {
+        if (window.crypto && window.crypto.getRandomValues) {
+          const arr = new Uint32Array(1);
+          window.crypto.getRandomValues(arr);
+          return min + (arr[0] / 4294967295) * (max - min);
+        }
+        return min + Math.random() * (max - min);
+      }
+
+      function randomInt(min, max) {
+        return Math.floor(randomFloat(min, max + 1));
+      }
+
+      function randomHex(length) {
+        const chars = '0123456789abcdef';
+        let out = '';
+        for (let i = 0; i < length; i++) out += chars[randomInt(0, chars.length - 1)];
+        return out;
+      }
+
+      function makeHistoryRecords() {
+        const end = sessionFreezeAt || cloneMinusMinutes(new Date(), 60);
+        const startMs = end.getTime() - 365 * 24 * 60 * 60 * 1000;
+        const span = end.getTime() - startMs;
+        const tags = [
+          'Aggregation', 'Bridge-Quelle', 'Börsenfluss',
+          'Gegenparteiprüfung', 'Wallet-Rotation', 'Abwicklung',
+          'Konsolidierung', 'Verwahrungsfluss', 'Routing'
+        ];
+        const statuses = ['Bestätigt', 'Bestätigt', 'Bestätigt', 'Geprüft', 'Markiert'];
+        const rows = [];
+
+        for (let i = 0; i < RECORD_COUNT; i++) {
+          const time = new Date(startMs + randomFloat(0.004, 0.997) * span);
+          const inbound = randomFloat(0, 1) > 0.43;
+          const amount = randomFloat(5200, 188000) * (randomFloat(0, 1) > .86 ? randomFloat(1.6, 3.5) : 1);
+          rows.push({
+            hash: '0x' + randomHex(64),
+            block: 'SIM-' + randomInt(310000, 989999),
+            time,
+            direction: inbound ? 'Eingang' : 'Ausgang',
+            counterparty: '0x' + randomHex(40),
+            amount: (inbound ? '+' : '-') + amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USDT',
+            status: statuses[randomInt(0, statuses.length - 1)],
+            tag: tags[randomInt(0, tags.length - 1)]
+          });
+        }
+
+        rows.sort((a, b) => b.time - a.time);
+        generatedRecords = rows;
+        return rows;
+      }
+
+      function renderRecords(records) {
+        const body = $('transactionBody');
+        if (!body) return;
+        body.innerHTML = '';
+        records.forEach((r) => {
+          const tr = document.createElement('tr');
+          const out = r.direction === 'Ausgang';
+          tr.innerHTML = `
+            <td><span class="table-cell editable editable-block" contenteditable="true">${r.hash}</span></td>
+            <td><span class="table-cell editable editable-block" contenteditable="true">${r.block}</span></td>
+            <td><span class="table-cell editable editable-block" contenteditable="true">${formatRecordDate(r.time)}</span></td>
+            <td><span class="table-cell center"><span class="table-badge${out ? ' out' : ''} editable editable-inline" contenteditable="true">${r.direction}</span></span></td>
+            <td><span class="table-cell editable editable-block" contenteditable="true">${r.counterparty}</span></td>
+            <td><span class="table-cell right ${out ? 'amount-out' : 'amount-in'} editable editable-block" contenteditable="true">${r.amount}</span></td>
+            <td><span class="table-cell"><span class="table-status editable editable-inline" contenteditable="true">${r.status}</span></span></td>
+            <td><span class="table-cell"><span class="table-tag editable editable-inline" contenteditable="true">${r.tag}</span></span></td>`;
+          body.appendChild(tr);
+        });
+        if ($('recordCountPill')) $('recordCountPill').textContent = `${records.length} Datensätze`;
+      }
+
+      function tryLocalTetherLogo() {
+        const logo = $('brandLogo');
+        const favicon = $('pageFavicon');
+        if (!logo) return;
+        const candidates = ['Tether.svg', 'Tether.png', 'Tether.webp', 'Tether.jpg', 'Tether.jpeg', 'Tether.gif', 'Tether.avif'];
+        let index = 0;
+        const loadNext = () => {
+          if (index >= candidates.length) {
+            logo.style.visibility = 'hidden';
+            return;
+          }
+          const candidate = candidates[index++];
+          logo.onload = () => {
+            resolvedLogoSrc = candidate;
+            logo.style.visibility = 'visible';
+            if (favicon) favicon.href = candidate;
+          };
+          logo.onerror = loadNext;
+          logo.src = candidate;
+        };
+        loadNext();
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function getMetric(label) {
+        const metrics = [...document.querySelectorAll('.metric')];
+        const match = metrics.find(m => (m.querySelector('.metric-label')?.textContent || '').trim() === label);
+        return match ? (match.querySelector('.metric-value')?.textContent || '').trim() : '';
+      }
+
+      function buildPrintReport() {
+        const report = $('printReport');
+        if (!report) return;
+
+        const rows = [...document.querySelectorAll('#transactionBody tr')].map((tr) => {
+          const cells = [...tr.querySelectorAll('td')].map(td => td.innerText.trim());
+          return {
+            hash: cells[0] || '', block: cells[1] || '', time: cells[2] || '',
+            direction: cells[3] || '', counterparty: cells[4] || '', amount: cells[5] || '',
+            status: cells[6] || '', tag: cells[7] || ''
+          };
+        });
+
+        const inboundCount = rows.filter(r => /Eingang/i.test(r.direction)).length;
+        const outboundCount = rows.length - inboundCount;
+        const executionTime = getMetric('Ausführungszeitpunkt') || formatDateTime(sessionFreezeAt || new Date(), true);
+        const caseId = getMetric('Fall-ID') || CASE_ID;
+        const frozenAmount = getMetric('Gesperrter Betrag') || FROZEN_AMOUNT;
+        const network = getMetric('Netzwerk') || 'Ethereum / USDT';
+        const address = (document.querySelector('.hero-value')?.textContent || '').trim();
+        const generatedAt = formatDateTime(new Date(), true);
+        const rowsPerPage = 18;
+        const chunks = [];
+        for (let i = 0; i < rows.length; i += rowsPerPage) chunks.push(rows.slice(i, i + rowsPerPage));
+        const totalPages = 1 + chunks.length;
+
+        const header = () => `
+          <div class="print-header">
+            <div class="print-brand">
+              <img class="print-logo" src="${escapeHtml(resolvedLogoSrc)}" alt="Tether-Logo" />
+              <div>
+                <div class="print-brand-title">USDT-Sperrdatensatz</div>
+                <div class="print-brand-sub">Export der Compliance-Oberfläche</div>
+              </div>
+            </div>
+            <div class="print-prop-label">FILMREQUISITE — KEIN OFFIZIELLER DATENSATZ</div>
+          </div>`;
+
+        const footer = (page) => `
+          <div class="print-footer">
+            <div><strong>${escapeHtml(caseId)}</strong> · Export des Falldatensatzes</div>
+            <div>Seite ${page} von ${totalPages}</div>
+          </div>`;
+
+        const watermark = '';
+
+        let html = `
+          <article class="print-page">
+            ${watermark}
+            <div class="print-content">
+              ${header()}
+              <div class="print-title-row">
+                <div>
+                  <div class="print-kicker">Fallübersicht</div>
+                  <div class="print-title">Zusammenfassung des Sperrdatensatzes</div>
+                </div>
+                <div class="print-generated">Aus lokalem HTML erstellt<br>${escapeHtml(generatedAt)}</div>
+              </div>
+
+              <div class="print-summary-grid">
+                <div class="print-summary-card"><div class="print-summary-label">Fall-ID</div><div class="print-summary-value">${escapeHtml(caseId)}</div></div>
+                <div class="print-summary-card"><div class="print-summary-label">Gesperrter Betrag</div><div class="print-summary-value">${escapeHtml(frozenAmount)}</div></div>
+                <div class="print-summary-card"><div class="print-summary-label">Netzwerk</div><div class="print-summary-value">${escapeHtml(network)}</div></div>
+                <div class="print-summary-card"><div class="print-summary-label">Ausführungszeitpunkt</div><div class="print-summary-value">${escapeHtml(executionTime)}</div></div>
+              </div>
+
+              <div class="print-section">
+                <div class="print-section-head"><div class="print-section-title">Adressdatensatz</div><div class="print-section-meta">Generierte 12-Monats-Historie</div></div>
+                <div class="print-note"><strong>Adresse:</strong> ${escapeHtml(address)}<br><br>
+                </div>
+              </div>
+
+              <div class="print-summary-grid">
+                <div class="print-summary-card"><div class="print-summary-label">Transaktionszeilen</div><div class="print-summary-value">${rows.length}</div></div>
+                <div class="print-summary-card"><div class="print-summary-label">Eingangszeilen</div><div class="print-summary-value">${inboundCount}</div></div>
+                <div class="print-summary-card"><div class="print-summary-label">Ausgangszeilen</div><div class="print-summary-value">${outboundCount}</div></div>
+                <div class="print-summary-card"><div class="print-summary-label">Zeitraum</div><div class="print-summary-value">Vergangene 12 Monate</div></div>
+              </div>
+            </div>
+            ${footer(1)}
+          </article>`;
+
+        chunks.forEach((chunk, index) => {
+          const page = index + 2;
+          const bodyRows = chunk.map(r => `
+            <tr>
+              <td class="mono">${escapeHtml(r.hash)}</td>
+              <td class="mono">${escapeHtml(r.block)}</td>
+              <td>${escapeHtml(r.time)}</td>
+              <td>${escapeHtml(r.direction)}</td>
+              <td class="mono">${escapeHtml(r.counterparty)}</td>
+              <td class="${/^-/.test(r.amount) ? 'negative' : 'positive'}">${escapeHtml(r.amount)}</td>
+              <td>${escapeHtml(r.status)}</td>
+              <td>${escapeHtml(r.tag)}</td>
+            </tr>`).join('');
+
+          html += `
+            <article class="print-page">
+              ${watermark}
+              <div class="print-content">
+                ${header()}
+                <div class="print-title-row">
+                  <div>
+                    <div class="print-kicker">Transaktionsanhang</div>
+                    <div class="print-title">Transaktionsdaten der vergangenen 12 Monate</div>
+                  </div>
+                  <div class="print-generated">Zeilen ${index * rowsPerPage + 1}–${index * rowsPerPage + chunk.length} von ${rows.length}<br>${escapeHtml(caseId)}</div>
+                </div>
+                <div class="print-section">
+                  <table class="print-record-table">
+                    <thead><tr><th>Transaktions-Hash</th><th>Block</th><th>Zeit</th><th>Richtung</th><th>Gegenpartei</th><th>Betrag</th><th>Status</th><th>Kennzeichnung</th></tr></thead>
+                    <tbody>${bodyRows}</tbody>
+                  </table>
+                </div>
+              </div>
+              ${footer(page)}
+            </article>`;
+        });
+
+        report.innerHTML = html;
+        report.setAttribute('aria-hidden', 'false');
+      }
+
+      // The button label intentionally remains "Export PDF" per the interface design,
+      // but the action below creates a genuine editable .docx file using native OOXML.
+      function xmlEscape(value) {
+        return String(value ?? '')
+          .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      }
+
+      function docxRun(text, opts = {}) {
+        const size = opts.size || 20;
+        const color = opts.color || '263B36';
+        const font = opts.font || 'Aptos';
+        const bold = opts.bold ? '<w:b/>' : '';
+        const italic = opts.italic ? '<w:i/>' : '';
+        const caps = opts.caps ? '<w:caps/>' : '';
+        const parts = String(text ?? '').split(/\n/);
+        const body = parts.map((part, i) => `${i ? '<w:br/>' : ''}<w:t xml:space="preserve">${xmlEscape(part)}</w:t>`).join('');
+        return `<w:r><w:rPr>${bold}${italic}${caps}<w:rFonts w:ascii="${font}" w:hAnsi="${font}"/><w:color w:val="${color}"/><w:sz w:val="${size}"/><w:szCs w:val="${size}"/></w:rPr>${body}</w:r>`;
+      }
+
+      function docxParagraph(text = '', opts = {}) {
+        const align = opts.align ? `<w:jc w:val="${opts.align}"/>` : '';
+        const before = opts.before ?? 0;
+        const after = opts.after ?? 120;
+        const line = opts.line ?? 280;
+        const keepNext = opts.keepNext ? '<w:keepNext/>' : '';
+        const pageBreakBefore = opts.pageBreakBefore ? '<w:pageBreakBefore/>' : '';
+        const indent = opts.indent ? `<w:ind w:left="${opts.indent}"/>` : '';
+        const pPr = `<w:pPr>${keepNext}${pageBreakBefore}${align}${indent}<w:spacing w:before="${before}" w:after="${after}" w:line="${line}" w:lineRule="auto"/></w:pPr>`;
+        return `<w:p>${pPr}${docxRun(text, opts)}</w:p>`;
+      }
+
+      function docxSectionTitle(text, meta = '') {
+        const right = meta ? docxParagraph(meta, {size: 17, color: '6C7C77', align: 'right', after: 0}) : docxParagraph('', {after: 0});
+        return docxTable([[{
+          width: 10200,
+          paragraphs: [docxParagraph(text, {size: 26, bold: true, color: '183A32', after: 0})],
+          shade: 'EEF7F4'
+        }, {
+          width: 4200,
+          paragraphs: [right],
+          shade: 'EEF7F4'
+        }]], {widths: [10200, 4200], outerColor: 'CFE5DD', innerColor: 'CFE5DD', margin: 150, after: 140});
+      }
+
+      function docxCell(cell, defaultWidth) {
+        const c = typeof cell === 'object' && cell !== null ? cell : {text: String(cell ?? '')};
+        const width = c.width || defaultWidth || 1800;
+        const shade = c.shade ? `<w:shd w:val="clear" w:color="auto" w:fill="${c.shade}"/>` : '';
+        const vAlign = `<w:vAlign w:val="${c.vAlign || 'center'}"/>`;
+        const margins = `<w:tcMar><w:top w:w="${c.marginTop ?? 120}" w:type="dxa"/><w:left w:w="${c.marginLeft ?? 120}" w:type="dxa"/><w:bottom w:w="${c.marginBottom ?? 120}" w:type="dxa"/><w:right w:w="${c.marginRight ?? 120}" w:type="dxa"/></w:tcMar>`;
+        const tcPr = `<w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${shade}${vAlign}${margins}</w:tcPr>`;
+        let paragraphs = c.paragraphs;
+        if (!paragraphs) {
+          paragraphs = [docxParagraph(c.text ?? '', {
+            size: c.size || 18,
+            bold: !!c.bold,
+            color: c.color || '334E47',
+            font: c.font || 'Aptos',
+            align: c.align,
+            before: 0,
+            after: 0,
+            line: c.line || 250
+          })];
+        }
+        return `<w:tc>${tcPr}${paragraphs.join('')}</w:tc>`;
+      }
+
+      function docxTable(rows, opts = {}) {
+        const widths = opts.widths || [];
+        const outer = opts.outerColor || 'D9E8E3';
+        const inner = opts.innerColor || 'E6F0EC';
+        const tableWidth = widths.reduce((a, b) => a + b, 0) || 14400;
+        const tblPr = `<w:tblPr><w:tblW w:w="${tableWidth}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="${opts.margin ?? 100}" w:type="dxa"/><w:left w:w="${opts.margin ?? 100}" w:type="dxa"/><w:bottom w:w="${opts.margin ?? 100}" w:type="dxa"/><w:right w:w="${opts.margin ?? 100}" w:type="dxa"/></w:tblCellMar><w:tblBorders><w:top w:val="single" w:sz="6" w:color="${outer}"/><w:left w:val="single" w:sz="6" w:color="${outer}"/><w:bottom w:val="single" w:sz="6" w:color="${outer}"/><w:right w:val="single" w:sz="6" w:color="${outer}"/><w:insideH w:val="single" w:sz="4" w:color="${inner}"/><w:insideV w:val="single" w:sz="4" w:color="${inner}"/></w:tblBorders></w:tblPr>`;
+        const grid = widths.length ? `<w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>` : '';
+        const body = rows.map((row, rowIndex) => {
+          const header = opts.headerRows && rowIndex < opts.headerRows ? '<w:tblHeader/>' : '';
+          const cantSplit = '<w:cantSplit/>';
+          const cells = row.map((c, i) => docxCell(c, widths[i]));
+          return `<w:tr><w:trPr>${header}${cantSplit}</w:trPr>${cells.join('')}</w:tr>`;
+        }).join('');
+        const after = opts.after === 0 ? '' : docxParagraph('', {after: opts.after ?? 120, line: 40});
+        return `<w:tbl>${tblPr}${grid}${body}</w:tbl>${after}`;
+      }
+
+      function getText(selector, fallback = '') {
+        const el = document.querySelector(selector);
+        if (!el) return fallback;
+        if ('value' in el && typeof el.value === 'string') return el.value.trim();
+        return (el.innerText || el.textContent || '').trim();
+      }
+
+      function collectDocxData() {
+        const metrics = [...document.querySelectorAll('.metric')].map(m => ({
+          label: (m.querySelector('.metric-label')?.innerText || '').trim(),
+          value: (m.querySelector('.metric-value')?.innerText || '').trim()
+        }));
+        const timeline = [...document.querySelectorAll('.timeline-item')].map(item => ({
+          title: (item.querySelector('.timeline-title')?.innerText || '').trim(),
+          time: (item.querySelector('.timeline-time')?.innerText || '').trim(),
+          desc: (item.querySelector('.timeline-desc')?.innerText || '').trim()
+        }));
+        const rows = [...document.querySelectorAll('#transactionBody tr')].map(tr => {
+          const c = [...tr.querySelectorAll('td')].map(td => td.innerText.trim());
+          return {hash:c[0]||'', block:c[1]||'', time:c[2]||'', direction:c[3]||'', counterparty:c[4]||'', amount:c[5]||'', status:c[6]||'', tag:c[7]||''};
+        });
+        const navGroups = [...document.querySelectorAll('.sidebar .side-group-title')].map(group => {
+          let items = [];
+          const next = group.nextElementSibling;
+          if (next?.classList.contains('side-nav')) items = [...next.querySelectorAll('.side-item')].map(x => x.innerText.trim());
+          return {title: group.innerText.trim(), items};
+        });
+        return {
+          brandTitle: getText('.brand-title', 'Tether-Konsole für gerichtliche Rechtshilfe'),
+          brandSubtitle: getText('.brand-subtitle', 'Verwaltung von USDT-Sperren'),
+          eyebrow: getText('.eyebrow'),
+          pageTitle: getText('.page-title', 'Ausführung der USDT-Sperranordnung'),
+          pageSubline: getText('.topbar-left .subline'),
+          status: getText('.top-actions .chip-btn.primary'),
+          query1: document.querySelector('.search-row input:nth-child(1)')?.value || '',
+          query2: document.querySelector('.search-row input:nth-child(2)')?.value || '',
+          detailTitle: getText('.panel-grid .card:nth-child(1) .card-title'),
+          detailSubline: getText('.panel-grid .card:nth-child(1) .card-head .subline'),
+          detailStatus: getText('.panel-grid .card:nth-child(1) .status-pill'),
+          addressLabel: getText('.hero-label', 'Gesperrte Adresse'),
+          address: getText('.hero-value'),
+          metrics,
+          alert: getText('.alert-box'),
+          timelineTitle: getText('.panel-grid .card:nth-child(2) .card-title'),
+          timelineSubline: getText('.panel-grid .card:nth-child(2) .card-head .subline'),
+          timelineStatus: getText('.panel-grid .card:nth-child(2) .status-pill'),
+          timeline,
+          recordsTitle: getText('.table-card .card-title'),
+          recordsSubline: getText('.table-card .card-head .subline'),
+          recordsCount: getText('#recordCountPill'),
+          records: rows,
+          footerNote: getText('.footer-note'),
+          navGroups,
+          generatedAt: formatDateTime(new Date(), true)
+        };
+      }
+
+      function buildDocumentXml(data) {
+        const caseMetric = data.metrics.find(m => /^Fall-ID$/i.test(m.label));
+        const amountMetric = data.metrics.find(m => /^Gesperrter Betrag$/i.test(m.label));
+        const networkMetric = data.metrics.find(m => /^Netzwerk$/i.test(m.label));
+        const execMetric = data.metrics.find(m => /^Ausführungszeitpunkt$/i.test(m.label));
+        const caseId = caseMetric?.value || CASE_ID;
+        const frozenAmount = amountMetric?.value || FROZEN_AMOUNT;
+        const network = networkMetric?.value || 'Ethereum / USDT';
+        const executionTime = execMetric?.value || '';
+
+        const content = [];
+        content.push(docxParagraph(data.eyebrow || 'Compliance / Gerichtliche Sperre', {size: 18, bold: true, color: '218C6D', before: 80, after: 80, caps: true}));
+        content.push(docxParagraph(data.pageTitle, {size: 40, bold: true, color: '17362F', before: 0, after: 80, line: 440}));
+        content.push(docxParagraph(data.pageSubline, {size: 20, color: '596E67', after: 220, line: 300}));
+
+        content.push(docxTable([
+          [{text:'FALL-ID', size:15, bold:true, color:'6C7C77', shade:'F4F8F6'}, {text:'GESPERRTER BETRAG', size:15, bold:true, color:'6C7C77', shade:'F4F8F6'}, {text:'NETZWERK', size:15, bold:true, color:'6C7C77', shade:'F4F8F6'}, {text:'AUSFÜHRUNGSZEITPUNKT', size:15, bold:true, color:'6C7C77', shade:'F4F8F6'}],
+          [{text:caseId, size:23, bold:true, color:'17362F'}, {text:frozenAmount, size:23, bold:true, color:'17362F'}, {text:network, size:21, bold:true, color:'17362F'}, {text:executionTime, size:18, bold:true, color:'17362F'}]
+        ], {widths:[3600,3600,3600,3600], outerColor:'CFE5DD', innerColor:'E3EFEA', after:180}));
+
+        content.push(docxSectionTitle(data.detailTitle || 'Sperrdetails', data.detailStatus));
+        content.push(docxTable([
+          [{text:data.addressLabel || 'Gesperrte Adresse', size:16, bold:true, color:'218C6D', shade:'F2F8F5'}, {text:data.address, size:19, bold:true, font:'Consolas', color:'17362F'}]
+        ], {widths:[2300,12100], after:140}));
+
+        const metricRows = [];
+        for (let i = 0; i < data.metrics.length; i += 2) {
+          const a = data.metrics[i] || {label:'', value:''};
+          const b = data.metrics[i+1] || {label:'', value:''};
+          metricRows.push([
+            {paragraphs:[docxParagraph(a.label, {size:15,bold:true,color:'6C7C77',after:45}), docxParagraph(a.value,{size:18,bold:true,color:'263B36',after:0,line:270})], shade:i%4===0?'FAFCFB':'FFFFFF'},
+            {paragraphs:[docxParagraph(b.label, {size:15,bold:true,color:'6C7C77',after:45}), docxParagraph(b.value,{size:18,bold:true,color:'263B36',after:0,line:270})], shade:i%4===0?'FAFCFB':'FFFFFF'}
+          ]);
+        }
+        content.push(docxTable(metricRows, {widths:[7200,7200], after:140}));
+        content.push(docxTable([[{paragraphs:[docxParagraph('WICHTIGER HINWEIS', {size:15,bold:true,color:'A03A2B',after:60}), docxParagraph(data.alert,{size:18,color:'7A3326',after:0,line:290})], shade:'FFF2EF'}]], {widths:[14400], outerColor:'F2C7BE', innerColor:'F2C7BE', after:220}));
+
+        content.push(docxSectionTitle(data.timelineTitle || 'Sperrzeitachse', data.timelineStatus));
+        const timelineRows = [[
+          {text:'SCHRITT',size:15,bold:true,color:'FFFFFF',shade:'218C6D'},
+          {text:'EREIGNIS',size:15,bold:true,color:'FFFFFF',shade:'218C6D'},
+          {text:'ZEIT',size:15,bold:true,color:'FFFFFF',shade:'218C6D'},
+          {text:'EINZELHEITEN',size:15,bold:true,color:'FFFFFF',shade:'218C6D'}
+        ]];
+        data.timeline.forEach((t, i) => timelineRows.push([
+          {text:String(i+1).padStart(2,'0'), size:17,bold:true,color:'218C6D',align:'center',shade:'F4F8F6'},
+          {text:t.title,size:18,bold:true,color:'263B36'},
+          {text:t.time,size:16,color:'596E67'},
+          {text:t.desc,size:17,color:'334E47',line:270}
+        ]));
+        content.push(docxTable(timelineRows,{widths:[850,3100,2600,7850],headerRows:1,after:220}));
+
+        content.push(docxSectionTitle(data.recordsTitle || 'Transaktionsdaten', `${data.records.length} Datensätze`));
+        content.push(docxParagraph('USDT-Zuflüsse, -Abflüsse, Gegenparteien und On-Chain-Status im Zusammenhang mit dieser Adresse.', {size:18,color:'596E67',after:140,line:280}));
+        content.push(docxParagraph('Die folgenden Zeilen sind in dieser Fallzusammenfassung enthalten.', {size:16,bold:true,color:'596E67',after:120}));
+        const recordRows = [[
+          {text:'Transaktions-Hash',size:13,bold:true,color:'FFFFFF',shade:'173D34'},
+          {text:'Block',size:13,bold:true,color:'FFFFFF',shade:'173D34'},
+          {text:'Zeit',size:13,bold:true,color:'FFFFFF',shade:'173D34'},
+          {text:'Richtung',size:13,bold:true,color:'FFFFFF',shade:'173D34',align:'center'},
+          {text:'Gegenpartei',size:13,bold:true,color:'FFFFFF',shade:'173D34'},
+          {text:'Betrag',size:13,bold:true,color:'FFFFFF',shade:'173D34',align:'right'},
+          {text:'Status',size:13,bold:true,color:'FFFFFF',shade:'173D34'},
+          {text:'Kennzeichnung',size:13,bold:true,color:'FFFFFF',shade:'173D34'}
+        ]];
+        data.records.forEach((r, i) => recordRows.push([
+          {text:r.hash,size:11,font:'Consolas',color:'334E47',shade:i%2?'F8FBFA':'FFFFFF'},
+          {text:r.block,size:12,font:'Consolas',color:'334E47',shade:i%2?'F8FBFA':'FFFFFF'},
+          {text:r.time,size:12,color:'334E47',shade:i%2?'F8FBFA':'FFFFFF'},
+          {text:r.direction,size:12,bold:true,color:/Ausgang/i.test(r.direction)?'A84B3C':'19765A',align:'center',shade:i%2?'F8FBFA':'FFFFFF'},
+          {text:r.counterparty,size:11,font:'Consolas',color:'334E47',shade:i%2?'F8FBFA':'FFFFFF'},
+          {text:r.amount,size:12,bold:true,color:/^-/.test(r.amount)?'A84B3C':'19765A',align:'right',shade:i%2?'F8FBFA':'FFFFFF'},
+          {text:r.status,size:12,color:'334E47',shade:i%2?'F8FBFA':'FFFFFF'},
+          {text:r.tag,size:12,color:'334E47',shade:i%2?'F8FBFA':'FFFFFF'}
+        ]));
+        content.push(docxTable(recordRows,{widths:[3000,1200,1800,1100,2500,1700,1200,1900],headerRows:1,outerColor:'CADDD6',innerColor:'DFEBE7',margin:70,after:220}));
+
+        content.push(docxParagraph(`Lokal erstellt: ${data.generatedAt}`, {size:15,color:'7A8984',after:0}));
+
+        const sectPr = `<w:sectPr><w:headerReference w:type="default" r:id="rId3"/><w:footerReference w:type="default" r:id="rId4"/><w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/><w:pgMar w:top="900" w:right="720" w:bottom="850" w:left="720" w:header="360" w:footer="360" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr>`;
+
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>${content.join('')}${sectPr}</w:body></w:document>`;
+      }
+
+      function buildStylesXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Aptos" w:hAnsi="Aptos" w:eastAsia="Aptos"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:color w:val="334E47"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="280" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`;
+      }
+
+      function buildHeaderXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:tbl><w:tblPr><w:tblW w:w="14400" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:bottom w:val="single" w:sz="8" w:color="9CCBBB"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="14400"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:w="14400" w:type="dxa"/><w:shd w:val="clear" w:fill="173D34"/><w:tcMar><w:top w:w="90" w:type="dxa"/><w:left w:w="130" w:type="dxa"/><w:bottom w:w="90" w:type="dxa"/><w:right w:w="130" w:type="dxa"/></w:tcMar></w:tcPr>${docxParagraph('TETHER · USDT-SPERRDATENSATZ', {size:17,bold:true,color:'FFFFFF',after:0})}</w:tc></w:tr></w:tbl></w:hdr>`;
+      }
+
+      function buildFooterXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:tabs><w:tab w:val="right" w:pos="14400"/></w:tabs><w:spacing w:before="80" w:after="0"/></w:pPr>${docxRun('UNABHÄNGIGE FALLZUSAMMENFASSUNG — HERAUSGEGEBEN VON TETHER', {size:13,color:'7A8984'})}<w:r><w:tab/></w:r>${docxRun('Seite ', {size:15,color:'7A8984'})}<w:fldSimple w:instr="PAGE"><w:r><w:rPr><w:color w:val="7A8984"/><w:sz w:val="15"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>${docxRun(' von ', {size:15,color:'7A8984'})}<w:fldSimple w:instr="NUMPAGES"><w:r><w:rPr><w:color w:val="7A8984"/><w:sz w:val="15"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>`;
+      }
+
+      function crc32(bytes) {
+        if (!crc32.table) {
+          const table = new Uint32Array(256);
+          for (let n = 0; n < 256; n++) {
+            let c = n;
+            for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            table[n] = c >>> 0;
+          }
+          crc32.table = table;
+        }
+        let c = 0xFFFFFFFF;
+        for (let i = 0; i < bytes.length; i++) c = crc32.table[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+        return (c ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      const le16 = n => new Uint8Array([n & 255, (n >>> 8) & 255]);
+      const le32 = n => new Uint8Array([n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]);
+      function concatBytes(parts) {
+        const len = parts.reduce((s, p) => s + p.length, 0);
+        const out = new Uint8Array(len);
+        let off = 0;
+        parts.forEach(p => { out.set(p, off); off += p.length; });
+        return out;
+      }
+
+      function buildStoredZip(files) {
+        const enc = new TextEncoder();
+        const locals = [];
+        const centrals = [];
+        let offset = 0;
+        files.forEach(file => {
+          const name = enc.encode(file.name);
+          const data = file.data instanceof Uint8Array ? file.data : enc.encode(file.data);
+          const crc = crc32(data);
+          const local = concatBytes([
+            le32(0x04034b50), le16(20), le16(0x0800), le16(0), le16(0), le16(0),
+            le32(crc), le32(data.length), le32(data.length), le16(name.length), le16(0), name, data
+          ]);
+          locals.push(local);
+          const central = concatBytes([
+            le32(0x02014b50), le16(20), le16(20), le16(0x0800), le16(0), le16(0), le16(0),
+            le32(crc), le32(data.length), le32(data.length), le16(name.length), le16(0), le16(0), le16(0), le16(0), le32(0), le32(offset), name
+          ]);
+          centrals.push(central);
+          offset += local.length;
+        });
+        const centralSize = centrals.reduce((s, p) => s + p.length, 0);
+        const end = concatBytes([
+          le32(0x06054b50), le16(0), le16(0), le16(files.length), le16(files.length),
+          le32(centralSize), le32(offset), le16(0)
+        ]);
+        return new Blob([...locals, ...centrals, end], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+      }
+
+      function exportEditableDocx() {
+        const data = collectDocxData();
+        const caseId = data.metrics.find(m => /^Fall-ID$/i.test(m.label))?.value || CASE_ID;
+        const files = [
+          {name:'[Content_Types].xml', data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>`},
+          {name:'_rels/.rels', data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`},
+          {name:'word/_rels/document.xml.rels', data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`},
+          {name:'word/document.xml', data:buildDocumentXml(data)},
+          {name:'word/styles.xml', data:buildStylesXml()},
+          {name:'word/settings.xml', data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:defaultTabStop w:val="720"/><w:updateFields w:val="true"/></w:settings>`},
+          {name:'word/header1.xml', data:buildHeaderXml()},
+          {name:'word/footer1.xml', data:buildFooterXml()}
+        ];
+        const blob = buildStoredZip(files);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${caseId.replace(/[^A-Za-z0-9._-]+/g, '_')}_Freeze_Record.docx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      setGeneratedFreezeTimes();
+      updateWorkstationClock();
+      tryLocalTetherLogo();
+      renderRecords(makeHistoryRecords());
+      $('exportPdfButton')?.addEventListener('click', exportEditableDocx);
+      window.setInterval(updateWorkstationClock, 1000);
+    })();
+  </script>
+
+</body>
+</html>

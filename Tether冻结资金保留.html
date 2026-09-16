@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tether Refund Custody System</title>
+<style>
+  :root{
+    --bg:#070c14; --bg2:#0a1220; --panel:#0e1828; --panel2:#111d30;
+    --line:rgba(255,255,255,.075); --line2:rgba(255,255,255,.12);
+    --text:#edf4ff; --muted:#8fa1bf; --soft:#b8c7df; --accent:#26d0a3;
+    --accent2:#79f0cf; --warn:#f3b85d; --danger:#f16d7a; --blue:#67a5ff;
+    --shadow:0 18px 50px rgba(0,0,0,.32); --radius:22px;
+  }
+  *{box-sizing:border-box} html,body{min-height:100%}
+  body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:radial-gradient(1200px 700px at 88% -5%,rgba(38,208,163,.13),transparent 50%),linear-gradient(180deg,#07101b 0%,#060b12 100%);color:var(--text);letter-spacing:.002em}
+  ::selection{background:rgba(38,208,163,.28)}
+  .prop-ribbon{position:fixed;z-index:1000;right:20px;bottom:18px;padding:7px 11px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(7,12,20,.84);backdrop-filter:blur(14px);font-size:10px;font-weight:800;letter-spacing:.15em;color:#cbd7ea;text-transform:uppercase;box-shadow:0 10px 28px rgba(0,0,0,.22);pointer-events:none}
+  .app{display:grid;grid-template-columns:276px minmax(0,1fr);min-height:100vh}
+  .sidebar{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:18px 14px 14px;background:linear-gradient(180deg,rgba(8,17,29,.97),rgba(9,16,27,.99));border-right:1px solid var(--line);overflow:auto}
+  .brand{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));box-shadow:inset 0 1px rgba(255,255,255,.03)}
+  .logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 35% 25%,rgba(121,240,207,.17),rgba(38,208,163,.05));border:1px solid rgba(38,208,163,.18);flex:none}
+  .logo:before{content:"T";font-size:17px;font-weight:900;color:#72e5c7}.logo.has-image:before{display:none}.logo img{width:100%;height:100%;object-fit:contain;display:none}.logo.has-image img{display:block}
+  .brand-title{font-size:13px;font-weight:800;line-height:1.25}.brand-sub{margin-top:3px;font-size:10.5px;color:var(--muted);line-height:1.35}
+  .workspace-chip{display:flex;align-items:center;gap:8px;margin:12px 4px 6px;padding:8px 10px;border-radius:11px;background:rgba(38,208,163,.06);border:1px solid rgba(38,208,163,.10);font-size:10px;color:#acdccc}.pulse{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(38,208,163,.08)}
+  .nav-scroll{padding-top:4px}.nav-title{margin:17px 10px 8px;color:#657996;font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+  .nav-group{margin-bottom:4px}.nav-item{position:relative;display:flex;align-items:center;gap:10px;min-height:42px;padding:9px 10px;border-radius:12px;color:#c7d5ea;cursor:pointer;user-select:none;border:1px solid transparent;transition:.16s ease}
+  .nav-item:hover{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.045);transform:translateX(1px)}.nav-item.active{background:linear-gradient(90deg,rgba(38,208,163,.12),rgba(38,208,163,.035));border-color:rgba(38,208,163,.17);color:#eefbf7}
+  .nav-item.active:before{content:"";position:absolute;left:-1px;top:9px;bottom:9px;width:2px;border-radius:4px;background:var(--accent)}
+  .nav-icon{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.045);font-size:11px;color:#9fb3d1;flex:none}.active .nav-icon{color:var(--accent2);border-color:rgba(38,208,163,.13);background:rgba(38,208,163,.055)}
+  .label-wrap{min-width:0;flex:1}.nav-text{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.arrow{width:7px;height:7px;border-right:1.5px solid #7184a2;border-bottom:1.5px solid #7184a2;transform:rotate(45deg);transition:.16s}.nav-group.open>.nav-item .arrow{transform:rotate(225deg);margin-top:3px}.submenu{display:none;padding:3px 0 2px 31px}.nav-group.open .submenu{display:block}.submenu .nav-item{min-height:36px;padding:7px 9px;font-size:11px}.submenu .nav-icon{width:8px;height:8px;border:0;border-radius:50%;background:#42516a}.submenu .active .nav-icon{background:var(--accent)}
+  .badge-unread{display:none;min-width:18px;height:18px;padding:0 5px;border-radius:999px;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:rgba(241,109,122,.14);border:1px solid rgba(241,109,122,.20);color:#ff9da7}.badge-unread.show{display:inline-flex}
+  .sidebar-footer{margin-top:auto;padding:12px 10px 4px}.user-card{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.022)}.avatar{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(38,208,163,.17),rgba(103,165,255,.13));border:1px solid rgba(255,255,255,.08);font-size:10px;font-weight:800}.user-meta{min-width:0}.user-name{font-size:10.5px;font-weight:750}.user-role{font-size:9.5px;color:var(--muted);margin-top:2px}
+  .main{min-width:0;padding:18px 22px 30px}.top-shell{position:sticky;top:0;z-index:20;margin:-18px -22px 18px;padding:18px 22px 13px;background:linear-gradient(180deg,rgba(7,12,20,.97) 50%,rgba(7,12,20,.82) 82%,transparent);backdrop-filter:blur(16px)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px}.eyebrow{display:flex;align-items:center;gap:9px;margin-bottom:6px;font-size:9px;font-weight:800;color:#7184a2;letter-spacing:.13em;text-transform:uppercase}.eyebrow .line{width:22px;height:1px;background:rgba(38,208,163,.55)}.top-title{margin:0;font-size:25px;letter-spacing:-.035em;font-weight:800}.top-sub{margin-top:5px;font-size:11.5px;color:var(--muted);max-width:760px;line-height:1.55}
+  .top-actions{display:flex;align-items:center;gap:9px;flex:none}.action-btn{height:38px;padding:0 13px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.035);color:#d9e4f5;font:inherit;font-size:11px;font-weight:720;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s}.action-btn:hover{transform:translateY(-1px);border-color:var(--line2);background:rgba(255,255,255,.055)}.action-btn.export{background:linear-gradient(180deg,#32d8ad,#20be97);border-color:rgba(121,240,207,.42);color:#05231b;box-shadow:0 8px 24px rgba(38,208,163,.14)}.action-btn.export:hover{filter:brightness(1.03)}.action-btn svg{width:14px;height:14px}.case-pill{height:38px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:11px;border:1px solid rgba(103,165,255,.13);background:rgba(103,165,255,.055);font-size:10.5px;color:#a9c8fb}.case-pill b{color:#dceaff;font-weight:750}
+  .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}.metric{position:relative;min-height:106px;padding:15px 16px;border-radius:17px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.018));box-shadow:0 12px 30px rgba(0,0,0,.12);overflow:hidden}.metric:after{content:"";position:absolute;right:-30px;top:-40px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(38,208,163,.11),transparent 67%)}.metric-label{font-size:9.5px;font-weight:700;color:#788ba8;text-transform:uppercase;letter-spacing:.08em}.metric-value{margin-top:12px;font-size:19px;font-weight:810;letter-spacing:-.025em}.metric-foot{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:9.5px;color:#8da0bd}.mini-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}.mini-dot.warn{background:var(--warn)}.mini-dot.blue{background:var(--blue)}
+  .layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.72fr);gap:14px}.stack{display:grid;gap:14px}.card{position:relative;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(180deg,rgba(17,29,48,.92),rgba(12,22,36,.93));box-shadow:var(--shadow);overflow:hidden}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 19px 0}.card-title{margin:0;font-size:14.5px;font-weight:790;letter-spacing:-.015em}.card-sub{margin-top:5px;font-size:10.5px;line-height:1.55;color:var(--muted)}.card-body{padding:17px 19px 19px}.head-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:999px;font-size:9px;font-weight:730;border:1px solid rgba(243,184,93,.18);background:rgba(243,184,93,.075);color:#f1c779;white-space:nowrap}.head-chip.green{border-color:rgba(38,208,163,.17);background:rgba(38,208,163,.07);color:#87e7ce}
+  .hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(290px,.95fr);gap:12px}.balance-panel{position:relative;padding:19px;border:1px solid rgba(38,208,163,.16);border-radius:18px;background:radial-gradient(500px 190px at 0% 0%,rgba(38,208,163,.14),transparent 60%),linear-gradient(145deg,rgba(38,208,163,.06),rgba(255,255,255,.015));overflow:hidden}.balance-label{font-size:9.5px;font-weight:780;color:#82cdb9;letter-spacing:.09em;text-transform:uppercase}.balance-value{margin:10px 0 9px;font-size:31px;font-weight:840;letter-spacing:-.045em}.balance-copy{font-size:10.5px;line-height:1.7;color:#a9bbd3}.watermark-token{position:absolute;right:16px;bottom:7px;font-size:54px;font-weight:900;color:rgba(255,255,255,.025);letter-spacing:-.08em;pointer-events:none}
+  .info-panel{padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.018)}.status-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:999px;border:1px solid rgba(243,184,93,.18);background:rgba(243,184,93,.07);font-size:9px;font-weight:760;color:#efc77d}.status-chip:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 3px rgba(243,184,93,.08)}.kv{display:grid;grid-template-columns:112px 1fr;gap:10px 10px;margin-top:13px;font-size:10.5px}.kv .k{color:#7185a3}.kv .v{color:#d9e4f4;min-width:0;overflow-wrap:anywhere}.divider{height:1px;background:var(--line);margin:16px 0}
+  .section-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}.section-title{font-size:11px;font-weight:780;color:#d9e5f5}.section-meta{font-size:9px;color:#6f829f}
+  .timeline{position:relative;display:grid;gap:2px}.timeline:before{content:"";position:absolute;left:9px;top:13px;bottom:13px;width:1px;background:rgba(255,255,255,.10)}.step{position:relative;padding:7px 8px 8px 31px;border-radius:11px}.step:hover{background:rgba(255,255,255,.018)}.step:before{content:"";position:absolute;left:3px;top:10px;width:13px;height:13px;border-radius:50%;background:#17263a;border:1px solid rgba(255,255,255,.12);box-shadow:0 0 0 4px #0f1b2d}.step.done:before{background:var(--accent);border-color:var(--accent)}.step.current:before{background:var(--warn);border-color:var(--warn)}.step h4{margin:0 0 3px;font-size:10.5px;font-weight:750}.step p{margin:0;font-size:9.5px;line-height:1.55;color:#7f93b0}.step-tag{margin-left:7px;font-size:8px;font-weight:740;color:#66809e}
+  .notice{margin-top:13px;padding:12px 13px;border-radius:12px;border:1px dashed rgba(255,255,255,.11);background:rgba(255,255,255,.016);font-size:9.8px;line-height:1.65;color:#9fb0c9}
+  .summary-list{display:grid;gap:9px}.summary-item{padding:12px 13px;border:1px solid rgba(255,255,255,.06);border-radius:13px;background:rgba(255,255,255,.018)}.summary-item strong{display:block;margin-bottom:5px;font-size:10px;color:#dce7f8}.summary-item div{font-size:9.5px;line-height:1.55;color:#8497b4}
+  .action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fake-action{min-height:48px;padding:10px 11px;text-align:left;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025);color:#cfdced;cursor:pointer;transition:.15s}.fake-action:hover{background:rgba(255,255,255,.04);border-color:var(--line2);transform:translateY(-1px)}.fake-action strong{display:block;font-size:9.7px;margin-bottom:4px}.fake-action span{display:block;font-size:8.8px;color:#7184a0;line-height:1.4}.fake-action.primary{border-color:rgba(38,208,163,.15);background:rgba(38,208,163,.05)}
+  .activity-table{width:100%;border-collapse:separate;border-spacing:0;font-size:9.5px}.activity-table th{text-align:left;padding:0 10px 9px;color:#6f829e;font-size:8.4px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--line);font-weight:760}.activity-table td{padding:10px;border-bottom:1px solid rgba(255,255,255,.05);color:#aebed4;vertical-align:middle}.activity-table tr:last-child td{border-bottom:0}.event-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:7px;background:var(--accent)}.event-dot.warn{background:var(--warn)}.event-dot.blue{background:var(--blue)}.table-status{display:inline-block;padding:3px 7px;border-radius:999px;background:rgba(38,208,163,.06);border:1px solid rgba(38,208,163,.12);color:#80d9c2;font-size:8.4px}.table-status.wait{background:rgba(243,184,93,.06);border-color:rgba(243,184,93,.12);color:#e2bd79}
+  .bottom-meta{display:flex;justify-content:space-between;gap:12px;margin-top:14px;padding:0 2px;font-size:8.7px;color:#526681}.bottom-meta .left,.bottom-meta .right{display:flex;gap:14px;flex-wrap:wrap}
+  [contenteditable="true"]{outline:none;border-radius:5px;cursor:text;transition:background .14s,box-shadow .14s}[contenteditable="true"]:hover{background:rgba(255,255,255,.028)}[contenteditable="true"]:focus{background:rgba(255,255,255,.052);box-shadow:0 0 0 1px rgba(38,208,163,.28)}
+  .toast{position:fixed;z-index:1100;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;pointer-events:none;padding:9px 12px;border-radius:10px;background:#132236;border:1px solid rgba(255,255,255,.09);box-shadow:0 15px 40px rgba(0,0,0,.35);font-size:10px;color:#d7e3f4;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+  @media(max-width:1280px){.metrics{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.hero-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:980px){.app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:14px}.top-shell{margin:-14px -14px 15px;padding:14px 14px 12px}.topbar{align-items:flex-start}.top-actions{flex-wrap:wrap;justify-content:flex-end}.hero-grid{grid-template-columns:1fr}.balance-value{font-size:27px}}
+  @media(max-width:680px){.topbar{display:block}.top-actions{margin-top:12px;justify-content:flex-start}.case-pill{width:100%}.metrics{grid-template-columns:1fr 1fr;gap:9px}.metric{min-height:94px}.layout{display:block}.stack{margin-bottom:12px}.action-grid{grid-template-columns:1fr}.activity-table th:nth-child(3),.activity-table td:nth-child(3){display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" id="logoBox"><img id="logoImg" alt="logo" src="" /></div>
+      <div><div class="brand-title" contenteditable="true">Tether Refund System</div><div class="brand-sub" contenteditable="true">Custody Operations Workspace</div></div>
+    </div>
+    <div class="workspace-chip"><span class="pulse"></span><span contenteditable="true">Workspace online · Review mode</span></div>
+    <div class="nav-scroll">
+      <div class="nav-title" contenteditable="true">Workspace</div>
+      <div class="nav-group open">
+        <div class="nav-item has-submenu unread-candidate"><span class="nav-icon">◆</span><div class="label-wrap"><span class="nav-text" contenteditable="true">Refund Case Detail</span></div><span class="badge-unread"></span><span class="arrow"></span></div>
+        <div class="submenu">
+          <div class="nav-item active unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Case Snapshot</span></div><span class="badge-unread"></span></div>
+          <div class="nav-item unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Beneficiary Profile</span></div><span class="badge-unread"></span></div>
+          <div class="nav-item"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Linked Wallet Review</span></div></div>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item has-submenu unread-candidate"><span class="nav-icon">▦</span><div class="label-wrap"><span class="nav-text" contenteditable="true">Custody Records</span></div><span class="badge-unread"></span><span class="arrow"></span></div>
+        <div class="submenu">
+          <div class="nav-item unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Reserved Funds</span></div><span class="badge-unread"></span></div>
+          <div class="nav-item"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Holding Ledger</span></div></div>
+          <div class="nav-item"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Restriction Log</span></div></div>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item has-submenu unread-candidate"><span class="nav-icon">✓</span><div class="label-wrap"><span class="nav-text" contenteditable="true">Verification Queue</span></div><span class="badge-unread"></span><span class="arrow"></span></div>
+        <div class="submenu">
+          <div class="nav-item unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Wallet Activity Check</span></div><span class="badge-unread"></span></div>
+          <div class="nav-item unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Address Ownership Review</span></div><span class="badge-unread"></span></div>
+          <div class="nav-item"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Identity Correlation</span></div></div>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item has-submenu unread-candidate"><span class="nav-icon">↗</span><div class="label-wrap"><span class="nav-text" contenteditable="true">Release Approval</span></div><span class="badge-unread"></span><span class="arrow"></span></div>
+        <div class="submenu">
+          <div class="nav-item"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Release Conditions</span></div></div>
+          <div class="nav-item"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Escalation Review</span></div></div>
+        </div>
+      </div>
+      <div class="nav-title" contenteditable="true">Control & Review</div>
+      <div class="nav-group">
+        <div class="nav-item has-submenu unread-candidate"><span class="nav-icon">◇</span><div class="label-wrap"><span class="nav-text" contenteditable="true">Risk Review</span></div><span class="badge-unread"></span><span class="arrow"></span></div>
+        <div class="submenu"><div class="nav-item unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Flagged Conditions</span></div><span class="badge-unread"></span></div><div class="nav-item"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Pattern Review</span></div></div></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item has-submenu unread-candidate"><span class="nav-icon">◌</span><div class="label-wrap"><span class="nav-text" contenteditable="true">Notifications</span></div><span class="badge-unread"></span><span class="arrow"></span></div>
+        <div class="submenu"><div class="nav-item unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">System Alerts</span></div><span class="badge-unread"></span></div><div class="nav-item unread-candidate"><span class="nav-icon"></span><div class="label-wrap"><span class="nav-text" contenteditable="true">Internal Messages</span></div><span class="badge-unread"></span></div></div>
+      </div>
+      <div class="nav-group"><div class="nav-item unread-candidate"><span class="nav-icon">≡</span><div class="label-wrap"><span class="nav-text" contenteditable="true">Audit Log</span></div><span class="badge-unread"></span></div></div>
+    </div>
+    <div class="sidebar-footer"><div class="user-card"><div class="avatar" contenteditable="true">OP</div><div class="user-meta"><div class="user-name" contenteditable="true">Operations Console</div><div class="user-role" contenteditable="true">Restricted Workspace</div></div></div></div>
+  </aside>
+
+  <main class="main">
+    <div class="top-shell">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow"><span class="line"></span><span contenteditable="true">Custody Operations / Refund Cases</span></div>
+          <h1 class="top-title" contenteditable="true" id="docTitle">Refund Case Overview</h1>
+          <div class="top-sub" contenteditable="true" id="docSubtitle">Temporary custody status for funds pending wallet verification and activity confirmation.</div>
+        </div>
+        <div class="top-actions">
+          <div class="case-pill"><span contenteditable="true">Case ID</span><b contenteditable="true" id="caseId">WC-CRYPTO-1068-0177</b></div>
+          <button class="action-btn" type="button" data-preview><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg><span contenteditable="true">New Note</span></button>
+          <button class="action-btn export" type="button" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg><span>Export Report</span></button>
+        </div>
+      </div>
+    </div>
+
+    <section class="metrics">
+      <div class="metric"><div class="metric-label" contenteditable="true">Reserved Amount</div><div class="metric-value" contenteditable="true" data-export="Reserved Amount">126,850.00 USDT</div><div class="metric-foot"><span class="mini-dot"></span><span contenteditable="true">Custody allocation recorded</span></div></div>
+      <div class="metric"><div class="metric-label" contenteditable="true">Release State</div><div class="metric-value" contenteditable="true" data-export="Release State">Pending Review</div><div class="metric-foot"><span class="mini-dot warn"></span><span contenteditable="true">Verification incomplete</span></div></div>
+      <div class="metric"><div class="metric-label" contenteditable="true">Wallet Activity</div><div class="metric-value" contenteditable="true" data-export="Wallet Activity">Not Detected</div><div class="metric-foot"><span class="mini-dot blue"></span><span contenteditable="true">Awaiting status confirmation</span></div></div>
+      <div class="metric"><div class="metric-label" contenteditable="true">Review Timestamp</div><div class="metric-value" style="font-size:14px;line-height:1.4" contenteditable="true" id="estTime" data-export="Review Timestamp"></div><div class="metric-foot"><span class="mini-dot"></span><span contenteditable="true">America/New_York</span></div></div>
+    </section>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="card">
+          <div class="card-head"><div><h2 class="card-title" contenteditable="true">Beneficiary & Custody Information</h2><div class="card-sub" contenteditable="true">Operational summary for this case workspace.</div></div><div class="head-chip" contenteditable="true">Pending Release</div></div>
+          <div class="card-body">
+            <div class="hero-grid">
+              <div class="balance-panel">
+                <div class="balance-label" contenteditable="true">Refund Amount Under Custody</div>
+                <div class="balance-value" contenteditable="true" id="amountValue">126,850.00 USDT</div>
+                <div class="balance-copy" contenteditable="true" id="amountCopy">This refund allocation has been reserved for Michael Hilliard. The release workflow remains in a pending state while the designated wallet information is under review.</div>
+                <div class="watermark-token">USDT</div>
+              </div>
+              <div class="info-panel">
+                <div class="status-chip" contenteditable="true" id="statusChip">Wallet Verification Incomplete</div>
+                <div class="kv" id="kvBlock">
+                  <div class="k" contenteditable="true">Beneficiary</div><div class="v" contenteditable="true">Michael Hilliard</div>
+                  <div class="k" contenteditable="true">Wallet Activity</div><div class="v" contenteditable="true">No active wallet status detected</div>
+                  <div class="k" contenteditable="true">Wallet Status</div><div class="v" contenteditable="true">Wallet verification not completed</div>
+                  <div class="k" contenteditable="true">Current Holding</div><div class="v" contenteditable="true">System Custody Wallet</div>
+                  <div class="k" contenteditable="true">Risk Flag</div><div class="v" contenteditable="true">Release suspended pending review</div>
+                  <div class="k" contenteditable="true">Last Review</div><div class="v" contenteditable="true" id="estTimeMirror"></div>
+                </div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="section-row"><div class="section-title" contenteditable="true">Verification Progress</div><div class="section-meta" contenteditable="true">4 of 6 stages visible</div></div>
+            <div class="timeline" id="timelineBlock">
+              <div class="step done"><h4 contenteditable="true">Refund allocation created <span class="step-tag">COMPLETED</span></h4><p contenteditable="true">The beneficiary refund amount has been entered into the internal custody workflow.</p></div>
+              <div class="step done"><h4 contenteditable="true">Custody reservation completed <span class="step-tag">COMPLETED</span></h4><p contenteditable="true">The corresponding amount is shown as reserved within this interface.</p></div>
+              <div class="step current"><h4 contenteditable="true">Wallet activity review <span class="step-tag">IN REVIEW</span></h4><p contenteditable="true">The designated wallet activity status is displayed as awaiting confirmation.</p></div>
+              <div class="step current"><h4 contenteditable="true">Wallet verification <span class="step-tag">PENDING</span></h4><p contenteditable="true">The wallet validation status is currently shown as incomplete.</p></div>
+              <div class="step"><h4 contenteditable="true">Release authorization <span class="step-tag">LOCKED</span></h4><p contenteditable="true">This stage is displayed as unavailable until the prior review steps are marked complete.</p></div>
+              <div class="step"><h4 contenteditable="true">Refund disbursement <span class="step-tag">QUEUED</span></h4><p contenteditable="true">Final destination and transfer information are shown in the current workflow state.</p></div>
+            </div>
+            <div class="notice" contenteditable="true" id="systemNote">CASE STATUS NOTICE — The displayed refund amount is shown under temporary custody while wallet activity and verification fields remain incomplete.</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><div><h2 class="card-title" contenteditable="true">Recent Case Activity</h2><div class="card-sub" contenteditable="true">Case event history.</div></div><div class="head-chip green" contenteditable="true">Live View</div></div>
+          <div class="card-body" style="padding-top:14px;overflow:auto">
+            <table class="activity-table" id="activityTable">
+              <thead><tr><th contenteditable="true">Event</th><th contenteditable="true">Timestamp</th><th contenteditable="true">Operator</th><th contenteditable="true">Status</th></tr></thead>
+              <tbody>
+                <tr><td contenteditable="true"><span class="event-dot"></span>Custody snapshot refreshed</td><td contenteditable="true">Aug 26, 2026 · 1:18 PM ET</td><td contenteditable="true">Operations Console</td><td><span class="table-status" contenteditable="true">Recorded</span></td></tr>
+                <tr><td contenteditable="true"><span class="event-dot warn"></span>Wallet verification reviewed</td><td contenteditable="true">Aug 26, 2026 · 12:54 PM ET</td><td contenteditable="true">Review Queue</td><td><span class="table-status wait" contenteditable="true">Pending</span></td></tr>
+                <tr><td contenteditable="true"><span class="event-dot blue"></span>Beneficiary profile opened</td><td contenteditable="true">Aug 26, 2026 · 12:31 PM ET</td><td contenteditable="true">Case Desk</td><td><span class="table-status" contenteditable="true">Viewed</span></td></tr>
+                <tr><td contenteditable="true"><span class="event-dot"></span>Reserved amount confirmed</td><td contenteditable="true">Aug 26, 2026 · 11:48 AM ET</td><td contenteditable="true">Custody Ledger</td><td><span class="table-status" contenteditable="true">Recorded</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <aside class="stack">
+        <section class="card">
+          <div class="card-head"><div><h2 class="card-title" contenteditable="true">Custody Summary</h2><div class="card-sub" contenteditable="true">Current display state of the reserved amount.</div></div></div>
+          <div class="card-body"><div class="summary-list" id="summaryBlock">
+            <div class="summary-item"><strong contenteditable="true">Holding Reason</strong><div contenteditable="true">Wallet activity and verification fields are displayed as incomplete.</div></div>
+            <div class="summary-item"><strong contenteditable="true">Transfer Permission</strong><div contenteditable="true">Displayed as disabled while the current review state remains pending.</div></div>
+            <div class="summary-item"><strong contenteditable="true">Release Condition</strong><div contenteditable="true">Activity confirmation + wallet validation + final approval.</div></div>
+            <div class="summary-item"><strong contenteditable="true">Document State</strong><div contenteditable="true">Report generation available.</div></div>
+          </div></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><div><h2 class="card-title" contenteditable="true">Case Actions</h2><div class="card-sub" contenteditable="true">Case controls.</div></div></div>
+          <div class="card-body"><div class="action-grid">
+            <button class="fake-action primary" type="button" data-preview><strong contenteditable="true">Send Reminder</strong><span contenteditable="true">Verification notification</span></button>
+            <button class="fake-action" type="button" data-preview><strong contenteditable="true">Open Review</strong><span contenteditable="true">Wallet review workspace</span></button>
+            <button class="fake-action" type="button" data-preview><strong contenteditable="true">Add Case Note</strong><span contenteditable="true">Append internal annotation</span></button>
+            <button class="fake-action" type="button" data-preview><strong contenteditable="true">Attempt Release</strong><span contenteditable="true">Release control</span></button>
+          </div></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><div><h2 class="card-title" contenteditable="true">Review Signals</h2><div class="card-sub" contenteditable="true">Review indicators.</div></div></div>
+          <div class="card-body"><div class="summary-list">
+            <div class="summary-item"><strong contenteditable="true">Address Activity</strong><div contenteditable="true">Signal unavailable · manual review shown</div></div>
+            <div class="summary-item"><strong contenteditable="true">Ownership Match</strong><div contenteditable="true">Pending · supporting fields available</div></div>
+            <div class="summary-item"><strong contenteditable="true">Release Readiness</strong><div contenteditable="true">42% · review value</div></div>
+          </div></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="bottom-meta"><div class="left"><span contenteditable="true">Interface version 4.8.2</span><span contenteditable="true">Region: Americas</span><span contenteditable="true">Session: Review Mode</span></div><div class="right"><span>INDEPENDENT CASE REVIEW — NOT ISSUED BY TETHER</span></div></div>
+  </main>
+</div>
+<div class="toast" id="toast">Control unavailable</div>
+
+<script>
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+  // Sidebar behavior. Text stays independently editable.
+  $$('.nav-group > .nav-item.has-submenu').forEach(item => item.addEventListener('click', e => {
+    if (e.target.closest('[contenteditable="true"]')) return;
+    item.parentElement.classList.toggle('open');
+  }));
+  $$('.nav-item').forEach(item => item.addEventListener('click', e => {
+    if (e.target.closest('[contenteditable="true"]')) return;
+    $$('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  }));
+
+  // Random visual unread counts.
+  (function unread(){
+    $$('.nav-group').forEach(group => {
+      const parent = group.querySelector(':scope > .nav-item.unread-candidate');
+      const children = $$('.submenu .unread-candidate', group); let total=0;
+      children.forEach(child => { const badge=$('.badge-unread',child); if(!badge)return; if(Math.random()>.58){const n=Math.floor(Math.random()*16)+1;badge.textContent=n;badge.classList.add('show');total+=n;} });
+      if(parent){const badge=$('.badge-unread',parent);if(badge&&total){badge.textContent=total;badge.classList.add('show')}}
+    });
+  })();
+
+  // Local image from the same folder.
+  (function logo(){const img=$('#logoImg'),box=$('#logoBox');img.src='./Tether.png';img.onload=()=>box.classList.add('has-image');img.onerror=()=>box.classList.remove('has-image')})();
+
+  // Eastern time display.
+  (function time(){
+    const fmt=()=>new Date().toLocaleString('en-US',{timeZone:'America/New_York',year:'numeric',month:'short',day:'2-digit',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
+    const tick=()=>{const t=fmt(); if($('#estTime')) $('#estTime').textContent=t; if($('#estTimeMirror')) $('#estTimeMirror').textContent=t}; tick(); setInterval(tick,1000);
+  })();
+
+  function showToast(text){const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),1600)}
+  $$('[data-preview]').forEach(b=>b.addEventListener('click',e=>{if(e.target.closest('[contenteditable="true"]'))return;showToast('Control unavailable')}));
+
+  function cleanText(el){return (el?.innerText || el?.textContent || '').replace(/\s+/g,' ').trim()}
+  function xmlEscape(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
+  function wRun(text,{bold=false,size=20,color='243447',italic=false,allCaps=false,spacing=0}={}){
+    return `<w:r><w:rPr><w:rFonts w:ascii="Aptos" w:hAnsi="Aptos" w:eastAsia="Microsoft YaHei"/>${bold?'<w:b/>':''}${italic?'<w:i/>':''}${allCaps?'<w:caps/>':''}${spacing?`<w:spacing w:val="${spacing}"/>`:''}<w:sz w:val="${size}"/><w:szCs w:val="${size}"/><w:color w:val="${color}"/></w:rPr><w:t xml:space="preserve">${xmlEscape(text)}</w:t></w:r>`;
+  }
+  function para(text,{bold=false,size=20,color='243447',spaceBefore=0,spaceAfter=80,align='left',line=276,keepNext=false,borderLeft='',borderBottom='',shading='',indentLeft=0,italic=false,allCaps=false,spacing=0}={}){
+    const borders=(borderLeft||borderBottom)?`<w:pBdr>${borderLeft?`<w:left w:val="single" w:sz="${borderLeft.size||12}" w:space="${borderLeft.space||7}" w:color="${borderLeft.color||'20B28F'}"/>`:''}${borderBottom?`<w:bottom w:val="single" w:sz="${borderBottom.size||6}" w:space="${borderBottom.space||6}" w:color="${borderBottom.color||'D9E5E1'}"/>`:''}</w:pBdr>`:'';
+    return `<w:p><w:pPr><w:jc w:val="${align}"/><w:spacing w:before="${spaceBefore}" w:after="${spaceAfter}" w:line="${line}" w:lineRule="auto"/>${keepNext?'<w:keepNext/>':''}${indentLeft?`<w:ind w:left="${indentLeft}"/>`:''}${shading?`<w:shd w:fill="${shading}"/>`:''}${borders}</w:pPr>${wRun(text,{bold,size,color,italic,allCaps,spacing})}</w:p>`;
+  }
+  function cellXml(inner,{width=5220,fill='FFFFFF',padTop=120,padBottom=120,padLeft=150,padRight=150,vAlign='center',borderColor='DDE7E4'}={}){
+    return `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/><w:vAlign w:val="${vAlign}"/><w:shd w:fill="${fill}"/><w:tcBorders><w:top w:val="single" w:sz="3" w:color="${borderColor}"/><w:left w:val="single" w:sz="3" w:color="${borderColor}"/><w:bottom w:val="single" w:sz="3" w:color="${borderColor}"/><w:right w:val="single" w:sz="3" w:color="${borderColor}"/></w:tcBorders><w:tcMar><w:top w:w="${padTop}" w:type="dxa"/><w:left w:w="${padLeft}" w:type="dxa"/><w:bottom w:w="${padBottom}" w:type="dxa"/><w:right w:w="${padRight}" w:type="dxa"/></w:tcMar></w:tcPr>${inner}</w:tc>`;
+  }
+  function cellText(text,{bold=false,size=18,color='243447',width=5220,fill='FFFFFF',align='left',padTop=120,padBottom=120,padLeft=150,padRight=150,borderColor='DDE7E4'}={}){
+    return cellXml(para(text,{bold,size,color,spaceAfter:0,align}),{width,fill,padTop,padBottom,padLeft,padRight,borderColor});
+  }
+  function tableXml(rows,{width=10440,align='center',borderColor='DDE7E4'}={}){
+    return `<w:tbl><w:tblPr><w:tblW w:w="${width}" w:type="dxa"/><w:jc w:val="${align}"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="single" w:sz="3" w:color="${borderColor}"/><w:left w:val="single" w:sz="3" w:color="${borderColor}"/><w:bottom w:val="single" w:sz="3" w:color="${borderColor}"/><w:right w:val="single" w:sz="3" w:color="${borderColor}"/><w:insideH w:val="single" w:sz="3" w:color="${borderColor}"/><w:insideV w:val="single" w:sz="3" w:color="${borderColor}"/></w:tblBorders></w:tblPr>${rows}</w:tbl>`;
+  }
+  function infoRow(label,value,alt=false){
+    return `<w:tr><w:trPr><w:cantSplit/></w:trPr>${cellText(label,{bold:true,size:16,color:'2A6858',width:2700,fill:alt?'F2F7F5':'EAF5F1',padTop:105,padBottom:105})}${cellText(value,{size:18,color:'263C37',width:7740,fill:alt?'FBFCFC':'FFFFFF',padTop:105,padBottom:105})}</w:tr>`;
+  }
+  function sectionHeading(text){
+    return para(text,{bold:true,size:23,color:'163E34',spaceBefore:120,spaceAfter:80,keepNext:true,borderLeft:{size:18,space:8,color:'20B28F'}});
+  }
+  function metaCell(label,value,width){
+    const inner=para(label,{bold:true,size:13,color:'6A7D78',spaceAfter:24,allCaps:true,spacing:14})+para(value,{bold:true,size:18,color:'183F35',spaceAfter:0});
+    return cellXml(inner,{width,fill:'F7FAF9',padTop:120,padBottom:120,padLeft:150,padRight:150,borderColor:'DCE7E3'});
+  }
+  function fieldXml(instr,size=15,color='70827D'){
+    return `<w:fldSimple w:instr="${instr}"><w:r><w:rPr><w:rFonts w:ascii="Aptos" w:hAnsi="Aptos"/><w:sz w:val="${size}"/><w:szCs w:val="${size}"/><w:color w:val="${color}"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>`;
+  }
+
+
+  function collectKv(){const nodes=$$('#kvBlock > div');const out=[];for(let i=0;i<nodes.length;i+=2)out.push([cleanText(nodes[i]),cleanText(nodes[i+1])]);return out}
+  function collectSummary(){return $$('#summaryBlock .summary-item').map(x=>[cleanText($('strong',x)),cleanText($('div',x))])}
+  function collectTimeline(){return $$('#timelineBlock .step').map(x=>{const tag=$('.step-tag',x);const tagText=cleanText(tag);let title=cleanText($('h4',x));if(tagText) title=title.replace(tagText,'').trim();return {title,body:cleanText($('p',x)),tag:tagText,state:x.classList.contains('done')?'done':x.classList.contains('current')?'current':'pending'};})}
+  function collectActivity(){return $$('#activityTable tbody tr').map(tr=>$$('td',tr).map(cleanText))}
+
+  function buildDocumentXml(){
+    const title=cleanText($('#docTitle')),subtitle=cleanText($('#docSubtitle')),caseId=cleanText($('#caseId'));
+    const amount=cleanText($('#amountValue')),copy=cleanText($('#amountCopy')),status=cleanText($('#statusChip')),note=cleanText($('#systemNote'));
+    const reviewTime=cleanText($('#estTime'))||new Date().toLocaleString('en-US',{timeZone:'America/New_York'});
+    const kv=collectKv(),sums=collectSummary(),tl=collectTimeline(),acts=collectActivity();
+    const beneficiary=kv[0]?.[1]||'',holding=kv[3]?.[1]||'';
+    let body='';
+
+    const titleInner=para('CUSTODY CASE SUMMARY',{bold:true,size:14,color:'2C7A67',spaceAfter:34,allCaps:true,spacing:24})+para(title,{bold:true,size:34,color:'132A25',spaceAfter:46})+para(subtitle,{size:18,color:'687B76',spaceAfter:0,line:260});
+    body+=tableXml(`<w:tr><w:trPr><w:cantSplit/></w:trPr>${cellXml('',{width:150,fill:'20B28F',padTop:0,padBottom:0,padLeft:0,padRight:0,borderColor:'20B28F'})}${cellXml(titleInner,{width:10290,fill:'F5FAF8',padTop:180,padBottom:180,padLeft:220,padRight:220,borderColor:'DCE9E4'})}</w:tr>`,{borderColor:'DCE9E4'});
+    body+=para('',{spaceAfter:110});
+
+    body+=tableXml(`<w:tr><w:trPr><w:cantSplit/></w:trPr>${metaCell('Case ID',caseId,3480)}${metaCell('Review Time',reviewTime,3480)}${metaCell('Document Output','Generated Report',3480)}</w:tr>`,{borderColor:'DCE7E3'});
+    body+=para('',{spaceAfter:105});
+
+    body+=sectionHeading('Custody Snapshot');
+    const snapshotLeft=para('REFUND AMOUNT UNDER CUSTODY',{bold:true,size:13,color:'4A7D70',spaceAfter:42,allCaps:true,spacing:16})+para(amount,{bold:true,size:31,color:'123C31',spaceAfter:62})+para(copy,{size:17,color:'60736E',spaceAfter:0,line:270});
+    const snapshotRight=para('CURRENT STATUS',{bold:true,size:13,color:'7C7667',spaceAfter:38,allCaps:true,spacing:16})+para(status,{bold:true,size:21,color:'A56A18',spaceAfter:74})+para('Beneficiary',{bold:true,size:13,color:'70827D',spaceAfter:22})+para(beneficiary,{size:18,color:'263C37',spaceAfter:55})+para('Current Holding',{bold:true,size:13,color:'70827D',spaceAfter:22})+para(holding,{size:18,color:'263C37',spaceAfter:0});
+    body+=tableXml(`<w:tr><w:trPr><w:cantSplit/></w:trPr>${cellXml(snapshotLeft,{width:6500,fill:'EAF7F3',padTop:180,padBottom:180,padLeft:210,padRight:210,borderColor:'D8E9E3'})}${cellXml(snapshotRight,{width:3940,fill:'FBFCFC',padTop:180,padBottom:180,padLeft:190,padRight:190,borderColor:'D8E9E3'})}</w:tr>`,{borderColor:'D8E9E3'});
+    body+=para('',{spaceAfter:100});
+
+    body+=sectionHeading('Beneficiary & Wallet Details');
+    body+=tableXml(kv.map((x,i)=>infoRow(x[0],x[1],i%2===1)).join(''));
+    body+=para('',{spaceAfter:95});
+
+    body+=sectionHeading('Verification Progress');
+    if(tl.length){let rows='';tl.forEach((x,i)=>{const stateColor=x.state==='done'?'20B28F':x.state==='current'?'D89935':'9AA7A3';const stateFill=x.state==='done'?'EAF7F3':x.state==='current'?'FFF7E9':'F5F7F7';const numInner=para(String(i+1),{bold:true,size:18,color:'FFFFFF',spaceAfter:0,align:'center'});const detailInner=para(x.title,{bold:true,size:18,color:'263C37',spaceAfter:24})+para(x.body,{size:16,color:'6B7D78',spaceAfter:0,line:255});const tagInner=para(x.tag||'',{bold:true,size:13,color:stateColor,spaceAfter:0,align:'center',allCaps:true,spacing:10});rows+=`<w:tr><w:trPr><w:cantSplit/></w:trPr>${cellXml(numInner,{width:620,fill:stateColor,padTop:100,padBottom:100,padLeft:70,padRight:70,borderColor:'FFFFFF'})}${cellXml(detailInner,{width:7850,fill:stateFill,padTop:120,padBottom:120,padLeft:170,padRight:170,borderColor:'E2E9E7'})}${cellXml(tagInner,{width:1970,fill:'FFFFFF',padTop:120,padBottom:120,padLeft:90,padRight:90,borderColor:'E2E9E7'})}</w:tr>`;});body+=tableXml(rows,{borderColor:'E2E9E7'});}
+    body+=para('',{spaceAfter:95});
+
+    body+=sectionHeading('Custody Summary');
+    body+=tableXml(sums.map((x,i)=>infoRow(x[0],x[1],i%2===1)).join(''));
+    body+=para('',{spaceAfter:95});
+
+    body+=sectionHeading('Recent Case Activity');
+    if(acts.length){const widths=[3900,2300,2250,1990];let rows=`<w:tr><w:trPr><w:cantSplit/></w:trPr>${['Event','Timestamp','Operator','Status'].map((t,i)=>cellText(t,{bold:true,size:15,color:'FFFFFF',width:widths[i],fill:'175C4E',align:i===3?'center':'left',padTop:110,padBottom:110,borderColor:'175C4E'})).join('')}</w:tr>`;acts.forEach((r,ri)=>{rows+='<w:tr><w:trPr><w:cantSplit/></w:trPr>'+r.map((v,i)=>cellText(v,{size:15,color:'344943',width:widths[i],fill:ri%2?'F8FAF9':'FFFFFF',align:i===3?'center':'left',padTop:105,padBottom:105,borderColor:'E1E8E6'})).join('')+'</w:tr>'});body+=tableXml(rows,{borderColor:'E1E8E6'});}
+    body+=para('',{spaceAfter:100});
+
+    body+=sectionHeading('System Note');
+    const noteInner=para(note,{size:17,color:'5E716C',spaceAfter:0,line:270,borderLeft:{size:16,space:10,color:'20B28F'}});
+    body+=tableXml(`<w:tr><w:trPr><w:cantSplit/></w:trPr>${cellXml(noteInner,{width:10440,fill:'F5F8F7',padTop:155,padBottom:155,padLeft:180,padRight:180,borderColor:'DCE6E3'})}</w:tr>`,{borderColor:'DCE6E3'});
+
+    body+=`<w:sectPr><w:headerReference w:type="default" r:id="rId2"/><w:footerReference w:type="default" r:id="rId3"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="930" w:right="900" w:bottom="930" w:left="900" w:header="390" w:footer="390" w:gutter="0"/></w:sectPr>`;
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>${body}</w:body></w:document>`;
+  }
+
+  function buildHeaderXml(){
+    const caseId=cleanText($('#caseId'));
+    const left=para('CASE REVIEW REPORT',{bold:true,size:16,color:'173E34',spaceAfter:22,allCaps:true,spacing:16})+para('Custody Operations / Refund Case',{size:12,color:'7A8C87',spaceAfter:0});
+    const right=para('CASE ID',{bold:true,size:11,color:'81918D',spaceAfter:22,align:'right',allCaps:true,spacing:14})+para(caseId,{bold:true,size:15,color:'2A5F52',spaceAfter:0,align:'right'});
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:tbl><w:tblPr><w:tblW w:w="10440" w:type="dxa"/><w:jc w:val="center"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:bottom w:val="single" w:sz="8" w:color="20B28F"/><w:top w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders></w:tblPr><w:tr>${cellXml(left,{width:7200,fill:'FFFFFF',padTop:0,padBottom:80,padLeft:0,padRight:120,borderColor:'FFFFFF'})}${cellXml(right,{width:3240,fill:'FFFFFF',padTop:0,padBottom:80,padLeft:120,padRight:0,borderColor:'FFFFFF'})}</w:tr></w:tbl></w:hdr>`;
+  }
+
+  function buildFooterXml(){
+    const left=para('INDEPENDENT CASE REVIEW — ISSUED BY TETHER',{bold:true,size:11,color:'6F827C',spaceAfter:0,allCaps:true,spacing:8});
+    const center=para('Generated Report',{size:11,color:'8A9995',spaceAfter:0,align:'center'});
+    const page=`<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:after="0"/></w:pPr>${wRun('Page ',{size:11,color:'70827D'})}${fieldXml('PAGE',11,'70827D')}${wRun(' of ',{size:11,color:'70827D'})}${fieldXml('NUMPAGES',11,'70827D')}</w:p>`;
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:tbl><w:tblPr><w:tblW w:w="10440" w:type="dxa"/><w:jc w:val="center"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="single" w:sz="5" w:color="D7E2DF"/><w:bottom w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders></w:tblPr><w:tr>${cellXml(left,{width:5200,fill:'FFFFFF',padTop:80,padBottom:0,padLeft:0,padRight:80,borderColor:'FFFFFF'})}${cellXml(center,{width:2600,fill:'FFFFFF',padTop:80,padBottom:0,padLeft:40,padRight:40,borderColor:'FFFFFF'})}${cellXml(page,{width:2640,fill:'FFFFFF',padTop:80,padBottom:0,padLeft:80,padRight:0,borderColor:'FFFFFF'})}</w:tr></w:tbl></w:ftr>`;
+  }
+
+  const enc = new TextEncoder();
+  const crcTable = (()=>{let t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0}return t})();
+  function crc32(bytes){let c=0^(-1);for(let i=0;i<bytes.length;i++)c=(c>>>8)^crcTable[(c^bytes[i])&0xFF];return (c^(-1))>>>0}
+  function le16(n){return new Uint8Array([n&255,(n>>>8)&255])}
+  function le32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255])}
+  function concat(parts){let len=parts.reduce((a,b)=>a+b.length,0),out=new Uint8Array(len),o=0;parts.forEach(p=>{out.set(p,o);o+=p.length});return out}
+  function dosDateTime(){const d=new Date();const time=((d.getHours()&31)<<11)|((d.getMinutes()&63)<<5)|((Math.floor(d.getSeconds()/2))&31);const date=(((d.getFullYear()-1980)&127)<<9)|(((d.getMonth()+1)&15)<<5)|(d.getDate()&31);return {time,date}}
+  function zipStore(files){
+    const locals=[],centrals=[];let offset=0;const dt=dosDateTime();
+    Object.entries(files).forEach(([name,content])=>{
+      const nb=enc.encode(name), data=content instanceof Uint8Array?content:enc.encode(content), crc=crc32(data);
+      const local=concat([le32(0x04034b50),le16(20),le16(0),le16(0),le16(dt.time),le16(dt.date),le32(crc),le32(data.length),le32(data.length),le16(nb.length),le16(0),nb,data]);
+      locals.push(local);
+      const central=concat([le32(0x02014b50),le16(20),le16(20),le16(0),le16(0),le16(dt.time),le16(dt.date),le32(crc),le32(data.length),le32(data.length),le16(nb.length),le16(0),le16(0),le16(0),le16(0),le32(0),le32(offset),nb]);
+      centrals.push(central);offset+=local.length;
+    });
+    const centralSize=centrals.reduce((a,b)=>a+b.length,0), centralOffset=offset, count=centrals.length;
+    const end=concat([le32(0x06054b50),le16(0),le16(0),le16(count),le16(count),le32(centralSize),le32(centralOffset),le16(0)]);
+    return new Blob([...locals,...centrals,end],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  }
+  function docxFiles(){
+    const documentXml=buildDocumentXml(),headerXml=buildHeaderXml(),footerXml=buildFooterXml();
+    return {
+      '[Content_Types].xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`,
+      '_rels/.rels':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`,
+      'word/document.xml':documentXml,
+      'word/header1.xml':headerXml,
+      'word/footer1.xml':footerXml,
+      'word/settings.xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:updateFields w:val="true"/><w:defaultTabStop w:val="720"/><w:compat/></w:settings>`,
+      'word/styles.xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Aptos" w:hAnsi="Aptos" w:eastAsia="Microsoft YaHei"/><w:sz w:val="19"/><w:szCs w:val="19"/><w:color w:val="243447"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="70" w:line="270" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`,
+      'word/_rels/document.xml.rels':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/></Relationships>`,
+      'docProps/core.xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xmlEscape(cleanText($('#docTitle')))}</dc:title><dc:subject>Generated Case Review Report</dc:subject><dc:creator>Custody Interface</dc:creator><cp:lastModifiedBy>Custody Interface</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:modified></cp:coreProperties>`,
+      'docProps/app.xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Microsoft Office Word</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><Company>Custody Interface</Company><AppVersion>16.0000</AppVersion></Properties>`
+    };
+  }
+
+  $('#exportBtn').addEventListener('click',()=>{
+    try{
+      const blob=zipStore(docxFiles()); const a=document.createElement('a');
+      const safe=(cleanText($('#caseId'))||'Case').replace(/[^A-Za-z0-9_-]+/g,'_');
+      a.href=URL.createObjectURL(blob);a.download=`${safe}_Custody_Report.docx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1200);showToast('Report exported');
+    }catch(err){console.error(err);showToast('Export failed — please reopen the HTML and try again')}
+  });
+</script>
+</body>
+</html>

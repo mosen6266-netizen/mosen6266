@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whitfield & Crane Untersuchungskonsole · Vorläufiger Abschluss</title>
+  <style>
+    :root {
+      --bg: #c99728;
+      --bg-deep: #8b6414;
+      --bg-dark: #604407;
+      --panel: #f3f3f4;
+      --panel-2: #ffffff;
+      --panel-3: #ececed;
+      --line: #d3d4d7;
+      --line-strong: #b9bbc0;
+      --text: #22242a;
+      --muted: #6b707a;
+      --soft: #8a9099;
+      --red: #c99728;
+      --red-dark: #8b6414;
+      --red-deep: #604407;
+      --white: #ffffff;
+      --chip: #f4e3b5;
+      --warn: #f5c249;
+      --danger: #d7424b;
+      --good: #3b9f6b;
+      --info: #6a88b8;
+      --shadow: 0 18px 60px rgba(0,0,0,.20);
+      --radius: 14px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --sans: "Segoe UI", Inter, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        linear-gradient(180deg, #b7861d 0%, #c99728 18%, #c99728 35%, #9c7117 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(255,255,255,.12), transparent 24%),
+        radial-gradient(circle at 84% 12%, rgba(255,255,255,.08), transparent 24%),
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: auto, auto, 30px 30px, 30px 30px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.4));
+      z-index: -1;
+    }
+
+    .editable {
+      outline: none;
+      border-radius: 5px;
+      cursor: text;
+      transition: background .14s ease, box-shadow .14s ease;
+    }
+
+    .editable:hover {
+      background: rgba(201,151,40,.08);
+      box-shadow: 0 0 0 1px rgba(201,151,40,.10);
+    }
+
+    .editable:focus {
+      background: rgba(201,151,40,.14);
+      box-shadow: 0 0 0 2px rgba(201,151,40,.20);
+    }
+
+    .mono { font-family: var(--mono); }
+
+    .app-shell {
+      width: min(1860px, calc(100vw - 20px));
+      margin: 10px auto 18px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 30px 90px rgba(0,0,0,.24);
+      background: #f6f6f7;
+    }
+
+    .titlebar {
+      height: 38px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 0 14px;
+      background: linear-gradient(180deg, #ececef 0%, #dcdde1 100%);
+      border-bottom: 1px solid #c7c9cf;
+      user-select: none;
+    }
+
+    .window-dots {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .window-dots span {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+
+    .window-dots span:nth-child(1) { background: #ff605c; }
+    .window-dots span:nth-child(2) { background: #ffbd44; }
+    .window-dots span:nth-child(3) { background: #00ca4e; }
+
+    .titlebar-title {
+      text-align: center;
+      font-size: 12px;
+      color: #4f545d;
+      font-weight: 600;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .titlebar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #656b75;
+      font-size: 11px;
+    }
+
+    .app-header {
+      display: grid;
+      grid-template-columns: 320px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      background: linear-gradient(180deg, #f9f9fa 0%, #f0f0f2 100%);
+      border-bottom: 1px solid #d5d6db;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex: 0 0 auto;
+      border: 1px solid #c6c8cd;
+      background: #fff;
+      box-shadow: 0 4px 18px rgba(0,0,0,.08);
+    }
+
+    .brand-icon img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.05;
+      color: #1f2329;
+      letter-spacing: .1px;
+    }
+
+    .brand-text p {
+      margin: 5px 0 0;
+      color: #6d727b;
+      font-size: 12px;
+    }
+
+    .context-strip {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid #d1d3d8;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+    }
+
+    .context-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--red-dark);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .context-value {
+      min-width: 0;
+      font-size: 12px;
+      color: #29303a;
+      overflow-wrap: anywhere;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 9px;
+      border: 1px solid #dfc88e;
+      background: #fff8e7;
+      border-radius: 999px;
+      color: #846112;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--good);
+    }
+
+    .header-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tool-tag {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d3d8;
+      background: #fff;
+      color: #4e5561;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tool-tag.active {
+      border-color: #c69a32;
+      background: #fff8e7;
+      color: #8b6414;
+    }
+
+    .menu-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #d7d8dd;
+      background: #f5f5f6;
+      font-size: 12px;
+      color: #444b55;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .menu-item { font-weight: 600; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 250px 1fr 380px;
+      min-height: 1080px;
+      background: #efeff1;
+    }
+
+    .sidebar {
+      border-right: 1px solid #d7d8dd;
+      background: linear-gradient(180deg, #f7f7f8 0%, #f0f0f2 100%);
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+    }
+
+    .section-title {
+      padding: 12px 14px 8px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #8a9099;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .nav-list { padding: 0 8px 8px; }
+
+    .nav-item {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: 10px;
+      color: #515863;
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, #fff8e7 0%, #ffffff 100%);
+      color: #85600f;
+      box-shadow: inset 3px 0 0 #c99728;
+      border: 1px solid #e6d2a0;
+    }
+
+    .nav-icon {
+      text-align: center;
+      color: #946a13;
+      font-size: 13px;
+    }
+
+    .nav-count {
+      color: #8e949d;
+      font-size: 10px;
+      font-family: var(--mono);
+    }
+
+    .sidebar-card {
+      margin: 0 10px 10px;
+      border: 1px solid #d7d8dd;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .sidebar-card-head {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e3e7;
+      background: #f7f7f8;
+      font-size: 11px;
+      font-weight: 700;
+      color: #4f5661;
+    }
+
+    .sidebar-card-body {
+      padding: 11px 12px;
+      font-size: 12px;
+      color: #2f3540;
+      display: grid;
+      gap: 8px;
+    }
+
+    .meter {
+      height: 8px;
+      border-radius: 999px;
+      background: #ececef;
+      overflow: hidden;
+    }
+
+    .meter > div {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #c99728, #d7ad45);
+      border-radius: inherit;
+    }
+
+    .main-area {
+      display: grid;
+      grid-template-rows: auto auto auto 1fr auto;
+      min-width: 0;
+    }
+
+    .notice-banner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin: 10px 10px 0;
+      padding: 11px 12px;
+      border: 1px solid #ecd9a8;
+      border-radius: 12px;
+      background: #fff9e8;
+      color: #7e6300;
+      font-size: 12px;
+    }
+
+    .banner-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #fff2c3;
+      border: 1px solid #ecd9a8;
+      font-weight: 800;
+    }
+
+    .ribbon {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0,1fr));
+      gap: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #d7d8dd;
+      background: linear-gradient(180deg, #fbfbfc 0%, #f4f4f5 100%);
+    }
+
+    .ribbon-box {
+      border: 1px solid #d5d7dc;
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 11px;
+      min-width: 0;
+    }
+
+    .ribbon-box small {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #8a9099;
+    }
+
+    .ribbon-box b {
+      display: block;
+      font-size: 12px;
+      color: #282e37;
+      overflow-wrap: anywhere;
+    }
+
+    .main-tabs {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 8px 8px 0 8px;
+      background: #ececef;
+      border-bottom: 1px solid #d7d8dd;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .tab {
+      padding: 10px 14px;
+      border: 1px solid #d2d4d8;
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      background: #e6e7eb;
+      color: #606773;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      background: #ffffff;
+      color: #7b570b;
+    }
+
+    .summary-stage {
+      padding: 10px;
+      background: #ececef;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 10px;
+    }
+
+    .pane {
+      border: 1px solid #d4d6db;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,.03);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e3e7;
+      background: linear-gradient(180deg, #fafafb 0%, #f1f1f3 100%);
+    }
+
+    .pane-header h2,
+    .pane-header h3 {
+      margin: 0;
+      font-size: 12px;
+      color: #353b45;
+      letter-spacing: .02em;
+    }
+
+    .pane-header span {
+      color: #7d848e;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .completion-body {
+      padding: 14px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .headline {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .seal {
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 25px;
+      background: #fff8e7;
+      color: #835d0d;
+      border: 1px solid #e6d2a0;
+      font-weight: 800;
+    }
+
+    .headline h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #2a3039;
+      letter-spacing: -.02em;
+    }
+
+    .headline p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: #6d727c;
+      line-height: 1.6;
+    }
+
+    .status-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .status-card {
+      border: 1px solid #d8dade;
+      border-radius: 12px;
+      background: #fafafb;
+      padding: 12px;
+      min-height: 90px;
+    }
+
+    .status-card small {
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .10em;
+      color: #8a9099;
+      margin-bottom: 7px;
+      font-weight: 800;
+    }
+
+    .status-card b {
+      display: block;
+      font-size: 20px;
+      color: #2d333c;
+    }
+
+    .status-card span {
+      display: block;
+      margin-top: 7px;
+      font-size: 11px;
+      color: #6e7480;
+    }
+
+    .finding-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .finding-box {
+      border: 1px solid #d8dade;
+      border-radius: 12px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .finding-box h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: #353b45;
+    }
+
+    .finding-box p {
+      margin: 0;
+      font-size: 12px;
+      color: #6b707a;
+      line-height: 1.6;
+    }
+
+    .finding-box .addr {
+      margin-top: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #303640;
+      overflow-wrap: anywhere;
+      background: #f7f7f8;
+      border: 1px solid #e2e3e7;
+      border-radius: 9px;
+      padding: 8px;
+    }
+
+    .limitations {
+      border: 1px solid #d9dde6;
+      border-radius: 12px;
+      background: #f7faff;
+      padding: 12px;
+    }
+
+    .limitations h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: #33415a;
+    }
+
+    .limitations ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #61708a;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .limitations li + li { margin-top: 5px; }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    .matrix .cell {
+      border-right: 1px solid #e5e6ea;
+      border-bottom: 1px solid #e5e6ea;
+      padding: 12px;
+      min-height: 92px;
+    }
+
+    .matrix .cell:nth-child(2n) { border-right: none; }
+    .matrix .cell:nth-last-child(-n+2) { border-bottom: none; }
+
+    .matrix .cell small {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: #8a9099;
+    }
+
+    .matrix .cell b {
+      display: block;
+      font-size: 12px;
+      color: #2f3540;
+      line-height: 1.4;
+    }
+
+    .matrix .cell span {
+      display: block;
+      margin-top: 6px;
+      font-size: 11px;
+      color: #6d727c;
+    }
+
+    .report-preview {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 530px;
+    }
+
+    .report-frame {
+      margin: 12px;
+      border: 1px solid #d7d8dd;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+      overflow: hidden;
+    }
+
+    .paper-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid #ececef;
+      background: linear-gradient(180deg, #ffffff 0%, #fafafb 100%);
+    }
+
+    .paper-head h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #252b33;
+    }
+
+    .paper-head p {
+      margin: 5px 0 0;
+      font-size: 12px;
+      color: #69707b;
+    }
+
+    .paper-body {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      font-size: 12px;
+      color: #424853;
+      line-height: 1.7;
+    }
+
+    .paper-section h4 {
+      margin: 0 0 7px;
+      font-size: 12px;
+      color: #2e343d;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .paper-section p {
+      margin: 0;
+    }
+
+    .report-note {
+      margin: 0 12px 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d7d8dd;
+      background: #f9f9fa;
+      font-size: 11px;
+      color: #686f7a;
+    }
+
+    .right-column {
+      border-left: 1px solid #d7d8dd;
+      background: linear-gradient(180deg, #f7f7f8 0%, #f1f1f3 100%);
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .panel-title {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e3e7;
+      background: #fafafb;
+      font-size: 11px;
+      font-weight: 700;
+      color: #3d434d;
+    }
+
+    .score-panel, .info-list {
+      border: 1px solid #d7d8dd;
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .score-body {
+      display: grid;
+      grid-template-columns: 126px 1fr;
+      gap: 12px;
+      padding: 12px;
+      align-items: center;
+    }
+
+    .score-ring {
+      width: 126px;
+      height: 126px;
+      border-radius: 50%;
+      background: conic-gradient(#3b9f6b 0 40%, #f5c249 40% 70%, #c7ccd6 70% 100%);
+      position: relative;
+    }
+
+    .score-ring::after {
+      content: "";
+      position: absolute;
+      inset: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid #e3e4e8;
+    }
+
+    .score-center {
+      position: absolute;
+      inset: 34px;
+      display: grid;
+      place-items: center;
+      z-index: 1;
+      text-align: center;
+      font-weight: 800;
+      font-size: 24px;
+      color: #2c323b;
+      line-height: .95;
+    }
+
+    .score-center span {
+      display: block;
+      margin-top: 5px;
+      font-size: 9px;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: #8b9098;
+    }
+
+    .score-bars {
+      display: grid;
+      gap: 8px;
+    }
+
+    .score-line {
+      font-size: 10px;
+      color: #6b707a;
+    }
+
+    .score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .score-bar {
+      height: 7px;
+      border-radius: 999px;
+      background: #ececef;
+      overflow: hidden;
+    }
+
+    .score-bar > div {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #3b9f6b, #73be92);
+    }
+
+    .score-bar .warn { background: #f5c249; }
+    .score-bar .gray { background: #b8bfcb; }
+
+    .entry {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #ececef;
+    }
+
+    .entry:last-child { border-bottom: 0; }
+
+    .entry-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #2f8658;
+      background: #eff9f3;
+      border: 1px solid #cce5d7;
+    }
+
+    .entry-badge.warn {
+      color: #8b6414;
+      background: #fff8de;
+      border-color: #f1e1a7;
+    }
+
+    .entry-badge.info {
+      color: #4c6896;
+      background: #eef4ff;
+      border-color: #d6e2fb;
+    }
+
+    .entry b {
+      display: block;
+      font-size: 11px;
+      margin-bottom: 4px;
+      color: #343a43;
+    }
+
+    .entry p {
+      margin: 0;
+      font-size: 10px;
+      color: #6d727c;
+      line-height: 1.5;
+    }
+
+    .entry time {
+      display: block;
+      margin-top: 5px;
+      font-size: 10px;
+      color: #8b9098;
+      font-family: var(--mono);
+    }
+
+    .timeline {
+      padding: 6px 12px 12px;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 10px;
+      padding: 10px 0;
+      position: relative;
+    }
+
+    .event:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 34px;
+      bottom: -2px;
+      width: 1px;
+      background: #e3e4e8;
+    }
+
+    .event-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fff7e2;
+      border: 1px solid #e6d2a0;
+      color: #835d0d;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      z-index: 1;
+    }
+
+    .event b {
+      display: block;
+      font-size: 11px;
+      color: #343a43;
+      margin-bottom: 4px;
+    }
+
+    .event p {
+      margin: 0;
+      font-size: 10px;
+      color: #6d727c;
+      line-height: 1.5;
+    }
+
+    .event time {
+      display: inline-block;
+      margin-top: 5px;
+      font-size: 10px;
+      color: #8b9098;
+      font-family: var(--mono);
+    }
+
+    .statusbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 14px;
+      align-items: center;
+      padding: 8px 12px;
+      border-top: 1px solid #d5d6db;
+      background: linear-gradient(180deg, #efeff2 0%, #e4e5e9 100%);
+      color: #59606b;
+      font-size: 11px;
+    }
+
+    @media (max-width: 1580px) {
+      .workspace { grid-template-columns: 230px 1fr 330px; }
+    }
+
+    @media (max-width: 1340px) {
+      .app-header { grid-template-columns: 1fr; }
+      .header-tools { justify-content: flex-start; }
+      .workspace { grid-template-columns: 220px 1fr; }
+      .right-column {
+        grid-column: 1 / -1;
+        border-left: none;
+        border-top: 1px solid #d7d8dd;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: none;
+      }
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid #d7d8dd; }
+      .ribbon { grid-template-columns: repeat(2, 1fr); }
+      .status-cards { grid-template-columns: repeat(2, 1fr); }
+      .finding-grid { grid-template-columns: 1fr; }
+      .right-column { grid-template-columns: 1fr; }
+      .statusbar { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell { width: calc(100vw - 8px); margin: 4px auto 10px; border-radius: 12px; }
+      .ribbon, .status-cards, .matrix { grid-template-columns: 1fr; }
+      .matrix .cell, .matrix .cell:nth-child(2n), .matrix .cell:nth-last-child(-n+2) {
+        border-right: none;
+        border-bottom: 1px solid #e5e6ea;
+      }
+      .score-body { grid-template-columns: 1fr; justify-items: center; }
+      .notice-banner { grid-template-columns: 1fr; }
+    }
+  </style>
+
+<style id="wc-theme">
+  /* Whitfield & Crane — black / gold / white visual system */
+  :root{
+    --wc-gold:#c99728;
+    --wc-gold-2:#e0ba58;
+    --wc-gold-dark:#805a0d;
+    --wc-ink:#0a0a0a;
+    --wc-warm:#f7f4ec;
+    --wc-line:#dfd4b8;
+  }
+  html,body{
+    background:linear-gradient(180deg,#050505 0%,#171309 42%,#080808 100%) !important;
+  }
+  body::before, body:before{
+    background:
+      radial-gradient(circle at 12% 10%,rgba(224,186,88,.14),transparent 24%),
+      radial-gradient(circle at 84% 12%,rgba(201,151,40,.09),transparent 24%),
+      linear-gradient(rgba(224,186,88,.045) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(224,186,88,.045) 1px,transparent 1px) !important;
+    background-size:auto,auto,30px 30px,30px 30px !important;
+  }
+  .app,.app-shell{
+    border-color:rgba(214,173,70,.32) !important;
+    box-shadow:0 30px 90px rgba(0,0,0,.48),0 0 0 1px rgba(224,186,88,.06) inset !important;
+  }
+  .titlebar{
+    background:linear-gradient(180deg,#f2efe7 0%,#dfdbd0 100%) !important;
+    border-bottom-color:#c9bea2 !important;
+  }
+  .header,.app-header{
+    background:linear-gradient(180deg,#fffefb 0%,#f4f0e6 100%) !important;
+    border-bottom-color:#d7ccb0 !important;
+  }
+  .logo,.brand-icon{
+    background:#050505 !important;
+    border-color:#c99728 !important;
+    box-shadow:0 4px 18px rgba(0,0,0,.18),0 0 0 1px rgba(224,186,88,.12) inset !important;
+  }
+  .logo img,.brand-icon img{object-fit:contain !important;background:#050505 !important;}
+  .editable:hover{background:rgba(201,151,40,.10) !important;box-shadow:0 0 0 1px rgba(201,151,40,.16) !important;}
+  .editable:focus{background:rgba(201,151,40,.16) !important;box-shadow:0 0 0 2px rgba(201,151,40,.28) !important;}
+  .context,.context-strip,.address-strip{
+    border-color:#d7c9a5 !important;
+    background:#fffefb !important;
+  }
+  .context-label,.address-label{color:#805a0d !important;}
+  .pill,.status-pill{
+    border-color:#dec681 !important;
+    background:#fff8e7 !important;
+    color:#805a0d !important;
+  }
+  .tool.active,.tool-tag.active,.graph-flag.active{
+    border-color:#c99728 !important;
+    background:#fff7df !important;
+    color:#77520b !important;
+  }
+  .menubar,.menu-bar{background:#f5f2ea !important;border-bottom-color:#d9d0bc !important;}
+  .sidebar,.right{
+    background:linear-gradient(180deg,#f8f6f0 0%,#efebe1 100%) !important;
+  }
+  .nav-item.active{
+    background:linear-gradient(90deg,#fff4d2 0%,#fff 100%) !important;
+    color:#77520b !important;
+    box-shadow:inset 3px 0 0 #c99728 !important;
+    border-color:#e3d2a1 !important;
+  }
+  .nav-icon{color:#a77914 !important;}
+  .meter div,.meter>div,.mini-bar>div,.score-bar div{
+    background:linear-gradient(90deg,#9f7112,#e1bb59) !important;
+  }
+  .tab.active{color:#77520b !important;}
+  .seal,.notice-icon,.badge:not(.warn):not(.good):not(.info),.event-dot{
+    background:#fff7df !important;
+    color:#805a0d !important;
+    border-color:#e3d0a0 !important;
+  }
+  .path,.graph-canvas{
+    background-color:#fffefb !important;
+  }
+  .path{
+    background:
+      linear-gradient(rgba(0,0,0,.028) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,0,0,.028) 1px,transparent 1px),
+      radial-gradient(circle at 52% 42%,rgba(201,151,40,.11),transparent 31%),
+      #fffefb !important;
+    background-size:26px 26px,26px 26px,auto,auto !important;
+  }
+  .path-line{background:linear-gradient(90deg,#a87914,#ead18c,#a87914) !important;}
+  .path-node.final{border-color:#d9bd70 !important;background:linear-gradient(#fff6d8,#fff) !important;}
+  .stamp{border-color:#d5b75d !important;background:#fff6da !important;color:#77520b !important;}
+  .ring{background:conic-gradient(#c99728 0 40%,#e2be62 40% 62%,#3b9f6b 62% 83%,#c7ccd6 83% 100%) !important;}
+  .chip{background:#fff7df !important;border-color:#e6d2a0 !important;color:#805a0d !important;}
+  .graph-flag.active{box-shadow:0 0 0 1px rgba(201,151,40,.08) inset !important;}
+  .statusbar{border-top-color:#d5c9ac !important;background:linear-gradient(#f2efe7,#e3ded2) !important;}
+</style>
+
+
+<style id="wc-pdf-export-style">
+  .wc-export-pdf-btn{
+    appearance:none;border:1px solid #a77a18;background:linear-gradient(180deg,#171717,#050505);
+    color:#f0d07a;border-radius:10px;padding:8px 12px;font:700 11px/1.1 "Segoe UI",Arial,sans-serif;
+    letter-spacing:.02em;cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+    box-shadow:0 4px 14px rgba(0,0,0,.13),inset 0 0 0 1px rgba(255,255,255,.04);
+    transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+  }
+  .wc-export-pdf-btn:hover{transform:translateY(-1px);border-color:#d2a741;box-shadow:0 7px 20px rgba(0,0,0,.18)}
+  .wc-export-pdf-btn:active{transform:translateY(0)}
+  .wc-export-pdf-btn .wc-pdf-ico{font-size:13px;color:#f5dc98}
+  #wc-pdf-root{display:none}
+
+  @page{size:Letter;margin:0}
+  @media print{
+    html,body{margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+    body>*:not(#wc-pdf-root){display:none!important}
+    #wc-pdf-root{display:block!important;width:8.5in!important;margin:0!important;padding:0!important;background:#fff!important;color:#161616!important}
+    .wc-pdf-page{width:8.5in;height:11in;position:relative;overflow:hidden;background:#fff;page-break-after:always;break-after:page;font-family:Arial,"Segoe UI",sans-serif;color:#161616}
+    .wc-pdf-page:last-child{page-break-after:auto;break-after:auto}
+  }
+
+  .wc-pdf-page{box-sizing:border-box;font-family:Arial,"Segoe UI",sans-serif;color:#151515;background:#fff}
+  .wc-pdf-page *{box-sizing:border-box}
+  .wc-pdf-frame{position:absolute;inset:0;border-top:12px solid #050505}
+  .wc-pdf-inner{position:absolute;inset:0;padding:.52in .58in .50in .58in}
+  .wc-pdf-topline{height:3px;background:linear-gradient(90deg,#9e6f0d,#e3c36c,#9e6f0d);margin-bottom:15px}
+  .wc-pdf-header{display:grid;grid-template-columns:58px 1fr auto;gap:13px;align-items:center;padding-bottom:12px;border-bottom:1px solid #d9d1bf}
+  .wc-pdf-logo{width:54px;height:54px;object-fit:contain;background:#050505;border:1px solid #caa33c;border-radius:8px;padding:4px}
+  .wc-pdf-firm{font-family:Georgia,"Times New Roman",serif;font-size:19px;font-weight:700;letter-spacing:.2px;color:#101010}
+  .wc-pdf-dept{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#72674e;margin-top:5px;font-weight:700}
+  .wc-pdf-sample{font-size:8px;line-height:1.35;text-transform:uppercase;letter-spacing:.11em;font-weight:800;color:#74510a;border:1px solid #caa33c;background:#fff8e7;border-radius:6px;padding:6px 8px;text-align:center;max-width:155px}
+  .wc-pdf-kicker{margin-top:24px;font-size:8px;letter-spacing:.20em;text-transform:uppercase;color:#8a6b22;font-weight:800}
+  .wc-pdf-title{font-family:Georgia,"Times New Roman",serif;font-size:27px;line-height:1.15;margin:6px 0 7px;color:#111;font-weight:700;letter-spacing:-.01em}
+  .wc-pdf-subtitle{font-size:10px;line-height:1.5;color:#6b6559;max-width:5.9in}
+  .wc-pdf-caseband{margin-top:18px;background:#0b0b0b;color:#fff;padding:11px 14px;display:grid;grid-template-columns:1.35fr .85fr .85fr;gap:12px;border-left:4px solid #c99a2f}
+  .wc-pdf-caseband small{display:block;font-size:6.7px;letter-spacing:.15em;text-transform:uppercase;color:#d9c895;margin-bottom:4px;font-weight:700}
+  .wc-pdf-caseband b{display:block;font-size:9.5px;line-height:1.35;overflow-wrap:anywhere}
+  .wc-pdf-section{margin-top:18px}
+  .wc-pdf-section-title{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-family:Georgia,"Times New Roman",serif;font-size:14px;font-weight:700;color:#151515}
+  .wc-pdf-section-title:before{content:"";width:26px;height:2px;background:#c69526;flex:0 0 auto}
+  .wc-pdf-lead{font-family:Georgia,"Times New Roman",serif;font-size:12.3px;line-height:1.62;color:#29251f;margin:0;padding:12px 14px;background:#faf8f2;border:1px solid #e1dac9;border-left:3px solid #b88a24}
+  .wc-pdf-meta{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #ddd7ca;border-radius:7px;overflow:hidden}
+  .wc-pdf-meta-row{display:grid;grid-template-columns:40% 60%;min-height:34px;border-bottom:1px solid #e7e2d7}
+  .wc-pdf-meta-row:nth-last-child(-n+2){border-bottom:0}
+  .wc-pdf-meta-row:nth-child(odd){border-right:1px solid #e7e2d7}
+  .wc-pdf-meta-row:nth-child(even){border-right:0}
+  .wc-pdf-meta-row .k{background:#f7f4ec;color:#726955;font-size:7.4px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;padding:9px 10px}
+  .wc-pdf-meta-row .v{background:#fff;color:#222;font-size:8.7px;line-height:1.4;padding:8px 10px;font-weight:600;overflow-wrap:anywhere;word-break:break-word}
+  .wc-pdf-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .wc-pdf-card{border:1px solid #ddd7ca;border-radius:7px;padding:11px 12px;background:#fff;min-height:72px}
+  .wc-pdf-card small{display:block;font-size:6.8px;letter-spacing:.12em;text-transform:uppercase;color:#897758;font-weight:800;margin-bottom:6px}
+  .wc-pdf-card b{font-family:Georgia,"Times New Roman",serif;display:block;font-size:13px;line-height:1.25;color:#161616;overflow-wrap:anywhere}
+  .wc-pdf-card p{font-size:8.3px;line-height:1.45;color:#6d675c;margin:6px 0 0}
+  .wc-pdf-list{border-top:1px solid #dcd5c5}
+  .wc-pdf-item{display:grid;grid-template-columns:22px 1fr;gap:9px;padding:8px 0;border-bottom:1px solid #e6e0d3}
+  .wc-pdf-num{width:21px;height:21px;border-radius:50%;display:grid;place-items:center;background:#0b0b0b;color:#e4c871;font-size:7.5px;font-weight:800;margin-top:1px}
+  .wc-pdf-item b{display:block;font-size:9px;line-height:1.35;color:#1b1b1b;margin-bottom:3px}
+  .wc-pdf-item p{margin:0;font-size:8.1px;line-height:1.46;color:#666056;overflow-wrap:anywhere;word-break:break-word}
+  .wc-pdf-table{width:100%;border-collapse:collapse;border:1px solid #dcd6c8;font-size:7.8px}
+  .wc-pdf-table th{background:#0b0b0b;color:#f2dc9f;text-align:left;padding:7px 8px;font-size:6.8px;text-transform:uppercase;letter-spacing:.08em}
+  .wc-pdf-table td{padding:7px 8px;border-bottom:1px solid #e5dfd2;vertical-align:top;line-height:1.38;overflow-wrap:anywhere;word-break:break-word}
+  .wc-pdf-table tr:nth-child(even) td{background:#faf8f3}
+  .wc-pdf-score{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #e6e0d3;font-size:8.2px}
+  .wc-pdf-score b{font-size:8.8px;color:#7c5a10}
+  .wc-pdf-route{display:flex;align-items:flex-start;gap:9px;position:relative;padding:6px 0}
+  .wc-pdf-route:before{content:"";position:absolute;left:17px;top:27px;bottom:-7px;width:1px;background:#d6c48e}
+  .wc-pdf-route:last-child:before{display:none}
+  .wc-pdf-route-dot{width:34px;height:34px;flex:0 0 34px;border-radius:8px;border:1px solid #cda747;background:#fff8e5;display:grid;place-items:center;font-size:7.2px;font-weight:800;color:#78550e;z-index:1}
+  .wc-pdf-route b{display:block;font-size:8.8px;margin:1px 0 3px;color:#1b1b1b}
+  .wc-pdf-route p{margin:0;font-size:7.8px;line-height:1.42;color:#666056;overflow-wrap:anywhere;word-break:break-word}
+  .wc-pdf-note{margin-top:12px;padding:10px 12px;border:1px solid #d9d1bf;background:#fbf9f4;font-size:7.8px;line-height:1.5;color:#625c50}
+  .wc-pdf-watermark{position:absolute;left:0;right:0;top:5.04in;text-align:center;transform:rotate(-31deg);font:800 54px/1 Arial,sans-serif;letter-spacing:.08em;color:rgba(176,133,35,.055);pointer-events:none;white-space:nowrap}
+  .wc-pdf-footer{position:absolute;left:.58in;right:.58in;bottom:.24in;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding-top:7px;border-top:1px solid #d9d1bf;font-size:6.8px;color:#756d5f}
+  .wc-pdf-footer .center{font-weight:800;color:#5f4b1f;letter-spacing:.08em;text-transform:uppercase}
+  .wc-pdf-footer .right{text-align:right}
+  .wc-pdf-confidential{font-size:6.3px;letter-spacing:.09em;text-transform:uppercase;color:#8e825f}
+  .wc-pdf-legal{font-size:7.6px;line-height:1.55;color:#5e584e}
+  .wc-pdf-signoff{margin-top:18px;border-top:1px solid #cfc6b3;padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  .wc-pdf-signline{height:28px;border-bottom:1px solid #a99a7b;margin-bottom:5px}
+  .wc-pdf-signlabel{font-size:7px;text-transform:uppercase;letter-spacing:.08em;color:#81765f}
+</style>
+
+</head>
+<body>
+  <div class="app-shell">
+    <div class="titlebar">
+      <div class="window-dots" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="titlebar-title editable" contenteditable="true">Whitfield & Crane Untersuchungskonsole · Prüfung des vorläufigen Abschlusses</div>
+      <div class="titlebar-right">
+        <span class="editable" contenteditable="true">Statische Darstellung</span>
+      </div>
+    </div>
+
+    <div class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <img src="图标.png" alt="Whitfield &amp; Crane Symbol" />
+        </div>
+        <div class="brand-text">
+          <h1 class="editable" contenteditable="true">Whitfield & Crane</h1>
+          <p class="editable" contenteditable="true">Ermittlungswerkzeug für Blockchain-Geldflüsse</p>
+        </div>
+      </div>
+
+      <div class="context-strip">
+        <span class="context-label editable" contenteditable="true">Aktuell gehaltene Adresse</span>
+        <span class="context-value mono editable" contenteditable="true">bc1qretainedassets8h0p6v0m4x7n2zsamplesurplus000</span>
+        <span class="status-pill"><span class="status-dot"></span><span class="editable" contenteditable="true">Vorläufiger Abschluss</span></span>
+        <span class="status-pill editable" contenteditable="true">Bericht ausgestellt</span>
+      </div>
+
+      <div class="header-tools">
+        <button class="wc-export-pdf-btn" type="button" onclick="WC_exportProfessionalPDF()"><span class="wc-pdf-ico">▣</span><span>PDF-Bericht exportieren</span></button>
+        <span class="tool-tag editable" contenteditable="true">Arbeitsbereich</span>
+        <span class="tool-tag active editable" contenteditable="true">Abschlussprüfung</span>
+        <span class="tool-tag editable" contenteditable="true">Feststellungen</span>
+        <span class="tool-tag editable" contenteditable="true">Berichtsvorschau</span>
+        <span class="tool-tag editable" contenteditable="true">Protokolle</span>
+      </div>
+    </div>
+
+    <div class="menu-bar">
+      <span class="menu-item editable" contenteditable="true">Datei</span>
+      <span class="menu-item editable" contenteditable="true">Bearbeiten</span>
+      <span class="menu-item editable" contenteditable="true">Ansicht</span>
+      <span class="menu-item editable" contenteditable="true">Nachverfolgung</span>
+      <span class="menu-item editable" contenteditable="true">Feststellungen</span>
+      <span class="menu-item editable" contenteditable="true">Bericht</span>
+      <span class="menu-item editable" contenteditable="true">Beweismittel</span>
+      <span class="menu-item editable" contenteditable="true">Fenster</span>
+      <span class="menu-item editable" contenteditable="true">Hilfe</span>
+    </div>
+
+    <div class="workspace">
+      <aside class="sidebar">
+        <div>
+          <div class="section-title editable" contenteditable="true">Vorgangsnavigation</div>
+          <div class="nav-list">
+            <div class="nav-item"><span class="nav-icon">◆</span><span class="editable" contenteditable="true">Arbeitsbereich Geldfluss</span><span class="nav-count editable" contenteditable="true">01</span></div>
+            <div class="nav-item"><span class="nav-icon">◎</span><span class="editable" contenteditable="true">Profil der Ursprungsadresse</span><span class="nav-count editable" contenteditable="true">11</span></div>
+            <div class="nav-item"><span class="nav-icon">◇</span><span class="editable" contenteditable="true">Cluster-Zuordnung</span><span class="nav-count editable" contenteditable="true">43</span></div>
+            <div class="nav-item"><span class="nav-icon">◈</span><span class="editable" contenteditable="true">Börsenbezug</span><span class="nav-count editable" contenteditable="true">14</span></div>
+            <div class="nav-item active"><span class="nav-icon">▣</span><span class="editable" contenteditable="true">Prüfung des vorläufigen Abschlusses</span><span class="nav-count editable" contenteditable="true">02</span></div>
+            <div class="nav-item"><span class="nav-icon">✦</span><span class="editable" contenteditable="true">Ermittlungsbericht</span><span class="nav-count editable" contenteditable="true">01</span></div>
+            <div class="nav-item"><span class="nav-icon">⬡</span><span class="editable" contenteditable="true">Beweismittel-Warteschlange</span><span class="nav-count editable" contenteditable="true">248</span></div>
+            <div class="nav-item"><span class="nav-icon">⌁</span><span class="editable" contenteditable="true">Prüfprotokoll</span><span class="nav-count editable" contenteditable="true">96</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title editable" contenteditable="true">Feste Vorgangsdaten</div>
+          <div class="sidebar-card">
+            <div class="sidebar-card-head">Aktenzeichen</div>
+            <div class="sidebar-card-body">
+              <div class="mono"><b>WC-CRYPTO-1068-0177</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title editable" contenteditable="true">Abschlussübersicht</div>
+          <div class="sidebar-card">
+            <div class="sidebar-card-head editable" contenteditable="true">Abschluss der Prüfung</div>
+            <div class="sidebar-card-body">
+              <div class="meter"><div></div></div>
+              <div class="editable" contenteditable="true">Der vorläufige Ermittlungszyklus ist abgeschlossen und die aktuelle Bewertung wurde dokumentiert.</div>
+            </div>
+          </div>
+          <div class="sidebar-card">
+            <div class="sidebar-card-head editable" contenteditable="true">Ergebnisstatus</div>
+            <div class="sidebar-card-body">
+              <div class="editable" contenteditable="true">Die Gelder bleiben On-Chain nachvollziehbar</div>
+              <div class="editable" contenteditable="true">Erweiterter Datenzugriff nicht verfügbar</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title editable" contenteditable="true">Umgebung</div>
+          <div class="sidebar-card">
+            <div class="sidebar-card-head editable" contenteditable="true">Sitzungsgrundlage</div>
+            <div class="sidebar-card-body">
+              <div class="editable" contenteditable="true">Statische Desktop-Darstellung</div>
+              <div class="editable et-time" data-offset-minutes="0" contenteditable="true">Ostküstenzeit wird geladen</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <div class="notice-banner">
+          <div class="banner-icon">!</div>
+          <div class="editable" contenteditable="true">Die vorläufige Ermittlungsprüfung zeigt, dass die identifizierten Gelder weiterhin an einer On-Chain-Adresse verbleiben; zusätzlicher Datenzugriff liegt jedoch derzeit außerhalb des verfügbaren Berechtigungsumfangs.</div>
+          <div class="editable et-time" data-offset-minutes="4" contenteditable="true">Ostküstenzeit wird geladen</div>
+        </div>
+
+        <div class="ribbon">
+          <div class="ribbon-box">
+            <small class="editable" contenteditable="true">Aktenzeichen</small>
+            <b class="mono">WC-CRYPTO-1068-0177</b>
+          </div>
+          <div class="ribbon-box">
+            <small class="editable" contenteditable="true">Aktuell gehaltene Adresse</small>
+            <b class="mono editable" contenteditable="true">bc1qretainedassets8h0p6v0m4x7n2zsamplesurplus000</b>
+          </div>
+          <div class="ribbon-box">
+            <small class="editable" contenteditable="true">Ermittlungsphase</small>
+            <b class="editable" contenteditable="true">Vorläufiger Abschluss</b>
+          </div>
+          <div class="ribbon-box">
+            <small class="editable" contenteditable="true">Datenzugriffsstufe</small>
+            <b class="editable" contenteditable="true">Eingeschränkt / Begrenzt</b>
+          </div>
+          <div class="ribbon-box">
+            <small class="editable" contenteditable="true">Berichtsstatus</small>
+            <b class="editable" contenteditable="true">Ausgestellt</b>
+          </div>
+          <div class="ribbon-box">
+            <small class="editable" contenteditable="true">Zeitzone</small>
+            <b class="editable" contenteditable="true">America/New_York</b>
+          </div>
+        </div>
+
+        <div class="main-tabs">
+          <div class="tab active editable" contenteditable="true">Abschlussübersicht</div>
+          <div class="tab editable" contenteditable="true">Berichtsvorschau</div>
+          <div class="tab editable" contenteditable="true">Prüfung des Adressverbleibs</div>
+          <div class="tab editable" contenteditable="true">Berechtigungsgrenze</div>
+          <div class="tab editable" contenteditable="true">Konsolenprotokoll</div>
+        </div>
+
+        <div class="summary-stage">
+          <div class="summary-grid">
+            <section class="pane">
+              <div class="pane-header">
+                <h2 class="editable" contenteditable="true">Zusammenfassung des vorläufigen Ermittlungsabschlusses</h2>
+                <span class="editable" contenteditable="true">Bereich für die Hauptschlussfolgerung</span>
+              </div>
+              <div class="completion-body">
+                <div class="headline">
+                  <div class="seal">✓</div>
+                  <div>
+                    <h2 class="editable" contenteditable="true">Vorläufige Prüfung abgeschlossen.</h2>
+                    <p class="editable" contenteditable="true">Die aktuelle Arbeitsbewertung zeigt, dass die nachverfolgten Gelder weiterhin an einer Blockchain-Adresse beobachtbar sind und ein vorläufiger Ermittlungsbericht ausgestellt wurde. Derzeit stehen keine zusätzlichen Befugnisse oder Berechtigungen für den Zugriff auf weitergehende Datenquellen außerhalb des aktuellen Umfangs zur Verfügung.</p>
+                  </div>
+                </div>
+
+                <div class="status-cards">
+                  <div class="status-card">
+                    <small class="editable" contenteditable="true">Abschlussstatus</small>
+                    <b class="editable" contenteditable="true">100%</b>
+                    <span class="editable" contenteditable="true">Vorläufiger Prüfzyklus abgeschlossen</span>
+                  </div>
+                  <div class="status-card">
+                    <small class="editable" contenteditable="true">Status der Gelder</small>
+                    <b class="editable" contenteditable="true">Verblieben</b>
+                    <span class="editable" contenteditable="true">On-Chain beobachtet</span>
+                  </div>
+                  <div class="status-card">
+                    <small class="editable" contenteditable="true">Zugriffsumfang</small>
+                    <b class="editable" contenteditable="true">Begrenzt</b>
+                    <span class="editable" contenteditable="true">Keine erweiterten Berechtigungen</span>
+                  </div>
+                  <div class="status-card">
+                    <small class="editable" contenteditable="true">Berichtsstatus</small>
+                    <b class="editable" contenteditable="true">Ausgestellt</b>
+                    <span class="editable" contenteditable="true">Erstellt und verfügbar</span>
+                  </div>
+                </div>
+
+                <div class="finding-grid">
+                  <div class="finding-box">
+                    <h4 class="editable" contenteditable="true">Wesentliche vorläufige Feststellung</h4>
+                    <p class="editable" contenteditable="true">Die Ermittlung zeigt, dass die Spur der Vermögenswerte weiterhin mit einer derzeit gehaltenen Blockchain-Adresse verknüpft ist, anstatt ein bestätigtes endgültiges Liquidationsereignis auszuweisen.</p>
+                    <div class="addr editable" contenteditable="true">bc1qretainedassets8h0p6v0m4x7n2zsamplesurplus000</div>
+                  </div>
+                  <div class="finding-box">
+                    <h4 class="editable" contenteditable="true">Umfangsbeschränkung</h4>
+                    <p class="editable" contenteditable="true">In diesem Stadium stehen keine weiteren Berechtigungen zur Verfügung, um zusätzliche proprietäre Börsen- oder Verwahrdaten über den aktuellen Prüfungsstand hinaus zu erzwingen, freizuschalten oder abzurufen.</p>
+                  </div>
+                </div>
+
+                <div class="limitations">
+                  <h4 class="editable" contenteditable="true">Grenzen von Berechtigungen und Daten</h4>
+                  <ul>
+                    <li class="editable" contenteditable="true">On-Chain-Beobachtungen stützen die vorläufige Feststellung, dass die Gelder an einer identifizierten Adresse verblieben sind.</li>
+                    <li class="editable" contenteditable="true">Im aktuellen Darstellungsumfang sind keine zusätzlichen rechtlichen, verwahrungsbezogenen oder plattformseitigen Zugriffsberechtigungen ausgewiesen.</li>
+                    <li class="editable" contenteditable="true">Erweiterte Daten zu Eigentumsverhältnissen, Börsenkonten oder Off-Chain-Zuordnungen sind innerhalb der derzeitigen Zugriffsstufe nicht verfügbar.</li>
+                    <li class="editable" contenteditable="true">Ein vorläufiger Bericht wurde ausgestellt, um die Feststellungen und die aktuellen Beschränkungen zusammenzufassen.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section class="pane">
+              <div class="pane-header">
+                <h3 class="editable" contenteditable="true">Bewertungsmatrix</h3>
+                <span class="editable et-time" data-offset-minutes="7" contenteditable="true">Ostküstenzeit wird geladen</span>
+              </div>
+              <div class="matrix">
+                <div class="cell">
+                  <small class="editable" contenteditable="true">Gehaltene Adresse</small>
+                  <b class="mono editable" contenteditable="true">bc1qretainedassets8h0p6v0m4x7n2zsamplesurplus000</b>
+                  <span class="editable" contenteditable="true">Aktuell beobachtbares Ziel</span>
+                </div>
+                <div class="cell">
+                  <small class="editable" contenteditable="true">Hauptschlussfolgerung</small>
+                  <b class="editable" contenteditable="true">Die Gelder scheinen weiterhin On-Chain zu verbleiben</b>
+                  <span class="editable" contenteditable="true">Nur vorläufige Bewertung</span>
+                </div>
+                <div class="cell">
+                  <small class="editable" contenteditable="true">Zusätzlicher Datenzugriff</small>
+                  <b class="editable" contenteditable="true">Nicht verfügbar</b>
+                  <span class="editable" contenteditable="true">Außerhalb des aktuellen Berechtigungsumfangs</span>
+                </div>
+                <div class="cell">
+                  <small class="editable" contenteditable="true">Ermittlungsbericht</small>
+                  <b class="editable" contenteditable="true">Vorläufiger Bericht ausgestellt</b>
+                  <span class="editable" contenteditable="true">Zur Vorlage bereit</span>
+                </div>
+                <div class="cell">
+                  <small class="editable" contenteditable="true">Vertrauensniveau</small>
+                  <b class="editable" contenteditable="true">Mittel bis hoch</b>
+                  <span class="editable" contenteditable="true">Basierend auf der sichtbaren Kontinuität der Spur</span>
+                </div>
+                <div class="cell">
+                  <small class="editable" contenteditable="true">Empfohlener nächster Schritt</small>
+                  <b class="editable" contenteditable="true">Feststellungen sichern und eine Erweiterung der Befugnisse abwarten</b>
+                  <span class="editable" contenteditable="true">Keine weiteren Zugriffsmaßnahmen ausgewiesen</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="summary-stage" style="padding-top:0;">
+          <section class="pane report-preview">
+            <div class="pane-header">
+              <h2 class="editable" contenteditable="true">Ausgestellter vorläufiger Ermittlungsbericht</h2>
+              <span class="editable" contenteditable="true">Bereich für Berichtsvorschau</span>
+            </div>
+
+            <div class="report-frame">
+              <div class="paper-head">
+                <h3 class="editable" contenteditable="true">Vorläufiger Blockchain-Ermittlungsbericht</h3>
+                <p class="editable" contenteditable="true">Vorgang: WC-CRYPTO-1068-0177 · Whitfield & Crane · Interne Prüfkopie</p>
+              </div>
+              <div class="paper-body">
+                <div class="paper-section">
+                  <h4 class="editable" contenteditable="true">Zusammenfassung</h4>
+                  <p class="editable" contenteditable="true">Diese vorläufige Prüfung kommt zu dem Ergebnis, dass die untersuchten Gelder offenbar weiterhin an einer beobachtbaren Blockchain-Adresse verbleiben. Die vorliegende Bewertung basiert auf dem derzeit verfügbaren On-Chain-Prüfungsstand und weist keine weitergehenden Off-Chain-Zugriffsrechte aus.</p>
+                </div>
+                <div class="paper-section">
+                  <h4 class="editable" contenteditable="true">Beobachtete gehaltene Adresse</h4>
+                  <p class="mono editable" contenteditable="true">bc1qretainedassets8h0p6v0m4x7n2zsamplesurplus000</p>
+                </div>
+                <div class="paper-section">
+                  <h4 class="editable" contenteditable="true">Vorläufige Feststellung</h4>
+                  <p class="editable" contenteditable="true">Die Prüfung zeigt, dass die betreffenden Vermögenswerte an der oben genannten Adresse weiterhin sichtbar sind. Dies stützt die Arbeitsschlussfolgerung, dass die Gelder zum Zeitpunkt der aktuellen Prüfungsaufnahme weiterhin On-Chain vorhanden sind.</p>
+                </div>
+                <div class="paper-section">
+                  <h4 class="editable" contenteditable="true">Umfangsbeschränkung</h4>
+                  <p class="editable" contenteditable="true">In der aktuellen Prüfungsumgebung sind keine zusätzlichen Zugriffsrechte, Befugnisse zur erzwungenen Offenlegung oder proprietären Datenberechtigungen auf Börsenebene ausgewiesen. Daher kann die Ermittlung nicht über die derzeit sichtbaren und autorisierten Informationen hinaus ausgeweitet werden.</p>
+                </div>
+                <div class="paper-section">
+                  <h4 class="editable" contenteditable="true">Schlussfolgerung</h4>
+                  <p class="editable" contenteditable="true">Ein vorläufiger Ermittlungsbericht wurde ausgestellt. Er dokumentiert die aktuelle Schlussfolgerung, dass die Gelder weiterhin mit einer beobachtbaren Blockchain-Adresse verbunden sind, und weist zugleich darauf hin, dass derzeit keine zusätzlichen Berechtigungen für eine weitergehende Datenerweiterung verfügbar sind.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-note editable" contenteditable="true">
+              Nur statische Berichtsvorschau. Diese Darstellung ist nicht mit Live-Systemen für Recht, Verwahrung, Blockchain oder Börsen verbunden.
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <aside class="right-column">
+        <section class="score-panel">
+          <div class="panel-title editable" contenteditable="true">Bewertung des Verbleibs</div>
+          <div class="score-body">
+            <div class="score-ring">
+              <div class="score-center editable" contenteditable="true">74<span>Bewertung</span></div>
+            </div>
+            <div class="score-bars">
+              <div class="score-line">
+                <div class="score-row"><span class="editable" contenteditable="true">On-Chain-Kontinuität</span><b class="editable" contenteditable="true">88%</b></div>
+                <div class="score-bar"><div style="width:88%"></div></div>
+              </div>
+              <div class="score-line">
+                <div class="score-row"><span class="editable" contenteditable="true">Wahrscheinlichkeit des Adressverbleibs</span><b class="editable" contenteditable="true">81%</b></div>
+                <div class="score-bar"><div style="width:81%"></div></div>
+              </div>
+              <div class="score-line">
+                <div class="score-row"><span class="editable" contenteditable="true">Verfügbarkeit erweiterten Zugriffs</span><b class="editable" contenteditable="true">14%</b></div>
+                <div class="score-bar"><div class="warn" style="width:14%"></div></div>
+              </div>
+              <div class="score-line">
+                <div class="score-row"><span class="editable" contenteditable="true">Off-Chain-Sichtbarkeit</span><b class="editable" contenteditable="true">22%</b></div>
+                <div class="score-bar"><div class="gray" style="width:22%"></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-list">
+          <div class="panel-title editable" contenteditable="true">Ausgestellte Feststellungen</div>
+          <div class="entry">
+            <div class="entry-badge editable" contenteditable="true">F</div>
+            <div>
+              <b class="editable" contenteditable="true">Die Gelder bleiben On-Chain nachvollziehbar</b>
+              <p class="editable" contenteditable="true">Die sichtbare Kontinuität der Spur stützt die aktuelle Schlussfolgerung zum Verbleib an der Adresse.</p>
+              <time class="editable et-time" data-offset-minutes="16" contenteditable="true">Ostküstenzeit wird geladen</time>
+            </div>
+          </div>
+          <div class="entry">
+            <div class="entry-badge warn editable" contenteditable="true">L</div>
+            <div>
+              <b class="editable" contenteditable="true">Begrenzte Zugriffsgrenze</b>
+              <p class="editable" contenteditable="true">Derzeit ist keine weitergehende Berechtigung für eine vertiefte Datenerweiterung ausgewiesen.</p>
+              <time class="editable et-time" data-offset-minutes="34" contenteditable="true">Ostküstenzeit wird geladen</time>
+            </div>
+          </div>
+          <div class="entry">
+            <div class="entry-badge info editable" contenteditable="true">R</div>
+            <div>
+              <b class="editable" contenteditable="true">Bericht ausgestellt</b>
+              <p class="editable" contenteditable="true">Eine vorläufige schriftliche Zusammenfassung wurde erstellt und im Bereich der Berichtsvorschau bereitgestellt.</p>
+              <time class="editable et-time" data-offset-minutes="52" contenteditable="true">Ostküstenzeit wird geladen</time>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-list">
+          <div class="panel-title editable" contenteditable="true">Handlungsgrenze</div>
+          <div class="entry">
+            <div class="entry-badge warn editable" contenteditable="true">A</div>
+            <div>
+              <b class="editable" contenteditable="true">Keine weiteren Befugnisse ausgewiesen</b>
+              <p class="editable" contenteditable="true">Diese Darstellung bildet einen Endpunkt nach den ersten Schlussfolgerungen und der Berichtsausstellung ab.</p>
+            </div>
+          </div>
+          <div class="entry">
+            <div class="entry-badge info editable" contenteditable="true">N</div>
+            <div>
+              <b class="editable" contenteditable="true">Nächste Vorgehensweise</b>
+              <p class="editable" contenteditable="true">Den aktuellen Ergebnissatz sichern und eine mögliche künftige Erweiterung des autorisierten Zugriffs abwarten.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-list">
+          <div class="panel-title editable" contenteditable="true">Aktivitätsprotokoll zum Abschluss</div>
+          <div class="timeline">
+            <div class="event">
+              <div class="event-dot editable" contenteditable="true">1</div>
+              <div>
+                <b class="editable" contenteditable="true">Vorläufige Prüfung abgeschlossen</b>
+                <p class="editable" contenteditable="true">Die ersten Feststellungen wurden im Bereich der Abschlussübersicht zusammengeführt.</p>
+                <time class="editable et-time" data-offset-minutes="8" contenteditable="true">Ostküstenzeit wird geladen</time>
+              </div>
+            </div>
+            <div class="event">
+              <div class="event-dot editable" contenteditable="true">2</div>
+              <div>
+                <b class="editable" contenteditable="true">Bewertung des Adressverbleibs erfasst</b>
+                <p class="editable" contenteditable="true">Die aktuelle Schlussfolgerung zum Adressverbleib wurde dem Feststellungssatz hinzugefügt.</p>
+                <time class="editable et-time" data-offset-minutes="29" contenteditable="true">Ostküstenzeit wird geladen</time>
+              </div>
+            </div>
+            <div class="event">
+              <div class="event-dot editable" contenteditable="true">3</div>
+              <div>
+                <b class="editable" contenteditable="true">Berechtigungsgrenze dokumentiert</b>
+                <p class="editable" contenteditable="true">Die fehlende Möglichkeit zum Zugriff auf weitergehende Datenquellen wurde formal vermerkt.</p>
+                <time class="editable et-time" data-offset-minutes="47" contenteditable="true">Ostküstenzeit wird geladen</time>
+              </div>
+            </div>
+            <div class="event">
+              <div class="event-dot editable" contenteditable="true">4</div>
+              <div>
+                <b class="editable" contenteditable="true">Vorläufiger Bericht ausgestellt</b>
+                <p class="editable" contenteditable="true">Ein schriftlicher Bericht wurde erstellt und im Bereich der Berichtsvorschau angezeigt.</p>
+                <time class="editable et-time" data-offset-minutes="63" contenteditable="true">Ostküstenzeit wird geladen</time>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="statusbar">
+      <span class="editable" contenteditable="true">Whitfield & Crane Untersuchungskonsole</span>
+      <span class="editable">Aktenzeichen: <b>WC-CRYPTO-1068-0177</b></span>
+      <span class="editable" contenteditable="true">Modus: Prüfung des vorläufigen Abschlusses</span>
+      <span class="editable et-time" data-offset-minutes="0" contenteditable="true">Ostküstenzeit wird geladen</span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const formatter = new Intl.DateTimeFormat("de-DE", {
+        timeZone: "America/New_York",
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZoneName: "short"
+      });
+
+      function formatEastern(date) {
+        return formatter.format(date).replace(",", "");
+      }
+
+      function updateTimes() {
+        const now = new Date();
+        document.querySelectorAll(".et-time").forEach((el) => {
+          const offset = Math.max(0, Number(el.dataset.offsetMinutes || 0));
+          const dt = new Date(now.getTime() - offset * 60 * 1000);
+          el.textContent = formatEastern(dt);
+        });
+      }
+
+      updateTimes();
+
+      document.querySelectorAll(".editable").forEach((el) => {
+        el.setAttribute("spellcheck", "false");
+        el.addEventListener("click", function() {
+          if (this.getAttribute("contenteditable") === "true") {
+            this.focus();
+          }
+        });
+      });
+
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape" && document.activeElement) {
+          document.activeElement.blur();
+        }
+      });
+    })();
+  </script>
+  <div id="wc-pdf-root" aria-hidden="true"></div>
+
+<script id="wc-pdf-export-script">
+(function(){
+  const REPORT_TYPE = "preliminary";
+  const REPORT_TITLE = "Vorläufiger Blockchain-Ermittlungsbericht";
+  const REPORT_SUBTITLE = "Prüfung des vorläufigen Abschlusses";
+  const CASE_FIXED = "WC-CRYPTO-1068-0177";
+  const GOLD = "C79A2B", GOLD_DARK = "8A6718", INK = "181818", MUTED = "666666", PALE = "F6F1E5", LINE = "D7D1C5", WHITE = "FFFFFF", SOFT = "F7F7F7";
+  const DOC_W = 10800; // 7.5in usable width on US Letter with 0.5in side margins
+  const HALF_W = 5400;
+
+  const q = (sel, root=document) => root.querySelector(sel);
+  const qa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const clean = (s) => (s || "").replace(/\s+/g," ").trim();
+  const text = (sel, fallback="") => { const el=q(sel); return el ? clean(el.textContent) : fallback; };
+  const xesc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+  const units = n => Math.round(n);
+
+  // WC_LIVE_BINDING_V2 — export always reads the CURRENT edited DOM state.
+  // Original text is retained only to detect which contenteditable regions the user changed.
+  function wcRawText(el){
+    if(!el) return '';
+    const v = (typeof el.innerText === 'string' ? el.innerText : el.textContent) || '';
+    return v.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n[ \t]+/g,'\n').trim();
+  }
+  function wcInitEditableTracking(){
+    qa('.editable[contenteditable="true"]').forEach((el,i)=>{
+      if(!el.dataset.wcEditId) el.dataset.wcEditId = 'wc-edit-' + String(i+1).padStart(3,'0');
+      if(el.dataset.wcInitialText == null) el.dataset.wcInitialText = wcRawText(el);
+      if(!el.dataset.wcTrackingBound){
+        el.dataset.wcTrackingBound='1';
+        el.addEventListener('input',()=>{ el.dataset.wcChanged='1'; });
+        el.addEventListener('blur',()=>{
+          if(wcRawText(el)!==(el.dataset.wcInitialText||'')) el.dataset.wcChanged='1';
+        });
+      }
+    });
+  }
+  function wcIsUiChrome(el){
+    return !!el.closest('.titlebar,.menubar,.menu-bar,.window-dots,.tools,.header-tools,.main-tabs,.tabs,.nav-list,.nav');
+  }
+  function wcSemanticLabel(el,idx){
+    const parent=el.parentElement;
+    if(parent){
+      const small=q('small.editable,small',parent);
+      if(small && small!==el && clean(wcRawText(small))) return clean(wcRawText(small));
+      const label=q('.context-label,.address-label,.mini-row > span,.score-row > span,.sidebar-card-head,.side-head,.panel-title,.mini-title',parent);
+      if(label && label!==el && clean(wcRawText(label))) return clean(wcRawText(label));
+    }
+    const data=el.closest('.data');
+    if(data){
+      let n=el.previousElementSibling;
+      if(n && clean(wcRawText(n))) return clean(wcRawText(n));
+    }
+    const sec=el.closest('.paper-section');
+    if(sec){ const h=q('h4',sec); if(h && h!==el && clean(wcRawText(h))) return clean(wcRawText(h)); }
+    const entry=el.closest('.entry,.event,.finding,.path-node,.node,.cell,.card,.status-card,.mini-module');
+    if(entry){
+      const h=q('h2,h3,h4,b,small',entry);
+      if(h && h!==el && clean(wcRawText(h))) return clean(wcRawText(h));
+    }
+    const pane=el.closest('.pane,.report,.paper,.sidebar-card,.side-card,.mini,.score,.list');
+    if(pane){
+      const h=q('.pane-header h2,.pane-head h2,.pane-head h3,.panel-title,.mini-title,.sidebar-card-head,.side-head,h2,h3,h4',pane);
+      if(h && h!==el && clean(wcRawText(h))) return clean(wcRawText(h));
+    }
+    return 'Bearbeitetes Oberflächenfeld ' + (idx+1);
+  }
+  function wcManualEdits(){
+    wcInitEditableTracking();
+    return qa('.editable[contenteditable="true"]').map((el,i)=>{
+      const initial=el.dataset.wcInitialText||'';
+      const current=wcRawText(el);
+      return {id:el.dataset.wcEditId||'',initial,current,label:wcSemanticLabel(el,i),relevant:true};
+    }).filter(x=>x.current!==x.initial);
+  }
+  function wcInitialTextCounts(){
+    wcInitEditableTracking();
+    const counts={};
+    qa('.editable[contenteditable="true"]').forEach(el=>{
+      const k=el.dataset.wcInitialText||'';
+      if(k) counts[k]=(counts[k]||0)+1;
+    });
+    return counts;
+  }
+  function wcUniqueOverrideXml(xml,data){
+    const counts=(data&&data.initialTextCounts)||{};
+    (data&&data.manualEdits||[]).forEach(e=>{
+      if(!e.initial || !e.current || counts[e.initial]!==1) return;
+      const from=xesc(e.initial), to=xesc(e.current);
+      if(from && xml.includes(from)) xml=xml.split(from).join(to);
+    });
+    return xml;
+  }
+  function wcValueElementFromLabel(labelEl){
+    if(!labelEl) return null;
+    const data=labelEl.closest('.data');
+    if(data && labelEl.nextElementSibling) return labelEl.nextElementSibling;
+    const box=labelEl.closest('.ribbon-box,.box,.status-card,.card,.cell,.mini-row,.context-strip,.address-strip,.side-body,.sidebar-card-body,.matrix');
+    if(box){
+      const vals=qa('b,.context-value,.address-value,.mono',box).filter(x=>x!==labelEl && !x.contains(labelEl));
+      if(vals.length) return vals[0];
+      if(labelEl.nextElementSibling) return labelEl.nextElementSibling;
+    }
+    if(labelEl.nextElementSibling) return labelEl.nextElementSibling;
+    return null;
+  }
+  function wcValuesForOriginalLabel(label){
+    wcInitEditableTracking();
+    const target=clean(label).toLowerCase();
+    const out=[];
+    qa('.editable[contenteditable="true"]').forEach(labelEl=>{
+      const initial=clean(labelEl.dataset.wcInitialText||'').toLowerCase();
+      const current=clean(wcRawText(labelEl)).toLowerCase();
+      if(initial!==target && current!==target) return;
+      const valueEl=wcValueElementFromLabel(labelEl);
+      if(!valueEl) return;
+      const value=clean(wcRawText(valueEl));
+      if(!value) return;
+      const changed=(valueEl.dataset && valueEl.dataset.wcInitialText!=null && wcRawText(valueEl)!==valueEl.dataset.wcInitialText) || valueEl.dataset.wcChanged==='1';
+      out.push({value,changed});
+    });
+    return out;
+  }
+
+  function etStamp(){
+    return new Intl.DateTimeFormat("de-DE",{timeZone:"America/New_York",year:"numeric",month:"long",day:"2-digit",hour:"2-digit",minute:"2-digit",timeZoneName:"short"}).format(new Date());
+  }
+
+  function labelValuePairs(){
+    const boxes = qa('.ribbon-box,.ribbon .box');
+    return boxes.map(box=>{
+      const label = clean((q('small',box)||{}).textContent);
+      const valEl = q('b',box);
+      const value = clean(valEl ? valEl.textContent : '');
+      return {label,value};
+    }).filter(x=>x.label && x.value);
+  }
+  function valueFor(label, fallback=''){
+    const live=wcValuesForOriginalLabel(label);
+    const edited=live.find(x=>x.changed);
+    if(edited) return edited.value;
+    const pair = labelValuePairs().find(x=>x.label.toLowerCase()===label.toLowerCase());
+    if(pair) return pair.value;
+    if(live.length) return live[0].value;
+    return fallback;
+  }
+  function getPrimarySummary(){
+    if(REPORT_TYPE==='final') return text('.headline p', 'Die Prüfung des endgültigen Ziels erfasst die aktuell angezeigte Feststellung zur Verwahr-Wallet und die zugehörigen Vermögensinformationen.');
+    if(REPORT_TYPE==='preliminary') return text('.headline p', 'Die vorläufige Prüfung erfasst die aktuell angezeigte Feststellung zum Adressverbleib sowie die Grenzen des verfügbaren Datenumfangs.');
+    const note = qa('.mini-module').map(x=>clean(x.textContent)).find(t=>t.startsWith('Analystennotizen'));
+    return note ? note.replace(/^Analystennotizen\s*Bearbeitbar\s*/,'') : 'Dieser Bericht fasst den aktuell in der Ermittlungsoberfläche angezeigten Arbeitsbereich zum Geldfluss, die Routenindikatoren, Analysemodule und Beweismittel zusammen.';
+  }
+  function reportSections(){
+    return qa('.paper-section').map(sec=>({title:clean((q('h4',sec)||{}).textContent),body:clean((q('p',sec)||{}).textContent)})).filter(x=>x.title && x.body);
+  }
+  function statusCards(){
+    let nodes = qa('.status-card,.card');
+    if(!nodes.length){
+      nodes = qa('.mini-module').filter(x=>q('.mini-module-top',x)).slice(0,6);
+      return nodes.map(x=>{ const top=q('.mini-module-top',x); const parts=top?Array.from(top.children).map(c=>clean(c.textContent)):[]; return {label:parts[0]||'Kennzahl', value:parts[1]||'', note:''}; });
+    }
+    return nodes.slice(0,8).map(x=>({label:clean((q('small',x)||{}).textContent)||'Feststellung',value:clean((q('b',x)||{}).textContent),note:clean((q('span',x)||q('p',x)||{}).textContent)})).filter(x=>x.value);
+  }
+  function issuedFindings(){
+    const selectors = REPORT_TYPE==='final' ? '.right .entry' : (REPORT_TYPE==='preliminary' ? '.right-column .entry' : '.right-column .entry,.entry');
+    const seen=new Set();
+    return qa(selectors).map(x=>{ const b=q('b',x),p=q('p',x); const item={title:clean(b?b.textContent:''),body:clean(p?p.textContent:'').replace(/Diese Darstellung bildet einen Endpunkt nach den ersten Schlussfolgerungen und der Berichtsausstellung ab\./gi,'Dieser Datensatz bildet den aktuellen Endpunkt nach den ersten Schlussfolgerungen und der Berichtsausstellung ab.')}; const key=item.title+'|'+item.body; if(!item.title||seen.has(key)) return null; seen.add(key); return item; }).filter(Boolean).slice(0,10);
+  }
+  function scores(){
+    return qa('.score-line').map(x=>{ const row=q('.score-row',x); if(!row) return null; const spans=qa('span,b',row).map(el=>clean(el.textContent)); return spans.length>=2?{label:spans[0],value:spans[spans.length-1]}:null; }).filter(Boolean).slice(0,6);
+  }
+  function routes(){
+    if(REPORT_TYPE==='investigation'){
+      return qa('.node').map((x,i)=>{ const parts=Array.from(x.children).map(c=>clean(c.textContent)).filter(Boolean); return {step:String(i+1).padStart(2,'0'),title:parts.slice(0,2).join(' - '),body:parts.slice(2).join(' | ')}; }).filter(x=>x.title).slice(0,12);
+    }
+    const pathNodes=qa('.path-node');
+    return pathNodes.map((x,i)=>({step:String(i+1).padStart(2,'0'),title:clean((q('b',x)||{}).textContent)||clean((q('small',x)||{}).textContent),body:qa('span',x).map(s=>clean(s.textContent)).join(' | ')})).filter(x=>x.title);
+  }
+  function activities(){
+    return qa('.event').map(x=>({title:clean((q('b',x)||{}).textContent),body:clean((q('p',x)||{}).textContent),time:clean((q('time',x)||{}).textContent)})).filter(x=>x.title).slice(0,8);
+  }
+  function currentAddress(){
+    return valueFor('Endgültige Adresse der Verwahr-Wallet') || valueFor('Aktuell gehaltene Adresse') || valueFor('Ausgangsadresse') || text('.address-value') || text('.context-value');
+  }
+
+  // ---------------- Minimal DOCX package writer (no external library) ----------------
+  const encoder = new TextEncoder();
+  function u8(v){ return typeof v === 'string' ? encoder.encode(v) : v; }
+  function concat(parts){ let n=0; parts.forEach(p=>n+=p.length); const out=new Uint8Array(n); let o=0; parts.forEach(p=>{out.set(p,o);o+=p.length;}); return out; }
+  function le16(n){ return new Uint8Array([n&255,(n>>>8)&255]); }
+  function le32(n){ return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]); }
+  const CRC_TABLE = (()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):(c>>>1);t[n]=c>>>0;} return t; })();
+  function crc32(bytes){ let c=0xFFFFFFFF; for(let i=0;i<bytes.length;i++) c=CRC_TABLE[(c^bytes[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+  function dosTimeDate(d=new Date()){ const year=Math.max(1980,d.getFullYear()); const time=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1); const date=((year-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(); return {time,date}; }
+  function makeZip(files){
+    const local=[], central=[]; let offset=0; const dt=dosTimeDate();
+    for(const f of files){
+      const name=u8(f.name), data=u8(f.data), crc=crc32(data), flag=0x0800;
+      const lh=concat([le32(0x04034b50),le16(20),le16(flag),le16(0),le16(dt.time),le16(dt.date),le32(crc),le32(data.length),le32(data.length),le16(name.length),le16(0),name,data]);
+      local.push(lh);
+      const ch=concat([le32(0x02014b50),le16(20),le16(20),le16(flag),le16(0),le16(dt.time),le16(dt.date),le32(crc),le32(data.length),le32(data.length),le16(name.length),le16(0),le16(0),le16(0),le16(0),le32(0),le32(offset),name]);
+      central.push(ch); offset += lh.length;
+    }
+    const centralBytes=concat(central), localBytes=concat(local);
+    const end=concat([le32(0x06054b50),le16(0),le16(0),le16(files.length),le16(files.length),le32(centralBytes.length),le32(localBytes.length),le16(0)]);
+    return concat([localBytes,centralBytes,end]);
+  }
+
+  // ---------------- Native Word XML helpers: all layout remains editable ----------------
+  function r(txt,opt={}){
+    const rp=[];
+    if(opt.bold) rp.push('<w:b/>'); if(opt.italic) rp.push('<w:i/>');
+    if(opt.color) rp.push(`<w:color w:val="${opt.color}"/>`);
+    if(opt.size) rp.push(`<w:sz w:val="${Math.round(opt.size*2)}"/><w:szCs w:val="${Math.round(opt.size*2)}"/>`);
+    if(opt.font) rp.push(`<w:rFonts w:ascii="${xesc(opt.font)}" w:hAnsi="${xesc(opt.font)}" w:eastAsia="${xesc(opt.font)}"/>`);
+    if(opt.caps) rp.push('<w:caps/>');
+    return `<w:r>${rp.length?`<w:rPr>${rp.join('')}</w:rPr>`:''}<w:t xml:space="preserve">${xesc(txt)}</w:t></w:r>`;
+  }
+  function p(content,opt={}){
+    const runs = Array.isArray(content) ? content.join('') : (opt.raw ? content : r(content,opt.run||{}));
+    const pp=[];
+    if(opt.align) pp.push(`<w:jc w:val="${opt.align}"/>`);
+    if(opt.before!=null||opt.after!=null||opt.line!=null) pp.push(`<w:spacing w:before="${opt.before||0}" w:after="${opt.after||0}"${opt.line?` w:line="${opt.line}" w:lineRule="auto"`:''}/>`);
+    if(opt.keepNext) pp.push('<w:keepNext/>'); if(opt.keepLines) pp.push('<w:keepLines/>');
+    if(opt.indent) pp.push(`<w:ind w:left="${opt.indent}"/>`);
+    if(opt.borderBottom) pp.push(`<w:pBdr><w:bottom w:val="single" w:sz="${opt.borderBottom.sz||8}" w:space="${opt.borderBottom.space||1}" w:color="${opt.borderBottom.color||GOLD}"/></w:pBdr>`);
+    if(opt.style) pp.push(`<w:pStyle w:val="${opt.style}"/>`);
+    return `<w:p>${pp.length?`<w:pPr>${pp.join('')}</w:pPr>`:''}${runs}</w:p>`;
+  }
+  function tc(body,opt={}){
+    const pr=[];
+    if(opt.width) pr.push(`<w:tcW w:w="${opt.width}" w:type="dxa"/>`);
+    if(opt.shade) pr.push(`<w:shd w:val="clear" w:color="auto" w:fill="${opt.shade}"/>`);
+    if(opt.vAlign) pr.push(`<w:vAlign w:val="${opt.vAlign}"/>`);
+    const b=opt.border||{};
+    if(opt.border!==false) pr.push(`<w:tcBorders><w:top w:val="single" w:sz="${b.sz||6}" w:color="${b.color||LINE}"/><w:left w:val="single" w:sz="${b.sz||6}" w:color="${b.color||LINE}"/><w:bottom w:val="single" w:sz="${b.sz||6}" w:color="${b.color||LINE}"/><w:right w:val="single" w:sz="${b.sz||6}" w:color="${b.color||LINE}"/></w:tcBorders>`);
+    pr.push(`<w:tcMar><w:top w:w="${opt.padV||90}" w:type="dxa"/><w:left w:w="${opt.padH||110}" w:type="dxa"/><w:bottom w:w="${opt.padV||90}" w:type="dxa"/><w:right w:w="${opt.padH||110}" w:type="dxa"/></w:tcMar>`);
+    return `<w:tc><w:tcPr>${pr.join('')}</w:tcPr>${body||p('')}</w:tc>`;
+  }
+  function tr(cells,opt={}){ return `<w:tr>${opt.cantSplit?'<w:trPr><w:cantSplit/></w:trPr>':''}${cells.join('')}</w:tr>`; }
+  function tbl(rows,widths=[],opt={}){
+    const grid = widths.length ? `<w:tblGrid>${widths.map(w=>`<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>` : '';
+    const borders=opt.noOuter?'<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>':'';
+    const total = widths.length ? widths.reduce((a,b)=>a+b,0) : DOC_W;
+    return `<w:tbl><w:tblPr><w:tblW w:w="${total}" w:type="dxa"/><w:jc w:val="center"/><w:tblLayout w:type="fixed"/>${borders}</w:tblPr>${grid}${rows.join('')}</w:tbl>`;
+  }
+  const pageBreak = () => '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+  function sectionLabel(kicker,title,sub){
+    return p(kicker,{run:{font:'Arial',size:8,bold:true,color:GOLD_DARK,caps:true},after:60})+
+           p(title,{run:{font:'Arial',size:21,bold:true,color:INK},after:60,keepNext:true})+
+           p(sub,{run:{font:'Times New Roman',size:10,color:MUTED},after:160});
+  }
+  function infoBand(items){
+    const widths=[3600,3600,3600];
+    const cells=items.slice(0,3).map(it=>tc(
+      p(it.label.toUpperCase(),{run:{font:'Arial',size:7,bold:true,color:MUTED},after:45})+
+      p(it.value,{run:{font:'Arial',size:10,bold:true,color:INK},after:0}),
+      {width:3600,shade:PALE,border:{color:'D8C79D',sz:7},padV:110,padH:120}
+    ));
+    while(cells.length<3) cells.push(tc(p(''),{width:3600,shade:PALE,border:{color:'D8C79D',sz:7}}));
+    return tbl([tr(cells,true)],widths)+p('',{after:40});
+  }
+  function metaTable(pairs){
+    const rows=[];
+    pairs.slice(0,8).forEach((it,i)=>{
+      rows.push(tr([
+        tc(p(it.label,{run:{font:'Arial',size:8,bold:true,color:MUTED}}),{width:3000,shade:i%2?WHITE:SOFT,padV:80}),
+        tc(p(it.value,{run:{font:'Times New Roman',size:9.5,color:INK}}),{width:7800,shade:i%2?WHITE:SOFT,padV:80})
+      ],true));
+    });
+    return tbl(rows,[3000,7800]);
+  }
+  function cardsTable(cards){
+    const rows=[]; const data=cards.slice(0,6);
+    for(let i=0;i<data.length;i+=2){
+      const cells=[];
+      for(let j=0;j<2;j++){
+        const c=data[i+j];
+        if(c) cells.push(tc(
+          p(c.label.toUpperCase(),{run:{font:'Arial',size:7,bold:true,color:MUTED},after:40})+
+          p(c.value,{run:{font:'Arial',size:13,bold:true,color:INK},after:55})+
+          (c.note?p(c.note,{run:{font:'Times New Roman',size:8.5,color:MUTED},after:0}):''),
+          {width:5400,shade:WHITE,border:{color:'D9D4CA',sz:6},padV:105,padH:120}
+        ));
+        else cells.push(tc(p(''),{width:5400,shade:WHITE,border:{color:'D9D4CA',sz:6}}));
+      }
+      rows.push(tr(cells,true));
+    }
+    return tbl(rows,[5400,5400]);
+  }
+  function numberedList(items){
+    const rows=[];
+    items.forEach((it,i)=>{
+      rows.push(tr([
+        tc(p(String(i+1).padStart(2,'0'),{align:'center',run:{font:'Arial',size:8,bold:true,color:WHITE}}),{width:700,shade:GOLD_DARK,border:{color:GOLD_DARK,sz:6},vAlign:'center',padV:70,padH:50}),
+        tc(p(it.title,{run:{font:'Arial',size:9.3,bold:true,color:INK},after:35})+p(it.body||it.time||'',{run:{font:'Times New Roman',size:8.7,color:MUTED}}),{width:10100,shade:WHITE,border:{color:'DDD9D0',sz:5},padV:78,padH:110})
+      ],true));
+    });
+    return tbl(rows,[700,10100]);
+  }
+  function routeTable(items){
+    const rows=[];
+    items.slice(0,9).forEach(it=>rows.push(tr([
+      tc(p(it.step,{align:'center',run:{font:'Arial',size:8,bold:true,color:WHITE}}),{width:800,shade:GOLD_DARK,border:{color:GOLD_DARK,sz:6},vAlign:'center'}),
+      tc(p(it.title,{run:{font:'Arial',size:9,bold:true,color:INK},after:30})+p(it.body,{run:{font:'Consolas',size:7.8,color:MUTED}}),{width:10000,border:{color:'D9D4CA',sz:5},padV:80,padH:110})
+    ],true)));
+    return tbl(rows,[800,10000]);
+  }
+  function indicatorTable(items){
+    const rows=[];
+    items.slice(0,6).forEach((it,i)=>rows.push(tr([
+      tc(p('◆',{align:'center',run:{font:'Arial',size:8,bold:true,color:GOLD_DARK}}),{width:500,border:false,padV:55,padH:30}),
+      tc(p(it.label,{run:{font:'Arial',size:8.5,bold:true,color:INK}}),{width:7800,border:false,padV:55,padH:40}),
+      tc(p(it.value,{align:'right',run:{font:'Arial',size:8.5,bold:true,color:GOLD_DARK}}),{width:2500,border:false,padV:55,padH:40})
+    ],true)));
+    return tbl(rows,[500,7800,2500],{noOuter:true});
+  }
+  function narrativeTable(rows){
+    const out=[];
+    out.push(tr([
+      tc(p('Eintrag',{run:{font:'Arial',size:8,bold:true,color:WHITE}}),{width:3000,shade:INK,border:{color:INK,sz:6}}),
+      tc(p('Angezeigte Feststellung / Wert',{run:{font:'Arial',size:8,bold:true,color:WHITE}}),{width:7800,shade:INK,border:{color:INK,sz:6}})
+    ],true));
+    rows.slice(0,10).forEach((r0,i)=>out.push(tr([
+      tc(p(r0[0],{run:{font:'Arial',size:8.2,bold:true,color:INK}}),{width:3000,shade:i%2?WHITE:SOFT,padV:72}),
+      tc(p(r0[1],{run:{font:'Times New Roman',size:8.7,color:INK}}),{width:7800,shade:i%2?WHITE:SOFT,padV:72})
+    ],true)));
+    return tbl(out,[3000,7800]);
+  }
+  function h2(txt){ return p(txt,{run:{font:'Arial',size:11,bold:true,color:INK},before:110,after:70,keepNext:true,borderBottom:{color:GOLD,sz:10,space:3}}); }
+  function bodyPara(txt){ return p(txt,{run:{font:'Times New Roman',size:10.2,color:INK},after:110,line:286}); }
+  function noteBox(txt){ return tbl([tr([tc(p(txt,{run:{font:'Times New Roman',size:8.2,color:MUTED},line:250}),{width:DOC_W,shade:'F4F1EA',border:{color:'D8C79D',sz:7},padV:110,padH:130})],true)],[DOC_W]); }
+
+  function wcEditedValuesTable(edits){
+    const rows=(edits||[]).slice(0,30).map((e,i)=>tr([
+      tc(p(e.label||('Bearbeitetes Feld '+(i+1)),{run:{font:'Arial',size:8,bold:true,color:INK}}),{width:3600,shade:i%2?WHITE:SOFT,border:{color:LINE,sz:4},padV:92,padH:105}),
+      tc(p(e.current,{run:{font:'Arial',size:8.4,color:INK}}),{width:7200,shade:i%2?WHITE:SOFT,border:{color:LINE,sz:4},padV:92,padH:105})
+    ],true));
+    return tbl(rows,[3600,7200]);
+  }
+
+  function buildDocumentXml(data){
+    const pairs=data.pairs, cards=data.cards, findings=data.findings, scoreData=data.scoreData, routeData=data.routeData, activity=data.activity, sections=data.sections;
+    const narrativeRows = sections.length ? sections.map(s=>[s.title,s.body]) : pairs.map(x=>[x.label,x.value]);
+    const conclusion = (sections.find(s=>/schlussfolgerung/i.test(s.title))||{}).body || (findings[0]||{}).body || data.summary;
+    let body='';
+    body += sectionLabel('BLOCKCHAIN-ERMITTLUNGSAKTE',REPORT_TITLE,REPORT_SUBTITLE+' · Microsoft-Word-Bericht, erstellt aus dem aktuell angezeigten Ermittlungsdatensatz.');
+    body += infoBand([{label:'Aktenzeichen',value:data.caseNo},{label:'Berichtsstatus',value:data.reportStatus},{label:'Erstellt (ET)',value:data.stamp}]);
+    body += h2('Zusammenfassung') + bodyPara(data.summary);
+    body += h2('Vorgangsübersicht') + metaTable(pairs);
+    body += p('',{after:40});
+    body += noteBox('DOKUMENTUMFANG — Dieser Bericht erfasst die derzeit im Ermittlungsarbeitsbereich angezeigten Informationen, einschließlich der aktuellen Feststellungen, Routenindikatoren und Vorgangsdaten.');
+
+    body += pageBreak();
+    body += sectionLabel('ABSCHNITT 01','Ermittlungsergebnisse','Wesentliche Indikatoren und Hauptwerte, die derzeit im Arbeitsbereich ausgewiesen werden.');
+    if(cards.length){ body += cardsTable(cards); body += p('',{after:30}); }
+    if(data.address){
+      body += h2('Primärer Adressdatensatz');
+      body += tbl([tr([tc(p('Geprüfte Adresse / geprüftes Ziel',{run:{font:'Arial',size:7,bold:true,color:MUTED},after:45})+p(data.address,{run:{font:'Consolas',size:8.3,bold:true,color:INK}}),{width:DOC_W,shade:PALE,border:{color:'D8C79D',sz:7},padV:105,padH:120})],true)],[DOC_W]);
+    }
+    body += h2('Ausgestellte Feststellungen');
+    body += findings.length ? numberedList(findings.slice(0,7)) : bodyPara('Derzeit werden in der Oberfläche keine ausgestellten Feststellungspunkte angezeigt.');
+
+    body += pageBreak();
+    body += sectionLabel('ABSCHNITT 02','Nachverfolgungs- & Analyseprotokoll','Routenfolge, Analyseindikatoren und unterstützende Oberflächendatensätze.');
+    if(routeData.length){ body += h2('Angezeigte Routenfolge') + routeTable(routeData); }
+    if(scoreData.length){ body += h2('Bewertungsindikatoren') + indicatorTable(scoreData); }
+    body += h2('Methodik & Datenumfang');
+    body += cardsTable([
+      {label:'Quellengrundlage',value:'Angezeigter Oberflächendatensatz',note:'Werte und Darstellung werden aus dem aktuellen lokalen Zustand des Arbeitsbereichs übernommen.'},
+      {label:'Analytische Bearbeitung',value:'Adress- und Routenprüfung',note:'Die Indikatoren werden wie angezeigt zusammengefasst; beim Export werden keine zusätzlichen Live-Daten abgefragt.'},
+      {label:'Zeitstandard',value:'America/New_York',note:'Die Erstellungszeit des Berichts wird in der US-Ostküstenzeit angegeben.'},
+      {label:'Verifizierungsgrenze',value:'Unabhängige Verifizierung erforderlich',note:'Schlussfolgerungen für reale Sachverhalte erfordern autorisierte Quelldaten und eine fachliche Validierung.'}
+    ]);
+
+    body += pageBreak();
+    body += sectionLabel('ABSCHNITT 03','Berichtsdatensatz & Beschränkungen','Darstellender Datensatz, Aktivitätsverlauf und Beschränkungen der Dokumentverwendung.');
+    body += h2('Berichtsdarstellung') + narrativeTable(narrativeRows);
+    if(activity.length){ body += h2('Aktivitätsprotokoll') + numberedList(activity.slice(0,5).map(x=>({title:x.title,body:[x.body,x.time].filter(Boolean).join(' — ')}))); }
+    body += h2('Schlussfolgerung') + bodyPara(conclusion);
+
+    // First apply unique literal edits to headings/body text that otherwise came from the report template.
+    body = wcUniqueOverrideXml(body,data);
+    // If a manually edited data-region value is not otherwise represented in the report,
+    // include its CURRENT value so no meaningful user edit is silently dropped.
+    const unmapped=(data.manualEdits||[]).filter(e=>e.relevant && e.current && !body.includes(xesc(e.current)));
+    if(unmapped.length){
+      body += h2('Aktuelle Oberflächenwerte') + wcEditedValuesTable(unmapped);
+    }
+    body += noteBox('DOKUMENTUMFANG — Dieses Dokument gibt die derzeit im Ermittlungsarbeitsbereich angezeigten Informationen wieder. Feststellungen sind zusammen mit den relevanten Quelldatensätzen, autorisierten Daten und der jeweils erforderlichen fachlichen Prüfung zu betrachten.');
+
+    const sect=`<w:sectPr><w:headerReference w:type="default" r:id="rId1"/><w:footerReference w:type="default" r:id="rId2"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="800" w:right="720" w:bottom="760" w:left="720" w:header="360" w:footer="360" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr>`;
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>${body}${sect}</w:body></w:document>`;
+  }
+
+  function stylesXml(){
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Arial"/><w:sz w:val="19"/><w:szCs w:val="19"/><w:color w:val="${INK}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="90" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style><w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont"><w:name w:val="Default Paragraph Font"/><w:semiHidden/><w:unhideWhenUsed/></w:style></w:styles>`;
+  }
+  function settingsXml(){ return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:view w:val="print"/><w:zoom w:val="bestFit" w:percent="115"/><w:defaultTabStop w:val="720"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`; }
+  function headerXml(){
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:tbl><w:tblPr><w:tblW w:w="10800" w:type="dxa"/><w:jc w:val="center"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="760"/><w:gridCol w:w="6200"/><w:gridCol w:w="3840"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:w="760" w:type="dxa"/><w:shd w:val="clear" w:fill="${INK}"/><w:tcBorders><w:top w:val="single" w:sz="10" w:color="${GOLD}"/><w:left w:val="single" w:sz="10" w:color="${GOLD}"/><w:bottom w:val="single" w:sz="10" w:color="${GOLD}"/><w:right w:val="single" w:sz="10" w:color="${GOLD}"/></w:tcBorders><w:vAlign w:val="center"/></w:tcPr>${p('WC',{align:'center',run:{font:'Arial',size:11,bold:true,color:GOLD}})}</w:tc><w:tc><w:tcPr><w:tcW w:w="6200" w:type="dxa"/><w:tcBorders><w:bottom w:val="single" w:sz="12" w:color="${GOLD}"/></w:tcBorders></w:tcPr>${p('WHITFIELD & CRANE',{run:{font:'Arial',size:10.5,bold:true,color:INK},after:10})}${p('Digitale Vermögenswerte & Datenforensik',{run:{font:'Arial',size:7.5,color:MUTED},after:0})}</w:tc><w:tc><w:tcPr><w:tcW w:w="3840" w:type="dxa"/><w:tcBorders><w:bottom w:val="single" w:sz="12" w:color="${GOLD}"/></w:tcBorders><w:vAlign w:val="center"/></w:tcPr>${p('ERMITTLUNGSBERICHT',{align:'right',run:{font:'Arial',size:7,bold:true,color:GOLD_DARK}})}</w:tc></w:tr></w:tbl></w:hdr>`;
+  }
+  function footerXml(){
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:pBdr><w:top w:val="single" w:sz="8" w:space="5" w:color="${GOLD}"/></w:pBdr><w:tabs><w:tab w:val="center" w:pos="5400"/><w:tab w:val="right" w:pos="10800"/></w:tabs><w:spacing w:before="70" w:after="0"/></w:pPr>${r('Whitfield & Crane',{font:'Arial',size:7.5,bold:true,color:INK})}${r('\tVERTRAULICH / INTERNE VERWENDUNG',{font:'Arial',size:7,color:MUTED})}${r('\tSeite ',{font:'Arial',size:7,color:MUTED})}<w:fldSimple w:instr="PAGE"><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="14"/><w:color w:val="666666"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>${r(' von ',{font:'Arial',size:7,color:MUTED})}<w:fldSimple w:instr="NUMPAGES"><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="14"/><w:color w:val="666666"/></w:rPr><w:t>4</w:t></w:r></w:fldSimple></w:p></w:ftr>`;
+  }
+  function coreXml(data){
+    const iso=new Date().toISOString();
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xesc(REPORT_TITLE)}</dc:title><dc:subject>${xesc(data.caseNo)}</dc:subject><dc:creator>Whitfield &amp; Crane</dc:creator><cp:keywords>Blockchain-Ermittlung; Geldfluss; Ermittlungsbericht</cp:keywords><dc:description>Blockchain-Ermittlungsbericht, erstellt aus dem aktuellen Ermittlungsdatensatz.</dc:description><dcterms:created xsi:type="dcterms:W3CDTF">${iso}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${iso}</dcterms:modified></cp:coreProperties>`;
+  }
+  function appXml(){ return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Microsoft Office Word</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><Company>Whitfield &amp; Crane</Company><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>false</HyperlinksChanged><AppVersion>16.0000</AppVersion></Properties>`; }
+
+  function buildDocxBytes(data){
+    const contentTypes=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`;
+    const rootRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`;
+    const docRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`;
+    return makeZip([
+      {name:'[Content_Types].xml',data:contentTypes},
+      {name:'_rels/.rels',data:rootRels},
+      {name:'word/document.xml',data:buildDocumentXml(data)},
+      {name:'word/styles.xml',data:stylesXml()},
+      {name:'word/settings.xml',data:settingsXml()},
+      {name:'word/header1.xml',data:headerXml()},
+      {name:'word/footer1.xml',data:footerXml()},
+      {name:'word/_rels/document.xml.rels',data:docRels},
+      {name:'docProps/core.xml',data:coreXml(data)},
+      {name:'docProps/app.xml',data:appXml()}
+    ]);
+  }
+
+  function collectData(){
+    const pairs=labelValuePairs(), cards=statusCards(), findings=issuedFindings(), scoreData=scores(), routeData=routes(), activity=activities(), sections=reportSections();
+    const caseNo=valueFor('Aktenzeichen',CASE_FIXED)||CASE_FIXED;
+    const manualEdits=wcManualEdits();
+    const initialTextCounts=wcInitialTextCounts();
+    return {pairs,cards,findings,scoreData,routeData,activity,sections,address:currentAddress(),summary:getPrimarySummary(),caseNo,reportStatus:valueFor('Berichtsstatus',REPORT_TYPE==='investigation'?'Analytische Prüfung':'Ausgestellt'),stamp:etStamp(),manualEdits,initialTextCounts};
+  }
+  function saveBlob(bytes,name){
+    const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+  function exportProfessionalDOCX(){
+    try{
+      const data=collectData();
+      const bytes=buildDocxBytes(data);
+      const safeTitle=REPORT_TITLE.replace(/[\\/:*?"<>|]+/g,'-');
+      saveBlob(bytes,`${data.caseNo} - ${safeTitle}.docx`);
+    }catch(err){
+      console.error(err);
+      alert('Der bearbeitbare Word-Bericht konnte nicht erstellt werden. Bitte öffnen Sie diese HTML-Datei erneut in Chrome oder Microsoft Edge und versuchen Sie es noch einmal.');
+    }
+  }
+
+  // Keep the original button/function name exactly as requested; it now downloads DOCX.
+  window.WC_exportProfessionalPDF = exportProfessionalDOCX;
+  window.WC_exportProfessionalDOCX = exportProfessionalDOCX;
+  window.WC_collectReportData = collectData;
+  window.WC_buildEditableDOCXBytes = buildDocxBytes;
+  window.WC_getManualEdits = wcManualEdits;
+  wcInitEditableTracking();
+})();
+</script>
+
+
+<script>
+/* Whitfield & Crane — live address synchronization
+   Any repeated address-like value that existed when the page loaded is treated
+   as one linked field. Editing ANY occurrence updates every other occurrence
+   that originally contained the same address. */
+(function(){
+  'use strict';
+
+  function plainText(el){
+    return (el && (el.innerText != null ? el.innerText : el.textContent) || '')
+      .replace(/\u00a0/g,' ')
+      .replace(/\r/g,'')
+      .trim();
+  }
+
+  function looksLikeAddress(el, value){
+    if(!el || !value || /\s/.test(value) || value.length < 24) return false;
+    if(/^0x[a-fA-F0-9]{20,}$/.test(value)) return true;
+    if(/^bc1[0-9A-Za-z]{20,}$/.test(value)) return true;
+    // Fallback for other chain/address formats used in this local interface.
+    // Restrict it to address/mono-looking editable fields to avoid linking
+    // ordinary labels, case numbers, dates, amounts, etc.
+    return el.matches('.mono,.addr,.address-value,.context-value') &&
+           /^[A-Za-z0-9:_\-.]{24,}$/.test(value) &&
+           !/^WC-CRYPTO-/i.test(value);
+  }
+
+  function initAddressSync(){
+    const editables = Array.from(document.querySelectorAll('[contenteditable="true"]'));
+    const groups = new Map();
+
+    editables.forEach(function(el){
+      const initial = plainText(el);
+      if(!looksLikeAddress(el, initial)) return;
+      el.dataset.wcAddressInitial = initial;
+      if(!groups.has(initial)) groups.set(initial, []);
+      groups.get(initial).push(el);
+    });
+
+    // Only repeated values need live synchronization.
+    groups.forEach(function(nodes, initial){
+      if(nodes.length < 2) return;
+      nodes.forEach(function(el){
+        el.dataset.wcAddressSync = '1';
+        el.dataset.wcAddressGroup = initial;
+      });
+    });
+
+    let syncing = false;
+    document.addEventListener('input', function(ev){
+      const source = ev.target && ev.target.closest ? ev.target.closest('[contenteditable="true"]') : null;
+      if(!source || source.dataset.wcAddressSync !== '1' || syncing) return;
+
+      const key = source.dataset.wcAddressGroup;
+      const nodes = groups.get(key) || [];
+      const value = plainText(source);
+
+      syncing = true;
+      try{
+        nodes.forEach(function(el){
+          if(el !== source && plainText(el) !== value){
+            el.textContent = value;
+          }
+          // Keep the existing DOCX exporter aware that every linked occurrence
+          // now differs from the original page value.
+          if(el.dataset.wcInitialText != null){
+            if(plainText(el) !== (el.dataset.wcInitialText || '')) el.dataset.wcChanged = '1';
+            else delete el.dataset.wcChanged;
+          }else{
+            el.dataset.wcChanged = '1';
+          }
+        });
+      } finally {
+        syncing = false;
+      }
+    }, true);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initAddressSync, {once:true});
+  }else{
+    initAddressSync();
+  }
+})();
+</script>
+
+</body>
+</html>
