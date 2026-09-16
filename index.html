@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>墨森工具中心</title>
+<style>
+  :root{
+    --bg:#f4f5f7;--panel:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;
+    --accent:#111827;--accent2:#374151;--chip:#f3f4f6;--shadow:0 14px 34px rgba(15,23,42,.08);
+    --success:#167a52;--success-bg:#eef9f3;--warn:#9a6700;--warn-bg:#fff8e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#f8fafc 0%,#f3f4f6 100%);color:var(--text);font-family:Inter,"Segoe UI","Microsoft YaHei",Arial,sans-serif;min-height:100vh}
+  .wrap{max-width:1180px;margin:0 auto;padding:44px 22px 56px}
+  .hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:26px}
+  h1{margin:0;font-size:32px;letter-spacing:-.02em}
+  .sub{margin-top:9px;color:var(--muted);font-size:14px;line-height:1.6}
+  .count{padding:8px 12px;border-radius:999px;background:#111827;color:white;font-size:12px;white-space:nowrap}
+  .toolbar{display:flex;gap:10px;margin:20px 0 12px;flex-wrap:wrap;align-items:center}
+  .search{flex:1;min-width:260px;border:1px solid var(--line);background:white;border-radius:13px;padding:12px 14px;font-size:14px;outline:none;box-shadow:0 4px 14px rgba(15,23,42,.03)}
+  .search:focus{border-color:#9ca3af;box-shadow:0 0 0 3px rgba(17,24,39,.06)}
+  .save-btn{border:0;background:#111827;color:#fff;border-radius:13px;padding:12px 16px;font-size:13px;font-weight:750;cursor:pointer;box-shadow:0 4px 14px rgba(15,23,42,.10);transition:.16s ease}
+  .save-btn:hover{background:#273244;transform:translateY(-1px)}
+  .sort-note{display:flex;align-items:center;gap:8px;color:#8b93a1;font-size:12px;margin:0 2px 28px;min-height:22px}
+  .sort-dot{width:8px;height:8px;border-radius:50%;background:#c7cdd6;flex:none}
+  .sort-note.unsaved{color:var(--warn)}
+  .sort-note.unsaved .sort-dot{background:#e8a317}
+  .sort-note.saved{color:var(--success)}
+  .sort-note.saved .sort-dot{background:#2ba66f}
+  .section{margin-top:30px}
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px}
+  .section-head h2{font-size:16px;margin:0;color:#303846;display:flex;align-items:center;gap:9px}
+  .section-head h2::before{content:"";width:4px;height:17px;border-radius:99px;background:#111827}
+  .section-head span{font-size:12px;color:#9ca3af}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;min-height:40px}
+  .card{position:relative;display:flex;flex-direction:column;min-height:158px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.04);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,opacity .16s ease;text-decoration:none;color:inherit;cursor:grab;user-select:none}
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:#d1d5db}
+  .card:active{cursor:grabbing}
+  .card.dragging{opacity:.36;transform:scale(.985);box-shadow:none}
+  .card.drag-over{border-color:#111827;box-shadow:0 0 0 3px rgba(17,24,39,.08)}
+  .drag-handle{position:absolute;right:15px;bottom:14px;color:#b0b7c2;font-size:16px;letter-spacing:2px;line-height:1;pointer-events:none}
+  .card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .icon{width:40px;height:40px;border-radius:12px;background:#111827;color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+  .lang{font-size:11px;padding:5px 8px;border-radius:999px;background:var(--chip);color:#6b7280}
+  .title{margin:16px 0 5px;font-size:15px;font-weight:750;line-height:1.35}
+  .desc{font-size:12px;color:var(--muted);line-height:1.55;flex:1;padding-right:20px}
+  .open{margin-top:14px;font-size:12px;font-weight:700;color:#374151}
+  .card.hidden,.section.hidden{display:none}
+  .empty{display:none;text-align:center;color:#9ca3af;padding:52px 0}
+  .footer{margin-top:38px;color:#9ca3af;font-size:11px;text-align:center;line-height:1.6}
+  @media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:620px){.wrap{padding:28px 14px 40px}.hero{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}h1{font-size:26px}.count{align-self:flex-start}.save-btn{width:100%}.search{min-width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>墨森工具中心</h1>
+      <div class="sub">点击卡片打开工具。可直接拖拽卡片调整同一分类内的顺序，调整完成后点击“保存当前排序”。</div>
+    </div>
+    <div class="count">14 个工具</div>
+  </div>
+
+  <div class="toolbar">
+    <input id="search" class="search" type="search" placeholder="搜索工具名称…" autocomplete="off" />
+    <button id="saveOrder" class="save-btn" type="button">保存当前排序</button>
+  </div>
+  <div id="sortNote" class="sort-note"><span class="sort-dot"></span><span>拖拽后的顺序只有在点击保存后才会被记住。</span></div>
+
+  <section class="section" data-section="us">
+    <div class="section-head"><h2>美国</h2><span>6</span></div>
+    <div class="grid" data-grid="us">
+      <a class="card" draggable="true" data-id="tether-freeze-us" data-name="Tether 冻结报告 美国" href="Tether冻结报告.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">T</div><div class="lang">美国</div></div>
+        <div class="title">Tether 冻结报告</div><div class="desc">Tether Judicial Freeze Console。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="tether-custody-us" data-name="Tether 冻结资金保留 美国" href="Tether冻结资金保留.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">TC</div><div class="lang">美国</div></div>
+        <div class="title">Tether 冻结资金保留</div><div class="desc">Tether Refund Custody System。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="risk-us" data-name="网站风险查询 美国" href="网站风险查询.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">WR</div><div class="lang">美国</div></div>
+        <div class="title">网站风险查询</div><div class="desc">网站风险分析与查询控制台。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="investigation-us" data-name="资金路径调查 美国" href="资金路径调查.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">FI</div><div class="lang">美国</div></div>
+        <div class="title">资金路径调查</div><div class="desc">Whitfield & Crane Investigation Console。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="lawyer-report-us" data-name="资金路径调查律师报告 美国" href="资金路径调查律师报告.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">LR</div><div class="lang">美国</div></div>
+        <div class="title">资金路径调查律师报告</div><div class="desc">Final Destination Report。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="assistant-report-us" data-name="资金路径调查助理报告 美国" href="资金路径调查助理报告.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">AR</div><div class="lang">美国</div></div>
+        <div class="title">资金路径调查助理报告</div><div class="desc">Preliminary Completion 报告。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section" data-section="de">
+    <div class="section-head"><h2>德国</h2><span>6</span></div>
+    <div class="grid" data-grid="de">
+      <a class="card" draggable="true" data-id="tether-freeze-de" data-name="Tether 冻结报告 德国" href="Tether冻结报告-德国.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">T</div><div class="lang">德国</div></div>
+        <div class="title">Tether 冻结报告</div><div class="desc">德国版本。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="tether-custody-de" data-name="Tether 冻结资金保留 德国" href="Tether冻结资金保留-德国.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">TC</div><div class="lang">德国</div></div>
+        <div class="title">Tether 冻结资金保留</div><div class="desc">德国版本。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="risk-de" data-name="网站风险查询 德国" href="网站风险查询-德国.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">WR</div><div class="lang">德国</div></div>
+        <div class="title">网站风险查询</div><div class="desc">德国版本。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="investigation-de" data-name="资金路径调查 德国" href="资金路径调查-德国.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">FI</div><div class="lang">德国</div></div>
+        <div class="title">资金路径调查</div><div class="desc">德国版本。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="lawyer-report-de" data-name="资金路径调查律师报告 德国" href="资金路径调查律师报告-德国.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">LR</div><div class="lang">德国</div></div>
+        <div class="title">资金路径调查律师报告</div><div class="desc">德国版本。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="assistant-report-de" data-name="资金路径调查助理报告 德国" href="资金路径调查助理报告-德国.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">AR</div><div class="lang">德国</div></div>
+        <div class="title">资金路径调查助理报告</div><div class="desc">德国版本。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section" data-section="other">
+    <div class="section-head"><h2>其它工具</h2><span>2</span></div>
+    <div class="grid" data-grid="other">
+      <a class="card" draggable="true" data-id="docx-editor" data-name="DOCX 文件编辑器" href="DOCX文件编辑器.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">DX</div><div class="lang">工具</div></div>
+        <div class="title">DOCX 文件编辑器</div><div class="desc">DOCX 中文内容替换与编辑工具。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+      <a class="card" draggable="true" data-id="email-editor" data-name="邮件编辑器" href="邮件编辑器.html" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">EM</div><div class="lang">工具</div></div>
+        <div class="title">邮件编辑器</div><div class="desc">邮件页面内容编辑与预览工具。</div><div class="open">打开工具 →</div><div class="drag-handle">⋮⋮</div>
+      </a>
+    </div>
+  </section>
+
+  <div id="empty" class="empty">没有找到匹配的工具。</div>
+  <div class="footer">排序保存在当前浏览器的本地存储中。请将本文件与所有 HTML 工具及图片资源放在同一目录中使用。</div>
+</div>
+<script>
+(() => {
+  const STORAGE_KEY = 'html-tool-center-order-v2';
+  const search = document.getElementById('search');
+  const saveBtn = document.getElementById('saveOrder');
+  const sortNote = document.getElementById('sortNote');
+  const empty = document.getElementById('empty');
+  const grids = [...document.querySelectorAll('[data-grid]')];
+  const sections = [...document.querySelectorAll('[data-section]')];
+  let dragged = null;
+  let dragMoved = false;
+  let suppressClick = false;
+
+  function allCards(){
+    return [...document.querySelectorAll('.card')];
+  }
+
+  function applySavedOrder(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      grids.forEach(grid => {
+        const order = saved[grid.dataset.grid];
+        if(!Array.isArray(order)) return;
+        const cardMap = new Map([...grid.querySelectorAll('.card')].map(card => [card.dataset.id, card]));
+        order.forEach(id => {
+          const card = cardMap.get(id);
+          if(card) grid.appendChild(card);
+        });
+      });
+    }catch(e){
+      console.warn('无法读取已保存排序：', e);
+    }
+  }
+
+  function setSortState(type){
+    sortNote.classList.remove('unsaved','saved');
+    if(type === 'unsaved'){
+      sortNote.classList.add('unsaved');
+      sortNote.querySelector('span:last-child').textContent = '排序已调整但尚未保存。点击“保存当前排序”后才会记住。';
+    }else if(type === 'saved'){
+      sortNote.classList.add('saved');
+      sortNote.querySelector('span:last-child').textContent = '当前排序已保存。';
+    }else{
+      sortNote.querySelector('span:last-child').textContent = '拖拽后的顺序只有在点击保存后才会被记住。';
+    }
+  }
+
+  function saveOrder(){
+    const data = {};
+    grids.forEach(grid => {
+      data[grid.dataset.grid] = [...grid.querySelectorAll('.card')].map(card => card.dataset.id);
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    setSortState('saved');
+    saveBtn.textContent = '已保存';
+    setTimeout(() => saveBtn.textContent = '保存当前排序', 1200);
+  }
+
+  function applyFilter(){
+    const q = search.value.trim().toLowerCase();
+    let shown = 0;
+    allCards().forEach(card => {
+      const name = (card.dataset.name || '').toLowerCase();
+      const visible = !q || name.includes(q);
+      card.classList.toggle('hidden', !visible);
+      if(visible) shown++;
+    });
+    sections.forEach(section => {
+      const any = [...section.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
+      section.classList.toggle('hidden', !any);
+    });
+    empty.style.display = shown ? 'none' : 'block';
+  }
+
+  function getDragAfterElement(grid, x, y){
+    const cards = [...grid.querySelectorAll('.card:not(.dragging):not(.hidden)')];
+    let closest = {offset: Number.NEGATIVE_INFINITY, element: null};
+    for(const card of cards){
+      const box = card.getBoundingClientRect();
+      const centerY = box.top + box.height / 2;
+      const centerX = box.left + box.width / 2;
+      const rowDistance = y - centerY;
+      const colDistance = x - centerX;
+      const rowTolerance = box.height * .45;
+      let offset;
+      if(Math.abs(rowDistance) <= rowTolerance){
+        offset = colDistance;
+      }else{
+        offset = rowDistance * 10;
+      }
+      if(offset < 0 && offset > closest.offset){
+        closest = {offset, element: card};
+      }
+    }
+    return closest.element;
+  }
+
+  allCards().forEach(card => {
+    card.addEventListener('dragstart', e => {
+      if(card.classList.contains('hidden')){
+        e.preventDefault();
+        return;
+      }
+      dragged = card;
+      dragMoved = false;
+      suppressClick = true;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.id || 'card');
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      allCards().forEach(c => c.classList.remove('drag-over'));
+      if(dragMoved) setSortState('unsaved');
+      dragged = null;
+      setTimeout(() => { suppressClick = false; }, 80);
+    });
+
+    card.addEventListener('click', e => {
+      if(suppressClick){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+  });
+
+  grids.forEach(grid => {
+    grid.addEventListener('dragover', e => {
+      if(!dragged || dragged.parentElement !== grid) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const after = getDragAfterElement(grid, e.clientX, e.clientY);
+      const beforeHTML = [...grid.children].map(el => el.dataset.id).join('|');
+      if(after == null) grid.appendChild(dragged);
+      else if(after !== dragged) grid.insertBefore(dragged, after);
+      const afterHTML = [...grid.children].map(el => el.dataset.id).join('|');
+      if(beforeHTML !== afterHTML) dragMoved = true;
+    });
+
+    grid.addEventListener('drop', e => {
+      if(dragged && dragged.parentElement === grid) e.preventDefault();
+    });
+  });
+
+  saveBtn.addEventListener('click', saveOrder);
+  search.addEventListener('input', applyFilter);
+
+  applySavedOrder();
+  applyFilter();
+})();
+</script>
+</body>
+</html>
