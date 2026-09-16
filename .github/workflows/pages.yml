@@ -71,6 +71,8 @@ jobs:
 
           cp docx-template-loader.js public/docx-template-loader.js
           cp shared-order.js public/shared-order.js
+          cp access-gate.js public/access-gate.js
+          cp access-config.json public/access-config.json
           python3 - <<'PY'
           from pathlib import Path
 
@@ -101,12 +103,13 @@ jobs:
           )
           p.write_text(s, encoding='utf-8')
 
-          # Tool center global-order support
+          # Tool center global-order + password-gate support
           p = Path('public/index.html')
           s = p.read_text(encoding='utf-8')
           for v in range(1, 20):
-              old = f'<script src="./shared-order.js?v={v}"></script>'
-              s = s.replace(old + '\n', '').replace(old, '')
+              for name in ('shared-order.js', 'access-gate.js'):
+                  old = f'<script src="./{name}?v={v}"></script>'
+                  s = s.replace(old + '\n', '').replace(old, '')
           s = s.replace(
               '拖拽后的顺序只有在点击保存后才会被记住。',
               '拖拽后点击保存，会把当前顺序保存为所有人使用的全局顺序。'
@@ -115,6 +118,7 @@ jobs:
               '排序保存在当前浏览器的本地存储中。请将本文件与所有 HTML 工具及图片资源放在同一目录中使用。',
               '固定链接会自动读取全局排序。只有拥有仓库写入授权的管理员才能修改全局顺序。'
           )
+          s = s.replace('</head>', '<script src="./access-gate.js?v=1"></script>\n</head>')
           s = s.replace('</body>', '<script src="./shared-order.js?v=3"></script>\n</body>')
           p.write_text(s, encoding='utf-8')
           PY
@@ -153,7 +157,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- '*.html' '*.png' '*.js' templates/index.json .nojekyll
+          git add -A -- '*.html' '*.png' '*.js' access-config.json templates/index.json .nojekyll
           if git diff --cached --quiet; then
             echo 'Site files and template index are already up to date.'
             exit 0
