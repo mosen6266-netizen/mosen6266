@@ -69,7 +69,44 @@ jobs:
           test -f 'public/Tether.png'
           test -f 'public/图标.png'
 
+          cp docx-template-loader.js public/docx-template-loader.js
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('public/DOCX文件编辑器.html')
+          s = p.read_text(encoding='utf-8')
+          tag = '<script src="./docx-template-loader.js?v=1"></script>'
+          if tag not in s:
+              s = s.replace('</body>', tag + '\n</body>')
+          p.write_text(s, encoding='utf-8')
+          PY
+
           cp -a public/. .
+
+      - name: Build DOCX template index
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p templates
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          root = Path('templates')
+          items = []
+          for p in sorted(root.glob('*.docx'), key=lambda x: x.name):
+              data = p.read_bytes()
+              items.append({
+                  'name': p.name,
+                  'path': p.as_posix(),
+                  'region': 'de' if '德国' in p.name else 'us',
+                  'size': len(data),
+                  'sha256': hashlib.sha256(data).hexdigest(),
+              })
+          (root / 'index.json').write_text(
+              json.dumps({'templates': items}, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8'
+          )
+          print(f'Indexed {len(items)} DOCX templates.')
+          PY
 
       - name: Commit generated site
         shell: bash
@@ -77,10 +114,10 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- '*.html' '*.png' .nojekyll
+          git add -A -- '*.html' '*.png' '*.js' templates/index.json .nojekyll
           if git diff --cached --quiet; then
-            echo 'Site files are already up to date.'
+            echo 'Site files and template index are already up to date.'
             exit 0
           fi
-          git commit -m 'Publish Mosen tools site'
+          git commit -m 'Publish Mosen tools site and template index'
           git push
