@@ -87,20 +87,15 @@ jobs:
               '.template-name{font-size:13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
               '.template-name{font-size:13px;font-weight:650;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.45;overflow-wrap:anywhere}'
           )
-          tag = '<script src="./docx-template-loader.js?v=1"></script>'
-          if tag not in s:
-              s = s.replace('</body>', tag + '\n</body>')
+          for old in (
+              '<script src="./docx-template-loader.js?v=1"></script>',
+              '<script src="./docx-template-loader.js?v=2"></script>',
+              '<script src="./docx-template-loader.js?v=3"></script>',
+          ):
+              s = s.replace(old + '\n', '').replace(old, '')
+          tag = '<script src="./docx-template-loader.js?v=3"></script>'
+          s = s.replace('</body>', tag + '\n</body>')
           p.write_text(s, encoding='utf-8')
-
-          lp = Path('public/docx-template-loader.js')
-          ls = lp.read_text(encoding='utf-8')
-          ls = ls.replace('<h2>美国模板</h2>', '<h2>🇺🇸 美国模板</h2>')
-          ls = ls.replace('<h2>德国模板</h2>', '<h2>🇩🇪 德国模板</h2>')
-          ls = ls.replace(
-              '.builtin-name{font-size:13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}',
-              '.builtin-name{font-size:13px;font-weight:650;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.45;overflow-wrap:anywhere;color:#fff}'
-          )
-          lp.write_text(ls, encoding='utf-8')
           PY
 
           cp -a public/. .
