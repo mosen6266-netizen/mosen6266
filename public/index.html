@@ -69,7 +69,7 @@
     <input id="search" class="search" type="search" placeholder="搜索工具名称…" autocomplete="off" />
     <button id="saveOrder" class="save-btn" type="button">保存当前排序</button>
   </div>
-  <div id="sortNote" class="sort-note"><span class="sort-dot"></span><span>拖拽后点击保存，会把当前顺序保存为所有人使用的全局顺序。</span></div>
+  <div id="sortNote" class="sort-note"><span class="sort-dot"></span><span>可在美国、德国和其它工具之间跨分类拖拽；点击保存后，分类和顺序都会保存为所有人使用的全局结果。</span></div>
 
   <section class="section" data-section="us">
     <div class="section-head"><h2>美国</h2><span>6</span></div>
@@ -146,7 +146,7 @@
   </section>
 
   <div id="empty" class="empty">没有找到匹配的工具。</div>
-  <div class="footer">固定链接会自动读取全局排序。只有拥有仓库写入授权的管理员才能修改全局顺序。</div>
+  <div class="footer">固定链接会自动读取全局分类和排序。只有拥有仓库写入授权的管理员才能修改。</div>
 </div>
 <script>
 (() => {
@@ -191,7 +191,7 @@
       sortNote.classList.add('saved');
       sortNote.querySelector('span:last-child').textContent = '当前排序已保存。';
     }else{
-      sortNote.querySelector('span:last-child').textContent = '拖拽后点击保存，会把当前顺序保存为所有人使用的全局顺序。';
+      sortNote.querySelector('span:last-child').textContent = '可在美国、德国和其它工具之间跨分类拖拽；点击保存后，分类和顺序都会保存为所有人使用的全局结果。';
     }
   }
 
@@ -300,6 +300,7 @@
   applyFilter();
 })();
 </script>
+<script src="./dynamic-tools.js?v=1"></script>
 <script src="./shared-order.js?v=3"></script>
 </body>
 </html>
