@@ -17,15 +17,28 @@
       style.id = 'toolCountryFlagStyle';
       style.textContent = `
         .section-head h2{display:flex;align-items:center;gap:9px}
-        .tool-country-flag{width:26px;height:17px;display:inline-flex;flex:0 0 26px;border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px rgba(15,23,42,.12),0 1px 3px rgba(15,23,42,.12)}
+        .section-head h2>.tool-country-flag{width:26px;height:17px;display:inline-flex;flex:0 0 26px;border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px rgba(15,23,42,.12),0 1px 3px rgba(15,23,42,.12)}
         .tool-country-flag svg{display:block;width:100%;height:100%}
+        .lang.country-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;line-height:1}
+        .lang.country-chip .tool-country-flag{width:19px;height:12px;display:inline-flex;flex:0 0 19px;border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(15,23,42,.10)}
+        .lang.country-chip .country-chip-text{font-size:10px;line-height:1}
       `;
       document.head.appendChild(style);
     }
+
     const usTitle = document.querySelector('[data-section="us"] .section-head h2');
     const deTitle = document.querySelector('[data-section="de"] .section-head h2');
-    if(usTitle && !usTitle.querySelector('.tool-country-flag')) usTitle.innerHTML = `${US_FLAG}<span>美国</span>`;
-    if(deTitle && !deTitle.querySelector('.tool-country-flag')) deTitle.innerHTML = `${DE_FLAG}<span>德国</span>`;
+    if(usTitle) usTitle.innerHTML = `${US_FLAG}<span>美国</span>`;
+    if(deTitle) deTitle.innerHTML = `${DE_FLAG}<span>德国</span>`;
+
+    document.querySelectorAll('[data-section="us"] .card .lang').forEach(chip => {
+      chip.classList.add('country-chip');
+      chip.innerHTML = `${US_FLAG}<span class="country-chip-text">美国</span>`;
+    });
+    document.querySelectorAll('[data-section="de"] .card .lang').forEach(chip => {
+      chip.classList.add('country-chip');
+      chip.innerHTML = `${DE_FLAG}<span class="country-chip-text">德国</span>`;
+    });
   }
 
   function blankConfig(){
