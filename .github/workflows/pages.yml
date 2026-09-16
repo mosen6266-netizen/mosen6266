@@ -71,6 +71,7 @@ jobs:
 
           cp docx-template-loader.js public/docx-template-loader.js
           cp shared-order.js public/shared-order.js
+          cp access-config-fresh.js public/access-config-fresh.js
           cp access-gate.js public/access-gate.js
           cp access-config.json public/access-config.json
           python3 - <<'PY'
@@ -107,7 +108,7 @@ jobs:
           p = Path('public/index.html')
           s = p.read_text(encoding='utf-8')
           for v in range(1, 20):
-              for name in ('shared-order.js', 'access-gate.js'):
+              for name in ('shared-order.js', 'access-gate.js', 'access-config-fresh.js'):
                   old = f'<script src="./{name}?v={v}"></script>'
                   s = s.replace(old + '\n', '').replace(old, '')
           s = s.replace(
@@ -118,7 +119,7 @@ jobs:
               '排序保存在当前浏览器的本地存储中。请将本文件与所有 HTML 工具及图片资源放在同一目录中使用。',
               '固定链接会自动读取全局排序。只有拥有仓库写入授权的管理员才能修改全局顺序。'
           )
-          s = s.replace('</head>', '<script src="./access-gate.js?v=1"></script>\n</head>')
+          s = s.replace('</head>', '<script src="./access-config-fresh.js?v=1"></script>\n<script src="./access-gate.js?v=2"></script>\n</head>')
           s = s.replace('</body>', '<script src="./shared-order.js?v=3"></script>\n</body>')
           p.write_text(s, encoding='utf-8')
           PY
