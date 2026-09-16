@@ -95,7 +95,7 @@ jobs:
                   s = s.replace(old + '\n', '').replace(old, '')
           s = s.replace(
               '</body>',
-              '<script src="./docx-template-loader.js?v=3"></script>\n'
+              '<script src="./docx-template-loader.js?v=4"></script>\n'
               '<script src="./shared-order.js?v=2"></script>\n'
               '</body>'
           )
