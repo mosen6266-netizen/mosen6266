@@ -1,3 +1,74 @@
 {
-  "templates": []
+  "templates": [
+    {
+      "name": "Tether退款通知模板-德国.docx",
+      "path": "templates/Tether退款通知模板-德国.docx",
+      "region": "de",
+      "size": 1294026,
+      "sha256": "4be26fc305ade28c85f5543557ebb42219881df3b6f79d05524fe784c2b61b30"
+    },
+    {
+      "name": "Tether退款通知模板.docx",
+      "path": "templates/Tether退款通知模板.docx",
+      "region": "us",
+      "size": 1330606,
+      "sha256": "2bba05107783eb0d41080cf946bc981158a3a73d95718674271ea7a6cf316807"
+    },
+    {
+      "name": "Tether退款通知模板（没有利润）-德国.docx",
+      "path": "templates/Tether退款通知模板（没有利润）-德国.docx",
+      "region": "de",
+      "size": 1294595,
+      "sha256": "354305548f285b9ac97c648b2e68952bd9dc68e381ace27fdff34e3f4540fc87"
+    },
+    {
+      "name": "Tether退款通知模板（没有利润）.docx",
+      "path": "templates/Tether退款通知模板（没有利润）.docx",
+      "region": "us",
+      "size": 1330205,
+      "sha256": "98c702253e3a42690f3c58da8c098d7cbc2cb1a174964f0d2ac8cefbed783750"
+    },
+    {
+      "name": "冻结令和资金返还令模板-德国.docx",
+      "path": "templates/冻结令和资金返还令模板-德国.docx",
+      "region": "de",
+      "size": 520519,
+      "sha256": "e85f94b9437fd6bd2ad2f0380475fbf0c814530b1b7355aef9b337948a8e0a2e"
+    },
+    {
+      "name": "冻结令和资金返还令模板.docx",
+      "path": "templates/冻结令和资金返还令模板.docx",
+      "region": "us",
+      "size": 2934525,
+      "sha256": "a9e3ca9e08656a8b0a47737887edc63da620f35f09dc0c94f8948c1b851e7715"
+    },
+    {
+      "name": "客户建档模板-德国.docx",
+      "path": "templates/客户建档模板-德国.docx",
+      "region": "de",
+      "size": 1176047,
+      "sha256": "a0bcf78af5e71855c043e5fecaab8a68a0540831887a1106f98b45a6d76047d6"
+    },
+    {
+      "name": "客户建档模板.docx",
+      "path": "templates/客户建档模板.docx",
+      "region": "us",
+      "size": 1176011,
+      "sha256": "1849b7717177b43255bc08090a2b5897476aede67c7e2800c432893e16fa5b55"
+    },
+    {
+      "name": "首充减免模板-德国.docx",
+      "path": "templates/首充减免模板-德国.docx",
+      "region": "de",
+      "size": 242276,
+      "sha256": "6e3cb06f7e9b16549d790f11e823423851a01495fbe98c48bb7a593b6d3aa0a8"
+    },
+    {
+      "name": "首充减免模板.docx",
+      "path": "templates/首充减免模板.docx",
+      "region": "us",
+      "size": 869245,
+      "sha256": "acfbf1697f3b8bdd33719be83d86f7de18d7d7a76d12d731625d81fcda305427"
+    }
+  ]
 }
