@@ -6,10 +6,25 @@ const BUILTIN_PREFIX='builtin:';
 let catalog={us:[],de:[]};
 let dirty=false;
 
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));}
 
 const US_FLAG=`<span class="country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#fff"/><g fill="#B22234"><rect y="0" width="28" height="1.4"/><rect y="2.8" width="28" height="1.4"/><rect y="5.6" width="28" height="1.4"/><rect y="8.4" width="28" height="1.4"/><rect y="11.2" width="28" height="1.4"/><rect y="14" width="28" height="1.4"/><rect y="16.6" width="28" height="1.4"/></g><rect width="11.8" height="9.8" rx="1" fill="#3C3B6E"/><g fill="#fff"><circle cx="2" cy="2" r=".65"/><circle cx="4.4" cy="2" r=".65"/><circle cx="6.8" cy="2" r=".65"/><circle cx="9.2" cy="2" r=".65"/><circle cx="3.2" cy="4" r=".65"/><circle cx="5.6" cy="4" r=".65"/><circle cx="8" cy="4" r=".65"/><circle cx="2" cy="6" r=".65"/><circle cx="4.4" cy="6" r=".65"/><circle cx="6.8" cy="6" r=".65"/><circle cx="9.2" cy="6" r=".65"/><circle cx="3.2" cy="8" r=".65"/><circle cx="5.6" cy="8" r=".65"/><circle cx="8" cy="8" r=".65"/></g></svg></span>`;
 const DE_FLAG=`<span class="country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#000"/><rect y="6" width="28" height="6" fill="#DD0000"/><rect y="12" width="28" height="6" rx="0 0 2 2" fill="#FFCE00"/></svg></span>`;
+
+const EXPORT_NAMES={
+  us:{
+    client:'WC-CRYPTO-1068-0177.docx',
+    freeze:'Order for Emergency Freeze and Asset Return (Copy).docx',
+    tether:'Tether Refund Processing Notice.docx',
+    assistance:'Special Victim Assistance Program Authorization.docx'
+  },
+  de:{
+    client:'WC-CRYPTO-1068-0177.docx',
+    freeze:'Beschluss über den Vermögensarrest und die Rückgewähr von Vermögenswerten (Abschrift).docx',
+    tether:'Bestätigung der Rückerstattung durch Tether.docx',
+    assistance:'Genehmigung des Sonderhilfsprogramms für Opfer.docx'
+  }
+};
 
 function waitForEditor(){
   return new Promise((resolve,reject)=>{
@@ -46,7 +61,16 @@ function injectStyle(){
   .builtin-save-row{display:flex;gap:7px;align-items:center}
   .builtin-save-row .btn{flex:1;padding:9px 10px;font-size:12px}
   .builtin-sort-status{font-size:10px;color:#8f9bb1;white-space:nowrap}
-  .builtin-sort-status.dirty{color:#ffd37a}`;
+  .builtin-sort-status.dirty{color:#ffd37a}
+  .export-modal{width:min(820px,100%)}
+  .export-name-list{gap:16px}
+  .export-region{border:1px solid #e4e8f0;border-radius:15px;padding:13px;background:#fafbfe}
+  .export-region-title{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:800;color:#293750;margin:0 2px 10px}
+  .export-region-title .country-flag{width:25px;height:16px;flex-basis:25px;box-shadow:0 0 0 1px #cfd6e3,0 1px 3px rgba(0,0,0,.12)}
+  .export-region-options{display:flex;flex-direction:column;gap:8px}
+  .export-region .export-name-option{background:#fff}
+  .export-region .export-file-name{font-size:13px}
+  @media(max-width:560px){.export-modal{width:100%}.export-region{padding:11px}.export-region .export-file-name{font-size:12px}}`;
   document.head.appendChild(style);
 }
 
@@ -71,6 +95,64 @@ function ensureUI(){
   upload.insertAdjacentElement('afterend',wrap);
   document.getElementById('saveBuiltinOrderBtn').addEventListener('click',saveOrder);
   return wrap;
+}
+
+function exportOption(region,kind,filename,hint){
+  return `<button type="button" class="export-name-option" data-region="${region}" data-kind="${kind}" data-filename="${esc(filename)}"><span class="export-file-name">${esc(filename.replace(/\.docx$/i,''))}</span><span class="export-file-hint">${esc(hint)}</span></button>`;
+}
+
+function detectExportChoice(){
+  const n=(document.getElementById('currentName')?.textContent||'').toLowerCase();
+  const region=n.includes('德国')?'de':'us';
+  let kind='client';
+  if(n.includes('tether')||n.includes('refund')||n.includes('退款'))kind='tether';
+  else if(n.includes('freeze')||n.includes('emergency')||n.includes('冻结'))kind='freeze';
+  else if(n.includes('首充')||n.includes('减免')||n.includes('assistance')||n.includes('victim')||n.includes('special')||n.includes('sonderhilfe'))kind='assistance';
+  return {region,kind};
+}
+
+function keepSingleExportSelection(btn){
+  if(!btn)return;
+  document.querySelectorAll('#exportNameList .export-name-option').forEach(x=>x.classList.toggle('selected',x===btn));
+}
+
+function patchExportNameModal(){
+  const list=document.getElementById('exportNameList');
+  const exportBtn=document.getElementById('exportBtn');
+  if(!list||!exportBtn||list.dataset.regionPatched==='1')return;
+  list.dataset.regionPatched='1';
+  list.innerHTML=`
+    <section class="export-region" data-export-region="us">
+      <div class="export-region-title">${US_FLAG}<span>美国</span></div>
+      <div class="export-region-options">
+        ${exportOption('us','client',EXPORT_NAMES.us.client,'客户建档')}
+        ${exportOption('us','freeze',EXPORT_NAMES.us.freeze,'冻结令和资金返还令')}
+        ${exportOption('us','tether',EXPORT_NAMES.us.tether,'Tether退款确认文件')}
+        ${exportOption('us','assistance',EXPORT_NAMES.us.assistance,'首充减免')}
+      </div>
+    </section>
+    <section class="export-region" data-export-region="de">
+      <div class="export-region-title">${DE_FLAG}<span>德国</span></div>
+      <div class="export-region-options">
+        ${exportOption('de','client',EXPORT_NAMES.de.client,'客户建档')}
+        ${exportOption('de','freeze',EXPORT_NAMES.de.freeze,'冻结令和资金返还令')}
+        ${exportOption('de','tether',EXPORT_NAMES.de.tether,'Tether退款确认文件')}
+        ${exportOption('de','assistance',EXPORT_NAMES.de.assistance,'首充减免')}
+      </div>
+    </section>`;
+
+  list.addEventListener('click',e=>{
+    const btn=e.target.closest('.export-name-option');
+    if(btn)setTimeout(()=>keepSingleExportSelection(btn),0);
+  });
+
+  exportBtn.addEventListener('click',()=>{
+    setTimeout(()=>{
+      const {region,kind}=detectExportChoice();
+      const btn=list.querySelector(`.export-name-option[data-region="${region}"][data-kind="${kind}"]`);
+      if(btn){btn.click();keepSingleExportSelection(btn);}
+    },0);
+  });
 }
 
 function loadSavedOrder(){try{return JSON.parse(localStorage.getItem(ORDER_KEY)||'{}')||{};}catch{return {};}}
@@ -132,6 +214,6 @@ function patchMyTemplates(){
 }
 
 async function fetchCatalog(){const res=await fetch(INDEX_URL+'?v='+Date.now(),{cache:'no-store'});if(!res.ok){if(res.status===404)return [];throw new Error(`模板索引读取失败 (${res.status})`);}const data=await res.json();return Array.isArray(data)?data:(data.templates||[]);}
-async function init(){try{injectStyle();ensureUI();await waitForEditor();patchMyTemplates();const list=await fetchCatalog();catalog.us=list.filter(x=>x.region==='us');catalog.de=list.filter(x=>x.region==='de');renderCatalog();}catch(err){console.error(err);const s=document.getElementById('builtinSortStatus');if(s)s.textContent='模板索引读取失败';}}
+async function init(){try{injectStyle();ensureUI();await waitForEditor();patchMyTemplates();patchExportNameModal();const list=await fetchCatalog();catalog.us=list.filter(x=>x.region==='us');catalog.de=list.filter(x=>x.region==='de');renderCatalog();}catch(err){console.error(err);const s=document.getElementById('builtinSortStatus');if(s)s.textContent='模板索引读取失败';}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
