@@ -1,6 +1,27 @@
 {
   "version": 1,
-  "toolCenter": null,
+  "toolCenter": {
+    "us": [
+      "investigation-us",
+      "assistant-report-us",
+      "lawyer-report-us",
+      "tether-freeze-us",
+      "tether-custody-us",
+      "risk-us"
+    ],
+    "de": [
+      "investigation-de",
+      "assistant-report-de",
+      "lawyer-report-de",
+      "tether-freeze-de",
+      "tether-custody-de",
+      "risk-de"
+    ],
+    "other": [
+      "docx-editor",
+      "email-editor"
+    ]
+  },
   "docxTemplates": null,
-  "updatedAt": null
+  "updatedAt": "2026-09-16T19:52:48.041Z"
 }
