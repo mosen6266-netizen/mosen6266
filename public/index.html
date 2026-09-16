@@ -67,7 +67,7 @@
     <input id="search" class="search" type="search" placeholder="搜索工具名称…" autocomplete="off" />
     <button id="saveOrder" class="save-btn" type="button">保存当前排序</button>
   </div>
-  <div id="sortNote" class="sort-note"><span class="sort-dot"></span><span>拖拽后的顺序只有在点击保存后才会被记住。</span></div>
+  <div id="sortNote" class="sort-note"><span class="sort-dot"></span><span>拖拽后点击保存，系统会生成并复制可共享排序链接。</span></div>
 
   <section class="section" data-section="us">
     <div class="section-head"><h2>美国</h2><span>6</span></div>
@@ -144,7 +144,7 @@
   </section>
 
   <div id="empty" class="empty">没有找到匹配的工具。</div>
-  <div class="footer">排序保存在当前浏览器的本地存储中。请将本文件与所有 HTML 工具及图片资源放在同一目录中使用。</div>
+  <div class="footer">点击“保存当前排序”后会生成共享链接；把该链接发给别人，对方会看到相同的排序。</div>
 </div>
 <script>
 (() => {
@@ -189,7 +189,7 @@
       sortNote.classList.add('saved');
       sortNote.querySelector('span:last-child').textContent = '当前排序已保存。';
     }else{
-      sortNote.querySelector('span:last-child').textContent = '拖拽后的顺序只有在点击保存后才会被记住。';
+      sortNote.querySelector('span:last-child').textContent = '拖拽后点击保存，系统会生成并复制可共享排序链接。';
     }
   }
 
@@ -298,5 +298,6 @@
   applyFilter();
 })();
 </script>
+<script src="./shared-order.js?v=1"></script>
 </body>
 </html>
