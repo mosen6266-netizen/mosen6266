@@ -16,12 +16,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build backup zip
+      - name: Build UTF-8 backup zip
+        shell: bash
         run: |
-          mkdir -p /tmp/mosen-backup
-          rsync -a --exclude='.git' ./ /tmp/mosen-backup/
-          cd /tmp
-          zip -qr mosen6266-complete-backup.zip mosen-backup
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+
+          root = Path('.')
+          out = Path('/tmp/mosen6266-complete-backup.zip')
+          with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+              for p in sorted(root.rglob('*')):
+                  if '.git' in p.parts or p.is_dir():
+                      continue
+                  arc = Path('mosen-backup') / p
+                  z.write(p, arc.as_posix())
+          print(out, out.stat().st_size)
+          PY
 
       - name: Upload backup artifact
         uses: actions/upload-artifact@v4
