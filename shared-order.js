@@ -7,6 +7,7 @@
   const CONFIG_PATH = 'global-order.json';
   const RAW_CONFIG_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${CONFIG_PATH}`;
   const API_CONFIG_URL = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${CONFIG_PATH}`;
+  const DEFAULT_DOCX_PLACEHOLDER = '在这里输入对应的英文内容';
 
   const US_FLAG = `<span class="tool-country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#fff"/><g fill="#B22234"><rect y="0" width="28" height="1.4"/><rect y="2.8" width="28" height="1.4"/><rect y="5.6" width="28" height="1.4"/><rect y="8.4" width="28" height="1.4"/><rect y="11.2" width="28" height="1.4"/><rect y="14" width="28" height="1.4"/><rect y="16.6" width="28" height="1.4"/></g><rect width="11.8" height="9.8" rx="1" fill="#3C3B6E"/><g fill="#fff"><circle cx="2" cy="2" r=".65"/><circle cx="4.4" cy="2" r=".65"/><circle cx="6.8" cy="2" r=".65"/><circle cx="9.2" cy="2" r=".65"/><circle cx="3.2" cy="4" r=".65"/><circle cx="5.6" cy="4" r=".65"/><circle cx="8" cy="4" r=".65"/><circle cx="2" cy="6" r=".65"/><circle cx="4.4" cy="6" r=".65"/><circle cx="6.8" cy="6" r=".65"/><circle cx="9.2" cy="6" r=".65"/><circle cx="3.2" cy="8" r=".65"/><circle cx="5.6" cy="8" r=".65"/><circle cx="8" cy="8" r=".65"/></g></svg></span>`;
   const DE_FLAG = `<span class="tool-country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#000"/><rect y="6" width="28" height="6" fill="#DD0000"/><rect y="12" width="28" height="6" rx="0 0 2 2" fill="#FFCE00"/></svg></span>`;
@@ -42,7 +43,13 @@
   }
 
   function blankConfig(){
-    return {version:1, toolCenter:null, docxTemplates:null, updatedAt:null};
+    return {
+      version:1,
+      toolCenter:null,
+      docxTemplates:null,
+      docxPlaceholder:DEFAULT_DOCX_PLACEHOLDER,
+      updatedAt:null
+    };
   }
 
   async function fetchGlobalConfig(){
@@ -86,7 +93,7 @@
 
   function askWriteToken(){
     return (window.prompt(
-      '保存全局排序需要 GitHub 写入授权。\n\n请粘贴仅对 mosen6266 仓库具有 Contents: Read and write 权限的 Fine-grained personal access token。\n\n令牌只用于本次保存请求，不会写入网页、仓库或浏览器存储。请不要把令牌发送给任何人。'
+      '保存全局设置需要 GitHub 写入授权。\n\n请粘贴仅对 mosen6266 仓库具有 Contents: Read and write 权限的 Fine-grained personal access token。\n\n令牌只用于本次保存请求，不会写入网页、仓库或浏览器存储。请不要把令牌发送给任何人。'
     ) || '').trim();
   }
 
@@ -99,7 +106,7 @@
     const payload = await res.json().catch(() => ({}));
     if(!res.ok){
       if(res.status === 401 || res.status === 403) throw new Error('GitHub 授权无效，或令牌没有该仓库的 Contents 写入权限。');
-      throw new Error(payload.message || `读取全局排序失败 (${res.status})`);
+      throw new Error(payload.message || `读取全局设置失败 (${res.status})`);
     }
     let data = blankConfig();
     try{ data = Object.assign(blankConfig(), JSON.parse(base64ToUtf8(payload.content || ''))); }catch(_){ }
@@ -113,8 +120,13 @@
     const next = Object.assign(blankConfig(), current.data || {});
     next[section] = value;
     next.updatedAt = new Date().toISOString();
+    const commitMessages = {
+      toolCenter:'Save global tool center order',
+      docxTemplates:'Save global DOCX template order',
+      docxPlaceholder:'Save global DOCX replacement placeholder'
+    };
     const body = {
-      message: section === 'toolCenter' ? 'Save global tool center order' : 'Save global DOCX template order',
+      message: commitMessages[section] || 'Save global settings',
       content: utf8ToBase64(JSON.stringify(next, null, 2) + '\n'),
       branch: BRANCH
     };
@@ -127,7 +139,7 @@
     const payload = await res.json().catch(() => ({}));
     if(!res.ok){
       if(res.status === 401 || res.status === 403) throw new Error('GitHub 授权无效，或令牌没有该仓库的 Contents 写入权限。');
-      if(res.status === 409) throw new Error('排序文件刚刚被更新，请刷新页面后再保存一次。');
+      if(res.status === 409) throw new Error('设置文件刚刚被更新，请刷新页面后再保存一次。');
       throw new Error(payload.message || `全局保存失败 (${res.status})`);
     }
     return next;
@@ -172,6 +184,132 @@
     });
   }
 
+  function addDocxPlaceholderStyles(){
+    if(document.getElementById('docxPlaceholderStyle')) return;
+    const style = document.createElement('style');
+    style.id = 'docxPlaceholderStyle';
+    style.textContent = `
+      #docxPlaceholderModal .docx-placeholder-input{width:100%;min-height:92px;resize:vertical;border:1px solid var(--line,#e4e8f0);border-radius:11px;padding:11px 12px;outline:none;line-height:1.55;margin:5px 0 10px;color:var(--text,#172033);background:#fff}
+      #docxPlaceholderModal .docx-placeholder-input:focus{border-color:#8ca5ee;box-shadow:0 0 0 3px #eef2ff}
+      #docxPlaceholderModal .docx-placeholder-count{font-size:11px;color:var(--muted,#697386);text-align:right;margin:-4px 2px 16px}
+      #docxPlaceholderModal .docx-placeholder-tip{font-size:12px;color:var(--muted,#697386);line-height:1.6;margin:0 0 8px}
+      #docxPlaceholderModal .docx-placeholder-error{display:none;font-size:12px;color:#c73737;background:#fff0f0;border-radius:9px;padding:8px 10px;margin:0 0 12px}
+      #docxPlaceholderModal .docx-placeholder-error.show{display:block}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function createDocxPlaceholderManager(initialValue){
+    const topActions = document.querySelector('.top-actions');
+    const rows = document.getElementById('rows');
+    if(!topActions || !rows) return null;
+
+    addDocxPlaceholderStyles();
+
+    let currentValue = typeof initialValue === 'string' ? initialValue : DEFAULT_DOCX_PLACEHOLDER;
+    const applyPlaceholder = () => {
+      rows.querySelectorAll('.replace-wrap textarea').forEach(textarea => {
+        textarea.placeholder = currentValue;
+      });
+    };
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-soft';
+    button.id = 'docxPlaceholderSettingsBtn';
+    button.textContent = '修改输入提示';
+    const clearBtn = document.getElementById('clearDraftBtn');
+    if(clearBtn) topActions.insertBefore(button, clearBtn);
+    else topActions.appendChild(button);
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.id = 'docxPlaceholderModal';
+    backdrop.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="docxPlaceholderTitle">
+        <h3 id="docxPlaceholderTitle">修改输入框提示</h3>
+        <p class="docx-placeholder-tip">这里修改的是右侧英文输入框里显示的提示文字。保存后会写入全局配置，所有人打开这个 DOCX 编辑器时都会使用同一条提示。</p>
+        <textarea class="docx-placeholder-input" id="docxPlaceholderInput" maxlength="160" spellcheck="false"></textarea>
+        <div class="docx-placeholder-count" id="docxPlaceholderCount">0 / 160</div>
+        <div class="docx-placeholder-error" id="docxPlaceholderError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="docxPlaceholderCancelBtn">取消</button>
+          <button type="button" class="btn btn-primary" id="docxPlaceholderSaveBtn">保存并同步给所有人</button>
+        </div>
+      </div>`;
+    document.body.appendChild(backdrop);
+
+    const input = backdrop.querySelector('#docxPlaceholderInput');
+    const count = backdrop.querySelector('#docxPlaceholderCount');
+    const error = backdrop.querySelector('#docxPlaceholderError');
+    const cancel = backdrop.querySelector('#docxPlaceholderCancelBtn');
+    const save = backdrop.querySelector('#docxPlaceholderSaveBtn');
+
+    const setError = message => {
+      error.textContent = message || '';
+      error.classList.toggle('show', !!message);
+    };
+    const updateCount = () => { count.textContent = `${input.value.length} / 160`; };
+    const open = () => {
+      input.value = currentValue;
+      updateCount();
+      setError('');
+      backdrop.classList.add('show');
+      setTimeout(() => { input.focus(); input.select(); }, 0);
+    };
+    const close = () => {
+      if(save.disabled) return;
+      backdrop.classList.remove('show');
+      setError('');
+    };
+
+    button.addEventListener('click', open);
+    cancel.addEventListener('click', close);
+    input.addEventListener('input', updateCount);
+    backdrop.addEventListener('click', e => { if(e.target === backdrop) close(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && backdrop.classList.contains('show')) close(); });
+
+    save.addEventListener('click', async () => {
+      const value = input.value.trim();
+      if(!value){ setError('提示文字不能为空。'); input.focus(); return; }
+      if(value.length > 160){ setError('提示文字最多 160 个字符。'); input.focus(); return; }
+      setError('');
+      save.disabled = true;
+      cancel.disabled = true;
+      save.textContent = '正在全局保存…';
+      try{
+        await saveGlobalSection('docxPlaceholder', value);
+        currentValue = value;
+        applyPlaceholder();
+        backdrop.classList.remove('show');
+        button.textContent = '输入提示已全局保存';
+        setTimeout(() => { button.textContent = '修改输入提示'; }, 1800);
+      }catch(err){
+        const msg = err && err.message ? err.message : String(err);
+        setError(msg === '已取消全局保存。' ? '已取消保存，公共提示没有改变。' : '保存失败：' + msg);
+      }finally{
+        save.disabled = false;
+        cancel.disabled = false;
+        save.textContent = '保存并同步给所有人';
+      }
+    });
+
+    const observer = new MutationObserver(applyPlaceholder);
+    observer.observe(rows, {childList:true, subtree:true});
+    applyPlaceholder();
+
+    return {
+      get value(){ return currentValue; },
+      setValue(value){
+        if(typeof value !== 'string' || !value.trim() || value === currentValue) return;
+        currentValue = value;
+        applyPlaceholder();
+        if(!backdrop.classList.contains('show')) input.value = currentValue;
+      },
+      destroy(){ observer.disconnect(); }
+    };
+  }
+
   function initDocxEditor(){
     let attempts = 0;
     const timer = setInterval(async () => {
@@ -181,6 +319,7 @@
       const deList = document.getElementById('builtinDeList');
       if(!saveBtn || !usList || !deList){ if(attempts > 240) clearInterval(timer); return; }
       clearInterval(timer);
+
       let applying = false;
       let shared = null;
       const applyGlobal = () => {
@@ -193,12 +332,21 @@
           if(status){ status.textContent = '全局排序'; status.classList.remove('dirty'); }
         }finally{ applying = false; }
       };
+
       const config = await fetchGlobalConfig();
       shared = config.docxTemplates && typeof config.docxTemplates === 'object' ? config.docxTemplates : null;
       applyGlobal();
+
+      const placeholderManager = createDocxPlaceholderManager(
+        typeof config.docxPlaceholder === 'string' && config.docxPlaceholder.trim()
+          ? config.docxPlaceholder
+          : DEFAULT_DOCX_PLACEHOLDER
+      );
+
       const observer = new MutationObserver(() => { if(!applying) applyGlobal(); });
       observer.observe(usList, {childList:true});
       observer.observe(deList, {childList:true});
+
       saveBtn.addEventListener('click', async () => {
         const data = {
           us:[...usList.querySelectorAll('.builtin-item')].map(node => node.dataset.path),
@@ -220,6 +368,18 @@
           setTimeout(() => { saveBtn.disabled = false; saveBtn.textContent = '保存当前排序'; }, 1800);
         }
       });
+
+      if(placeholderManager){
+        const poll = setInterval(async () => {
+          try{
+            const latest = await fetchGlobalConfig();
+            if(typeof latest.docxPlaceholder === 'string' && latest.docxPlaceholder.trim()){
+              placeholderManager.setValue(latest.docxPlaceholder);
+            }
+          }catch(_){ }
+        }, 30000);
+        window.addEventListener('beforeunload', () => clearInterval(poll), {once:true});
+      }
     }, 100);
   }
 
