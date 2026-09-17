@@ -4,34 +4,24 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-welcome",
-  "globalUpdatedAt": "2026-09-17T00:00:00.000Z",
+  "globalUpdatedAt": "2026-09-17T15:47:37.544Z",
   "workflows": [
     {
       "id": "flow-welcome",
       "name": "助理接待流程",
       "description": "这是一个可直接修改或删除的示例流程",
       "color": "#6d4aff",
-      "createdAt": 0,
-      "updatedAt": 0,
+      "createdAt": 1789659729157,
+      "updatedAt": 1789660043822,
       "steps": [
         {
           "id": "step-hello",
-          "title": "开场问候",
+          "title": "自我介绍",
           "type": "话术",
-          "contentZh": "您好，很高兴为您服务。请问有什么可以帮到您？",
-          "contentForeign": "Hello, it is a pleasure to assist you. How may I help you today?",
+          "contentZh": "您好，我叫 Lena S. Moeller，是 Maximilian Weber 律师的助理。我很乐意为您提供关于您涉及网络诈骗案件的免费初步咨询",
+          "contentForeign": "Hallo, mein Name ist Lena S Moeller, ich bin die Assistentin von Rechtsanwalt Maximilian Weber. Gerne biete ich Ihnen eine kostenlose Erstberatung zu Ihrem Fall im Bereich Online-Betrug an",
           "language": "auto",
-          "note": "先确认客户当前是否方便沟通。",
-          "attachments": []
-        },
-        {
-          "id": "step-needs",
-          "title": "确认客户需求",
-          "type": "提问",
-          "contentZh": "为了更准确地了解您的情况，请您简单说明一下目前遇到的问题。",
-          "contentForeign": "Damit ich Ihre Situation besser einschätzen kann, schildern Sie mir bitte kurz, worum es geht.",
-          "language": "auto",
-          "note": "根据客户回答进入相应的后续流程。",
+          "note": "",
           "attachments": []
         }
       ]
