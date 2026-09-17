@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "bundleId": "mosen-public-flows",
+  "shareMode": false,
+  "theme": "light",
+  "activeWorkflowId": "flow-welcome",
+  "globalUpdatedAt": "2026-09-17T00:00:00.000Z",
+  "workflows": [
+    {
+      "id": "flow-welcome",
+      "name": "助理接待流程",
+      "description": "这是一个可直接修改或删除的示例流程",
+      "color": "#6d4aff",
+      "createdAt": 0,
+      "updatedAt": 0,
+      "steps": [
+        {
+          "id": "step-hello",
+          "title": "开场问候",
+          "type": "话术",
+          "contentZh": "您好，很高兴为您服务。请问有什么可以帮到您？",
+          "contentForeign": "Hello, it is a pleasure to assist you. How may I help you today?",
+          "language": "auto",
+          "note": "先确认客户当前是否方便沟通。",
+          "attachments": []
+        },
+        {
+          "id": "step-needs",
+          "title": "确认客户需求",
+          "type": "提问",
+          "contentZh": "为了更准确地了解您的情况，请您简单说明一下目前遇到的问题。",
+          "contentForeign": "Damit ich Ihre Situation besser einschätzen kann, schildern Sie mir bitte kurz, worum es geht.",
+          "language": "auto",
+          "note": "根据客户回答进入相应的后续流程。",
+          "attachments": []
+        }
+      ]
+    }
+  ]
+}
