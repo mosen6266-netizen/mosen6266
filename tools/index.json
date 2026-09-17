@@ -1,3 +1,13 @@
 {
-  "tools": []
+  "tools": [
+    {
+      "id": "dynamic-e04f819fb860",
+      "name": "聊天流程编辑器.html",
+      "title": "聊天流程编辑器",
+      "description": "自定义编排话术、标题、图片与附件，并导出完整 HTML。",
+      "path": "tools/聊天流程编辑器.html",
+      "category": "other",
+      "icon": ""
+    }
+  ]
 }
