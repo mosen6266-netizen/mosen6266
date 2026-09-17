@@ -2,17 +2,17 @@
   "version": 2,
   "bundleId": "mosen-public-flows",
   "shareMode": false,
-  "theme": "light",
+  "theme": "dark",
   "activeWorkflowId": "flow-welcome",
-  "globalUpdatedAt": "2026-09-17T15:47:37.544Z",
+  "globalUpdatedAt": "2026-09-17T15:50:02.055Z",
   "workflows": [
     {
       "id": "flow-welcome",
-      "name": "助理接待流程",
+      "name": "德国助理接待流程",
       "description": "这是一个可直接修改或删除的示例流程",
       "color": "#6d4aff",
       "createdAt": 1789659729157,
-      "updatedAt": 1789660043822,
+      "updatedAt": 1789660193455,
       "steps": [
         {
           "id": "step-hello",
