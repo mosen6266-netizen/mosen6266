@@ -1,3 +1,11 @@
 {
-  "tools": []
+  "tools": [
+    {
+      "id": "chat-flow-editor",
+      "title": "聊天流程编辑器",
+      "description": "自定义编排话术、标题、图片与附件，并导出完整 HTML。",
+      "category": "other",
+      "path": "聊天流程编辑器.html"
+    }
+  ]
 }
