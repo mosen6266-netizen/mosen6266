@@ -152,11 +152,12 @@ jobs:
               title = path.stem
               rel = path.as_posix()
               encoded = quote(rel, safe='')
-              return f'''
-      <a class="card" draggable="true" data-id="docx-template-{encoded}" data-name="{html.escape(title, quote=True)} {label} DOCX" href="DOCX文件编辑器.html?template={encoded}" target="_blank" rel="noopener">
-        <div class="card-top"><div class="icon">DX</div><div class="lang">{label}</div></div>
-        <div class="title">{html.escape(title)}</div><div class="desc">DOCX 文件快捷入口，点击后直接进入编辑器并打开该文件。</div><div class="open">直接编辑 →</div><div class="drag-handle">⋮⋮</div>
-      </a>'''
+              return (
+                  f'\n      <a class="card" draggable="true" data-id="docx-template-{encoded}" data-name="{html.escape(title, quote=True)} {label} DOCX" href="DOCX文件编辑器.html?template={encoded}" target="_blank" rel="noopener">\n'
+                  f'        <div class="card-top"><div class="icon">DX</div><div class="lang">{label}</div></div>\n'
+                  f'        <div class="title">{html.escape(title)}</div><div class="desc">DOCX 文件快捷入口，点击后直接进入编辑器并打开该文件。</div><div class="open">直接编辑 →</div><div class="drag-handle">⋮⋮</div>\n'
+                  '      </a>'
+              )
 
           def inject(section_key, label, region):
               global s
