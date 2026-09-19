@@ -214,6 +214,15 @@ function patchMyTemplates(){
 }
 
 async function fetchCatalog(){const res=await fetch(INDEX_URL+'?v='+Date.now(),{cache:'no-store'});if(!res.ok){if(res.status===404)return [];throw new Error(`模板索引读取失败 (${res.status})`);}const data=await res.json();return Array.isArray(data)?data:(data.templates||[]);}
-async function init(){try{injectStyle();ensureUI();await waitForEditor();patchMyTemplates();patchExportNameModal();const list=await fetchCatalog();catalog.us=list.filter(x=>x.region==='us');catalog.de=list.filter(x=>x.region==='de');renderCatalog();}catch(err){console.error(err);const s=document.getElementById('builtinSortStatus');if(s)s.textContent='模板索引读取失败';}}
+function normalizeTemplatePath(v){return String(v||'').replace(/^\.\/?/,'').replace(/\\/g,'/');}
+function requestedTemplatePath(){try{return normalizeTemplatePath(new URLSearchParams(location.search).get('template')||'');}catch{return '';}}
+async function openRequestedTemplate(list){
+  const wanted=requestedTemplatePath();
+  if(!wanted)return;
+  const target=list.find(t=>normalizeTemplatePath(t.path)===wanted||t.name===wanted);
+  if(!target){if(typeof toast==='function')toast('未找到要打开的 DOCX 文件','error');return;}
+  await openBuiltIn(target);
+}
+async function init(){try{injectStyle();ensureUI();await waitForEditor();patchMyTemplates();patchExportNameModal();const list=await fetchCatalog();catalog.us=list.filter(x=>x.region==='us');catalog.de=list.filter(x=>x.region==='de');renderCatalog();await openRequestedTemplate(list);}catch(err){console.error(err);const s=document.getElementById('builtinSortStatus');if(s)s.textContent='模板索引读取失败';}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

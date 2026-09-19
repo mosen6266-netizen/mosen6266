@@ -129,6 +129,57 @@ jobs:
           p.write_text(s, encoding='utf-8')
           PY
 
+          # DOCX homepage shortcut generation
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import quote
+          import html
+          import re
+
+          p = Path('public/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Remove generated shortcut cards first so this remains idempotent.
+          s = re.sub(r'\n\s*<a class="card" draggable="true" data-id="docx-template-[\\s\\S]*?</a>', '', s)
+
+          templates = []
+          for f in sorted(Path('templates').glob('*.docx'), key=lambda x: x.name):
+              region = 'de' if '德国' in f.name else 'us'
+              templates.append((f, region))
+
+          def card(path, region):
+              label = '德国' if region == 'de' else '美国'
+              title = path.stem
+              rel = path.as_posix()
+              encoded = quote(rel, safe='')
+              return f'''
+      <a class="card" draggable="true" data-id="docx-template-{encoded}" data-name="{html.escape(title, quote=True)} {label} DOCX" href="DOCX文件编辑器.html?template={encoded}" target="_blank" rel="noopener">
+        <div class="card-top"><div class="icon">DX</div><div class="lang">{label}</div></div>
+        <div class="title">{html.escape(title)}</div><div class="desc">DOCX 文件快捷入口，点击后直接进入编辑器并打开该文件。</div><div class="open">直接编辑 →</div><div class="drag-handle">⋮⋮</div>
+      </a>'''
+
+          def inject(section_key, label, region):
+              global s
+              items = [card(path, r) for path, r in templates if r == region]
+              if not items:
+                  return
+              start = s.index(f'<section class="section" data-section="{section_key}">')
+              end = s.index('</section>', start)
+              close = s.rfind('</div>', start, end)
+              s = s[:close] + ''.join(items) + '\n    ' + s[close:]
+              end = s.index('</section>', start)
+              segment = s[start:end]
+              count = segment.count('<a class="card"')
+              pattern = rf'(<div class="section-head"><h2>{label}</h2><span>)\d+(</span></div>)'
+              s = re.sub(pattern, rf'\g<1>{count}\g<2>', s, count=1)
+
+          inject('us', '美国', 'us')
+          inject('de', '德国', 'de')
+          total = s.count('<a class="card"')
+          s = re.sub(r'<div class="count">\d+ 个工具</div>', f'<div class="count">{total} 个工具</div>', s, count=1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
           cp -a public/. .
 
       - name: Build dynamic HTML tool index
