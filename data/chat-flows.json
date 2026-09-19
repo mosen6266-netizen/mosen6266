@@ -2,9 +2,9 @@
   "version": 2,
   "bundleId": "mosen-public-flows",
   "shareMode": false,
-  "theme": "dark",
+  "theme": "light",
   "activeWorkflowId": "flow-welcome",
-  "globalUpdatedAt": "2026-09-17T15:50:02.055Z",
+  "globalUpdatedAt": "2026-09-19T14:00:02.365Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -12,7 +12,7 @@
       "description": "这是一个可直接修改或删除的示例流程",
       "color": "#6d4aff",
       "createdAt": 1789659729157,
-      "updatedAt": 1789660193455,
+      "updatedAt": 1789826373806,
       "steps": [
         {
           "id": "step-hello",
@@ -20,6 +20,46 @@
           "type": "话术",
           "contentZh": "您好，我叫 Lena S. Moeller，是 Maximilian Weber 律师的助理。我很乐意为您提供关于您涉及网络诈骗案件的免费初步咨询",
           "contentForeign": "Hallo, mein Name ist Lena S Moeller, ich bin die Assistentin von Rechtsanwalt Maximilian Weber. Gerne biete ich Ihnen eine kostenlose Erstberatung zu Ihrem Fall im Bereich Online-Betrug an",
+          "language": "auto",
+          "note": "",
+          "attachments": []
+        },
+        {
+          "id": "step-mu8gbm7t-hw4t9k",
+          "title": "法律声明",
+          "type": "话术",
+          "contentZh": "首先，为了避免任何误解，我想说明您可以保留我们聊天记录的截图。我在此与您分享的所有内容均具有法律效力。同时，我明确向您保证，我们绝不会泄露任何有关您隐私或个人数据的信息。这一点请您放心",
+          "contentForeign": "Zunächst möchte ich, um Missverständnisse zu vermeiden, darauf hinweisen, dass Sie gerne Screenshots unseres Chatverlaufs aufbewahren können. Alles, was ich Ihnen hier mitteile, ist rechtlich verbindlich. Gleichzeitig versichere ich Ihnen ausdrücklich, dass wir keinerlei Informationen weitergeben werden, die Ihre Privatsphäre oder persönlichen Daten betreffen. Sie können sich darauf verlassen",
+          "language": "auto",
+          "note": "",
+          "attachments": []
+        },
+        {
+          "id": "step-mu8gclna-p01swn",
+          "title": "声明成功后收费",
+          "type": "话术",
+          "contentZh": "请务必知悉，在因欺诈而损失的资金被成功追回并全额退还至受害者账户之前，我们不会收取任何预付费用。只有在成功协助追回资金且款项已入账受害者账户后，我们才会收取 15% 的固定服务费\n\n该服务费涵盖了追回过程中涉及的所有成本与专业服务，包括资金流向追踪与技术调查、法律文件及案卷准备、案件管理，以及与相关部门及涉案第三方的协调工作\n\n我们郑重承诺，Whitfield & Crane PartG mbB 在处理您案件的任何阶段，均不会要求支付定金、预付款、手续费、放款费，或任何其他隐性及额外费用",
+          "contentForeign": "Außerdem ist wichtig für Sie zu wissen, dass wir keinerlei Kosten im Voraus verlangen, bevor die durch den Betrug verlorenen Gelder erfolgreich zurückgeholt und vollständig auf das Konto des Geschädigten zurückgeführt wurden. Erst wenn wir Ihnen erfolgreich bei der Rückholung der Gelder geholfen haben und der Betrag auf dem Konto des Geschädigten eingegangen ist, berechnen wir eine pauschale Servicegebühr in Höhe von 15 %\n\nDiese Servicegebühr umfasst sämtliche im Rahmen der Rückholung anfallenden Kosten und professionellen Leistungen, einschließlich der Nachverfolgung der Geldflüsse und technischen Ermittlungen, der Erstellung rechtlicher Unterlagen und Fallvorbereitung, des Fallmanagements sowie der Abstimmung mit zuständigen Stellen und beteiligten Dritten\n\nWir versichern Ihnen ausdrücklich, dass Whitfield & Crane PartG mbB während der gesamten Bearbeitung Ihres Falls weder eine Kaution noch Vorauszahlungen, Bearbeitungsgebühren, Freigabegebühren oder sonstige versteckte bzw. zusätzliche Kosten verlangen wird",
+          "language": "auto",
+          "note": "",
+          "attachments": []
+        },
+        {
+          "id": "step-mu8gds6a-7ykwp4",
+          "title": "询问案件情况",
+          "type": "话术",
+          "contentZh": "为了尽可能精确、高效地记录您的案情，并据此着手开展后续调查及证据保全工作，我首先需要了解一下这起欺诈事件的经过。这不会占用太多时间，您只需向我简要说明几个关键点即可。您现在方便吗？",
+          "contentForeign": "Damit wir Ihren Fall möglichst präzise und effizient aufnehmen und anschließend mit den weiteren Ermittlungen und der Beweissicherung beginnen können, brauche ich zunächst einen kurzen Überblick darüber, wie der Betrug abgelaufen ist. Das wird nicht viel Zeit in Anspruch nehmen. Es reicht, wenn Sie mir einige wichtige Punkte kurz schildern. Haben Sie gerade einen Moment Zeit?",
+          "language": "auto",
+          "note": "",
+          "attachments": []
+        },
+        {
+          "id": "step-mu8geh6g-5zovim",
+          "title": "问题",
+          "type": "话术",
+          "contentZh": "您是通过什么渠道接触到相关涉案人员的？\n\n这主要涉及投资平台、加密货币，还是其他形式的诈骗？\n\n您的损失总额大约是多少？目前平台账户中是否还有余额显示？\n\n您手头是否有相关证据，例如聊天记录、转账或付款截图、平台链接或其他类似资料？\n\n提供的信息越详细越好。不过，如果您暂时无法回忆起具体细节也没关系，我们可以一步步梳理。您可以一次性发送所有信息，也可以分多次发送。当然，所有信息均会严格保密，且仅用于处理您的案件",
+          "contentForeign": "Über welchen Kanal sind Sie mit der betreffenden Person oder den betreffenden Personen in Kontakt gekommen?\n\nHandelte es sich hauptsächlich um eine Anlageplattform, Kryptowährungen oder eine andere Form des Betrugs?\n\nWie hoch ist Ihr gesamter Verlust ungefähr, und wird auf einem der Plattformkonten noch ein Guthaben angezeigt?\n\nHaben Sie noch Beweismaterial wie Chatverläufe, Screenshots von Überweisungen oder Zahlungen, Links zu den Plattformen oder ähnliche Unterlagen?\n\nJe genauer die Informationen sind, desto besser. Falls Sie sich an einzelne Punkte im Moment nicht mehr genau erinnern, ist das aber kein Problem. Wir können alles Schritt für Schritt durchgehen. Sie können mir die Informationen direkt jetzt schicken oder auch in mehreren Nachrichten senden. Sämtliche Angaben werden selbstverständlich vertraulich behandelt und ausschließlich für die Bearbeitung Ihres Falls verwendet",
           "language": "auto",
           "note": "",
           "attachments": []
