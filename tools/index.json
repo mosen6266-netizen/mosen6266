@@ -1,6 +1,15 @@
 {
   "tools": [
     {
+      "id": "dynamic-ea598bf1d465",
+      "name": "Onchain钱包地址查询-德国.html",
+      "title": "Onchain Wallet · Adressanalyse",
+      "description": "自定义 HTML 工具",
+      "path": "tools/Onchain钱包地址查询-德国.html",
+      "category": "de",
+      "icon": ""
+    },
+    {
       "id": "dynamic-bdb19292679f",
       "name": "Onchain钱包地址查询.html",
       "title": "Onchain Wallet · Address Intelligence",
