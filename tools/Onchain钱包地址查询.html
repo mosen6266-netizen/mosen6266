@@ -51,13 +51,13 @@
   .clickable-badge{cursor:pointer;user-select:none;transition:.16s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}.clickable-badge:hover{transform:translateY(-1px);filter:brightness(1.12);box-shadow:0 6px 18px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.08)}
   .editable-balance{cursor:pointer;user-select:none;border-radius:11px;padding:5px 6px;margin:-5px -6px;transition:.16s}.editable-balance:hover{background:rgba(77,140,255,.08);box-shadow:inset 0 0 0 1px rgba(77,140,255,.18)}
   .editable-balance .coin-top{font-size:18px;color:var(--text)}.editable-balance .coin-top span:last-child{font-weight:850}
-  .tx-status-click{cursor:pointer;user-select:none;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;min-width:68px;line-height:1.2}.tx-status-click:hover{filter:brightness(1.12)}
+  .tx-status-click{cursor:pointer;user-select:none;white-space:normal;display:inline-flex;align-items:center;justify-content:center;min-width:0;max-width:100%;padding-left:6px;padding-right:6px;line-height:1.2;text-align:center;overflow-wrap:anywhere;word-break:normal}.tx-status-click:hover{filter:brightness(1.12)}
   .tx-card th,.tx-card td{min-width:0;overflow:hidden}
   .tx-card th{overflow-wrap:normal;text-overflow:clip}
   .tx-card td{overflow-wrap:anywhere}
   .tx-direction-badge{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;min-width:54px;max-width:100%;line-height:1.2}
   .tx-direction-badge.judicial{font-size:11px;padding-left:8px;padding-right:8px;min-width:0}
-  .tx-status-click{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+  .tx-status-click{max-width:100%;white-space:normal;overflow:visible;text-overflow:clip;vertical-align:top}
   .channel-badge{display:inline-flex;align-items:center;max-width:100%;white-space:normal;line-height:1.25;text-align:center;overflow-wrap:anywhere}
   #txBody td:nth-child(2),.tx-card th:nth-child(2){white-space:nowrap;padding-left:10px;padding-right:12px}
   #txBody td:nth-child(3),.tx-card th:nth-child(3){padding-left:12px;padding-right:12px}
@@ -112,7 +112,7 @@
     .tx-card .tx-row td:nth-child(n){padding-left:0;padding-right:0}
     .tx-card .tx-row td:last-child{border-bottom:0}.tx-card .tx-row td::before{content:attr(data-label);color:#8298b8;font-weight:700;font-size:11px;line-height:1.45;white-space:nowrap}
     .tx-card .tx-row td>*{min-width:0;max-width:100%}.tx-card .tx-row td.mono,.tx-card .tx-row td .mono{overflow-wrap:anywhere;word-break:break-all}
-    .tx-direction-badge,.tx-status-click{width:max-content;max-width:100%;min-width:0;white-space:nowrap}
+    .tx-direction-badge{width:max-content;max-width:100%;min-width:0;white-space:nowrap}.tx-status-click{width:max-content;max-width:100%;min-width:0;white-space:normal}
     .tx-direction-badge.judicial,.channel-badge{white-space:normal;width:auto;max-width:100%;text-align:left;justify-content:flex-start}
     .tx-card .tx-empty-row{display:block;border:1px solid var(--line);border-radius:13px;background:#0a1727}.tx-card .tx-empty-row td{display:block!important;text-align:center!important;padding:28px 12px!important;border:0!important}.tx-card .tx-empty-row td::before{display:none}
     .tx-card .footerline{position:sticky;bottom:0;z-index:4;margin:10px -13px -13px;padding:11px 13px;background:rgba(13,26,43,.985);border-top:1px solid var(--line);backdrop-filter:blur(12px);gap:8px}.tx-card .footerline button{padding:9px 11px}.tx-card .footerline span{font-size:11px}
