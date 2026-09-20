@@ -1,6 +1,15 @@
 {
   "tools": [
     {
+      "id": "dynamic-bdb19292679f",
+      "name": "Onchain钱包地址查询.html",
+      "title": "Onchain Wallet · Address Intelligence",
+      "description": "自定义 HTML 工具",
+      "path": "tools/Onchain钱包地址查询.html",
+      "category": "us",
+      "icon": ""
+    },
+    {
       "id": "dynamic-e04f819fb860",
       "name": "聊天流程编辑器.html",
       "title": "维权流程",
