@@ -1051,104 +1051,16 @@ function buildDomainReportDocx(domain, logoBytes, meta={}){
   return {bytes:wcZipStore(files),filename:`Whitfield_Crane_Domain_Bewertung_${cleanDomain}_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.docx`,caseId};
 }
 
-async function wcLoadExportScript(src, readyCheck){
-  if(readyCheck()) return;
-  await new Promise((resolve,reject)=>{
-    const existing=[...document.scripts].find(s=>s.src===src);
-    if(existing){
-      if(readyCheck()) return resolve();
-      existing.addEventListener('load',()=>readyCheck()?resolve():reject(new Error('Export library unavailable')),{once:true});
-      existing.addEventListener('error',()=>reject(new Error('Export library failed to load')),{once:true});
-      return;
-    }
-    const s=document.createElement('script');
-    s.src=src;
-    s.onload=()=>readyCheck()?resolve():reject(new Error('Export library unavailable'));
-    s.onerror=()=>reject(new Error('Export library failed to load'));
-    document.head.appendChild(s);
-  });
-}
-
-async function wcGetImageBytes(src){
-  if(/^data:/i.test(src)){
-    const comma=src.indexOf(',');
-    if(comma<0) throw new Error('Invalid image data');
-    return wcBase64ToBytes(src.slice(comma+1));
-  }
-  const response=await fetch(src,{cache:'force-cache'});
-  if(!response.ok) throw new Error('Logo load failed');
-  return new Uint8Array(await response.arrayBuffer());
-}
-
-async function wcSaveDocxBlobAsPdf(blob, filename){
-  await wcLoadExportScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',()=>!!window.JSZip);
-  await wcLoadExportScript('https://cdn.jsdelivr.net/npm/docx-preview@0.3.6/dist/docx-preview.min.js',()=>!!(window.docx&&window.docx.renderAsync));
-  await Promise.all([
-    wcLoadExportScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',()=>!!window.html2canvas),
-    wcLoadExportScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',()=>!!(window.jspdf&&window.jspdf.jsPDF))
-  ]);
-
-  const host=document.createElement('div');
-  host.style.cssText='position:fixed;left:-12000px;top:0;background:#fff;z-index:-1;pointer-events:none;';
-  document.body.appendChild(host);
-
-  try{
-    await window.docx.renderAsync(blob,host,null,{
-      inWrapper:false,
-      ignoreWidth:false,
-      ignoreHeight:false,
-      ignoreFonts:false,
-      breakPages:true
-    });
-    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
-
-    const pages=[...host.querySelectorAll('section.docx')];
-    if(!pages.length) throw new Error('No report pages rendered');
-
-    const {jsPDF}=window.jspdf;
-    let pdf=null;
-
-    for(let i=0;i<pages.length;i++){
-      const canvas=await window.html2canvas(pages[i],{
-        scale:2,
-        useCORS:true,
-        backgroundColor:'#ffffff',
-        logging:false
-      });
-      if(!pdf) pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4',compress:true});
-      else pdf.addPage('a4','portrait');
-
-      const pageWidth=pdf.internal.pageSize.getWidth();
-      const pageHeight=pdf.internal.pageSize.getHeight();
-      const scale=Math.min(pageWidth/canvas.width,pageHeight/canvas.height);
-      const width=canvas.width*scale;
-      const height=canvas.height*scale;
-      const x=(pageWidth-width)/2;
-      const y=(pageHeight-height)/2;
-      pdf.addImage(canvas.toDataURL('image/jpeg',0.98),'JPEG',x,y,width,height,undefined,'FAST');
-    }
-
-    pdf.save(filename);
-  }finally{
-    host.remove();
-  }
-}
-
-async function exportDocxReport(){
-  try{
-    const domainEl=document.getElementById('targetDomain');
-    const inputEl=document.getElementById('domainInput');
-    const domain=(domainEl && domainEl.textContent && domainEl.textContent!=='target-domain.test') ? domainEl.textContent.trim() : normalize(inputEl ? inputEl.value : 'target-domain.test');
-    const logoSrc=document.querySelector('.brand img').src;
-    const logoBytes=await wcGetImageBytes(logoSrc);
-    const report=buildDomainReportDocx(domain,logoBytes);
-    const blob=new Blob([report.bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-    const pdfFilename=report.filename.replace(/\.docx$/i,'.pdf');
-    await wcSaveDocxBlobAsPdf(blob,pdfFilename);
-  }catch(err){
-    console.error(err);
-    systemNotice("PDF-Export fehlgeschlagen. Bitte versuchen Sie es erneut.");
-  }
+function exportDocxReport(){
+  const domainEl=document.getElementById('targetDomain');
+  const inputEl=document.getElementById('domainInput');
+  const domain=(domainEl && domainEl.textContent && domainEl.textContent!=='target-domain.test') ? domainEl.textContent.trim() : normalize(inputEl ? inputEl.value : 'target-domain.test');
+  const logoSrc=document.querySelector('.brand img').src;
+  const logoBytes=wcBase64ToBytes(logoSrc.split(',')[1]);
+  const report=buildDomainReportDocx(domain,logoBytes);
+  const blob=new Blob([report.bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=report.filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 
 </script>
