@@ -190,8 +190,8 @@ jobs:
           data_uri = 'data:image/png;base64,' + base64.b64encode(logo).decode('ascii')
 
           replacements = (
-              ('public/网站风险查询.html', 'Export PDF', 'Export DOCX'),
-              ('public/网站风险查询-德国.html', 'PDF exportieren', 'DOCX exportieren'),
+              ('public/网站风险查询.html', 'Export PDF', 'Generate Report'),
+              ('public/网站风险查询-德国.html', 'PDF exportieren', 'Bericht erstellen'),
           )
           for filename, old_label, new_label in replacements:
               p = Path(filename)
