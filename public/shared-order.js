@@ -12,6 +12,24 @@
   const US_FLAG = `<span class="tool-country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#fff"/><g fill="#B22234"><rect y="0" width="28" height="1.4"/><rect y="2.8" width="28" height="1.4"/><rect y="5.6" width="28" height="1.4"/><rect y="8.4" width="28" height="1.4"/><rect y="11.2" width="28" height="1.4"/><rect y="14" width="28" height="1.4"/><rect y="16.6" width="28" height="1.4"/></g><rect width="11.8" height="9.8" rx="1" fill="#3C3B6E"/><g fill="#fff"><circle cx="2" cy="2" r=".65"/><circle cx="4.4" cy="2" r=".65"/><circle cx="6.8" cy="2" r=".65"/><circle cx="9.2" cy="2" r=".65"/><circle cx="3.2" cy="4" r=".65"/><circle cx="5.6" cy="4" r=".65"/><circle cx="8" cy="4" r=".65"/><circle cx="2" cy="6" r=".65"/><circle cx="4.4" cy="6" r=".65"/><circle cx="6.8" cy="6" r=".65"/><circle cx="9.2" cy="6" r=".65"/><circle cx="3.2" cy="8" r=".65"/><circle cx="5.6" cy="8" r=".65"/><circle cx="8" cy="8" r=".65"/></g></svg></span>`;
   const DE_FLAG = `<span class="tool-country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#000"/><rect y="6" width="28" height="6" fill="#DD0000"/><rect y="12" width="28" height="6" rx="0 0 2 2" fill="#FFCE00"/></svg></span>`;
 
+  function installFreshRiskToolLinks(){
+    const targets = {
+      'risk-us':'网站风险查询.html',
+      'risk-de':'网站风险查询-德国.html'
+    };
+    const refresh = card => {
+      const base = targets[card.dataset.id];
+      if(!base) return;
+      card.href = base + '?v=docx-20260921-3&cb=' + Date.now();
+    };
+    document.querySelectorAll('.card[data-id="risk-us"], .card[data-id="risk-de"]').forEach(card => {
+      refresh(card);
+      card.addEventListener('mousedown', () => refresh(card));
+      card.addEventListener('click', () => refresh(card));
+      card.addEventListener('auxclick', () => refresh(card));
+    });
+  }
+
   function injectToolCenterFlags(){
     if(!document.getElementById('toolCountryFlagStyle')){
       const style = document.createElement('style');
@@ -159,6 +177,7 @@
     const grids = [...document.querySelectorAll('[data-grid]')];
     if(!saveBtn || !grids.length) return;
     injectToolCenterFlags();
+    installFreshRiskToolLinks();
     const config = await fetchGlobalConfig();
     const shared = config.toolCenter;
     if(shared && typeof shared === 'object'){
