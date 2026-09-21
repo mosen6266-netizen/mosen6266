@@ -189,11 +189,23 @@ jobs:
           logo = Path('public/图标.png').read_bytes()
           data_uri = 'data:image/png;base64,' + base64.b64encode(logo).decode('ascii')
 
-          for filename in ('public/网站风险查询.html', 'public/网站风险查询-德国.html'):
+          replacements = (
+              ('public/网站风险查询.html', 'Export PDF', 'Export DOCX'),
+              ('public/网站风险查询-德国.html', 'PDF exportieren', 'DOCX exportieren'),
+          )
+          for filename, old_label, new_label in replacements:
               p = Path(filename)
               text = p.read_text(encoding='utf-8')
               text = text.replace('src="图标.png" alt="Whitfield & Crane logo"', f'src="{data_uri}" alt="Whitfield & Crane logo"', 1)
+              text = text.replace(old_label, new_label, 1)
               p.write_text(text, encoding='utf-8')
+
+          # Force the opener to load the restored DOCX-export versions instead of a cached PDF-export page.
+          p = Path('public/index.html')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace('href="网站风险查询.html"', 'href="网站风险查询.html?v=docx-20260921-2"', 1)
+          text = text.replace('href="网站风险查询-德国.html"', 'href="网站风险查询-德国.html?v=docx-20260921-2"', 1)
+          p.write_text(text, encoding='utf-8')
           PY
 
           cp -a public/. .
