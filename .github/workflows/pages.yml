@@ -125,7 +125,7 @@ jobs:
               '固定链接会自动读取全局分类和排序。只有拥有仓库写入授权的管理员才能修改。'
           )
           s = s.replace('</head>', '<script src="./access-config-fresh.js?v=1"></script>\n<script src="./access-gate.js?v=2"></script>\n</head>')
-          s = s.replace('</body>', '<script src="./dynamic-tools.js?v=1"></script>\n<script src="./shared-order.js?v=3"></script>\n</body>')
+          s = s.replace('</body>', '<script src="./dynamic-tools.js?v=1"></script>\n<script src="./shared-order.js?v=4"></script>\n</body>')
           p.write_text(s, encoding='utf-8')
           PY
 
