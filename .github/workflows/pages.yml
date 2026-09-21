@@ -181,31 +181,19 @@ jobs:
           p.write_text(s, encoding='utf-8')
           PY
 
-          # Website risk PDF export repair
+          # Website risk DOCX export compatibility
           python3 - <<'PY'
           from pathlib import Path
           import base64
-          import json
 
-          export_block = base64.b64decode('YXN5bmMgZnVuY3Rpb24gd2NMb2FkRXhwb3J0U2NyaXB0KHNyYywgcmVhZHlDaGVjayl7CiAgaWYocmVhZHlDaGVjaygpKSByZXR1cm47CiAgYXdhaXQgbmV3IFByb21pc2UoKHJlc29sdmUscmVqZWN0KT0+ewogICAgY29uc3QgZXhpc3Rpbmc9Wy4uLmRvY3VtZW50LnNjcmlwdHNdLmZpbmQocz0+cy5zcmM9PT1zcmMpOwogICAgaWYoZXhpc3RpbmcpewogICAgICBpZihyZWFkeUNoZWNrKCkpIHJldHVybiByZXNvbHZlKCk7CiAgICAgIGV4aXN0aW5nLmFkZEV2ZW50TGlzdGVuZXIoJ2xvYWQnLCgpPT5yZWFkeUNoZWNrKCk/cmVzb2x2ZSgpOnJlamVjdChuZXcgRXJyb3IoJ0V4cG9ydCBsaWJyYXJ5IHVuYXZhaWxhYmxlJykpLHtvbmNlOnRydWV9KTsKICAgICAgZXhpc3RpbmcuYWRkRXZlbnRMaXN0ZW5lcignZXJyb3InLCgpPT5yZWplY3QobmV3IEVycm9yKCdFeHBvcnQgbGlicmFyeSBmYWlsZWQgdG8gbG9hZCcpKSx7b25jZTp0cnVlfSk7CiAgICAgIHJldHVybjsKICAgIH0KICAgIGNvbnN0IHM9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnc2NyaXB0Jyk7CiAgICBzLnNyYz1zcmM7CiAgICBzLm9ubG9hZD0oKT0+cmVhZHlDaGVjaygpP3Jlc29sdmUoKTpyZWplY3QobmV3IEVycm9yKCdFeHBvcnQgbGlicmFyeSB1bmF2YWlsYWJsZScpKTsKICAgIHMub25lcnJvcj0oKT0+cmVqZWN0KG5ldyBFcnJvcignRXhwb3J0IGxpYnJhcnkgZmFpbGVkIHRvIGxvYWQnKSk7CiAgICBkb2N1bWVudC5oZWFkLmFwcGVuZENoaWxkKHMpOwogIH0pOwp9Cgphc3luYyBmdW5jdGlvbiB3Y0dldEltYWdlQnl0ZXMoc3JjKXsKICBpZigvXmRhdGE6L2kudGVzdChzcmMpKXsKICAgIGNvbnN0IGNvbW1hPXNyYy5pbmRleE9mKCcsJyk7CiAgICBpZihjb21tYTwwKSB0aHJvdyBuZXcgRXJyb3IoJ0ludmFsaWQgaW1hZ2UgZGF0YScpOwogICAgcmV0dXJuIHdjQmFzZTY0VG9CeXRlcyhzcmMuc2xpY2UoY29tbWErMSkpOwogIH0KICBjb25zdCByZXNwb25zZT1hd2FpdCBmZXRjaChzcmMse2NhY2hlOidmb3JjZS1jYWNoZSd9KTsKICBpZighcmVzcG9uc2Uub2spIHRocm93IG5ldyBFcnJvcignTG9nbyBsb2FkIGZhaWxlZCcpOwogIHJldHVybiBuZXcgVWludDhBcnJheShhd2FpdCByZXNwb25zZS5hcnJheUJ1ZmZlcigpKTsKfQoKYXN5bmMgZnVuY3Rpb24gd2NTYXZlRG9jeEJsb2JBc1BkZihibG9iLCBmaWxlbmFtZSl7CiAgYXdhaXQgd2NMb2FkRXhwb3J0U2NyaXB0KCdodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2pzemlwQDMuMTAuMS9kaXN0L2pzemlwLm1pbi5qcycsKCk9PiEhd2luZG93LkpTWmlwKTsKICBhd2FpdCB3Y0xvYWRFeHBvcnRTY3JpcHQoJ2h0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vZG9jeC1wcmV2aWV3QDAuMy42L2Rpc3QvZG9jeC1wcmV2aWV3Lm1pbi5qcycsKCk9PiEhKHdpbmRvdy5kb2N4JiZ3aW5kb3cuZG9jeC5yZW5kZXJBc3luYykpOwogIGF3YWl0IFByb21pc2UuYWxsKFsKICAgIHdjTG9hZEV4cG9ydFNjcmlwdCgnaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9odG1sMmNhbnZhc0AxLjQuMS9kaXN0L2h0bWwyY2FudmFzLm1pbi5qcycsKCk9PiEhd2luZG93Lmh0bWwyY2FudmFzKSwKICAgIHdjTG9hZEV4cG9ydFNjcmlwdCgnaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9qc3BkZkAyLjUuMS9kaXN0L2pzcGRmLnVtZC5taW4uanMnLCgpPT4hISh3aW5kb3cuanNwZGYmJndpbmRvdy5qc3BkZi5qc1BERikpCiAgXSk7CgogIGNvbnN0IGhvc3Q9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnZGl2Jyk7CiAgaG9zdC5zdHlsZS5jc3NUZXh0PSdwb3NpdGlvbjpmaXhlZDtsZWZ0Oi0xMjAwMHB4O3RvcDowO2JhY2tncm91bmQ6I2ZmZjt6LWluZGV4Oi0xO3BvaW50ZXItZXZlbnRzOm5vbmU7JzsKICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKGhvc3QpOwoKICB0cnl7CiAgICBhd2FpdCB3aW5kb3cuZG9jeC5yZW5kZXJBc3luYyhibG9iLGhvc3QsbnVsbCx7CiAgICAgIGluV3JhcHBlcjpmYWxzZSwKICAgICAgaWdub3JlV2lkdGg6ZmFsc2UsCiAgICAgIGlnbm9yZUhlaWdodDpmYWxzZSwKICAgICAgaWdub3JlRm9udHM6ZmFsc2UsCiAgICAgIGJyZWFrUGFnZXM6dHJ1ZQogICAgfSk7CiAgICBpZihkb2N1bWVudC5mb250cyYmZG9jdW1lbnQuZm9udHMucmVhZHkpIGF3YWl0IGRvY3VtZW50LmZvbnRzLnJlYWR5OwoKICAgIGNvbnN0IHBhZ2VzPVsuLi5ob3N0LnF1ZXJ5U2VsZWN0b3JBbGwoJ3NlY3Rpb24uZG9jeCcpXTsKICAgIGlmKCFwYWdlcy5sZW5ndGgpIHRocm93IG5ldyBFcnJvcignTm8gcmVwb3J0IHBhZ2VzIHJlbmRlcmVkJyk7CgogICAgY29uc3Qge2pzUERGfT13aW5kb3cuanNwZGY7CiAgICBsZXQgcGRmPW51bGw7CgogICAgZm9yKGxldCBpPTA7aTxwYWdlcy5sZW5ndGg7aSsrKXsKICAgICAgY29uc3QgY2FudmFzPWF3YWl0IHdpbmRvdy5odG1sMmNhbnZhcyhwYWdlc1tpXSx7CiAgICAgICAgc2NhbGU6MiwKICAgICAgICB1c2VDT1JTOnRydWUsCiAgICAgICAgYmFja2dyb3VuZENvbG9yOicjZmZmZmZmJywKICAgICAgICBsb2dnaW5nOmZhbHNlCiAgICAgIH0pOwogICAgICBpZighcGRmKSBwZGY9bmV3IGpzUERGKHtvcmllbnRhdGlvbjoncG9ydHJhaXQnLHVuaXQ6J3B0Jyxmb3JtYXQ6J2E0Jyxjb21wcmVzczp0cnVlfSk7CiAgICAgIGVsc2UgcGRmLmFkZFBhZ2UoJ2E0JywncG9ydHJhaXQnKTsKCiAgICAgIGNvbnN0IHBhZ2VXaWR0aD1wZGYuaW50ZXJuYWwucGFnZVNpemUuZ2V0V2lkdGgoKTsKICAgICAgY29uc3QgcGFnZUhlaWdodD1wZGYuaW50ZXJuYWwucGFnZVNpemUuZ2V0SGVpZ2h0KCk7CiAgICAgIGNvbnN0IHNjYWxlPU1hdGgubWluKHBhZ2VXaWR0aC9jYW52YXMud2lkdGgscGFnZUhlaWdodC9jYW52YXMuaGVpZ2h0KTsKICAgICAgY29uc3Qgd2lkdGg9Y2FudmFzLndpZHRoKnNjYWxlOwogICAgICBjb25zdCBoZWlnaHQ9Y2FudmFzLmhlaWdodCpzY2FsZTsKICAgICAgY29uc3QgeD0ocGFnZVdpZHRoLXdpZHRoKS8yOwogICAgICBjb25zdCB5PShwYWdlSGVpZ2h0LWhlaWdodCkvMjsKICAgICAgcGRmLmFkZEltYWdlKGNhbnZhcy50b0RhdGFVUkwoJ2ltYWdlL2pwZWcnLDAuOTgpLCdKUEVHJyx4LHksd2lkdGgsaGVpZ2h0LHVuZGVmaW5lZCwnRkFTVCcpOwogICAgfQoKICAgIHBkZi5zYXZlKGZpbGVuYW1lKTsKICB9ZmluYWxseXsKICAgIGhvc3QucmVtb3ZlKCk7CiAgfQp9Cgphc3luYyBmdW5jdGlvbiBleHBvcnREb2N4UmVwb3J0KCl7CiAgdHJ5ewogICAgY29uc3QgZG9tYWluRWw9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RhcmdldERvbWFpbicpOwogICAgY29uc3QgaW5wdXRFbD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZG9tYWluSW5wdXQnKTsKICAgIGNvbnN0IGRvbWFpbj0oZG9tYWluRWwgJiYgZG9tYWluRWwudGV4dENvbnRlbnQgJiYgZG9tYWluRWwudGV4dENvbnRlbnQhPT0ndGFyZ2V0LWRvbWFpbi50ZXN0JykgPyBkb21haW5FbC50ZXh0Q29udGVudC50cmltKCkgOiBub3JtYWxpemUoaW5wdXRFbCA/IGlucHV0RWwudmFsdWUgOiAndGFyZ2V0LWRvbWFpbi50ZXN0Jyk7CiAgICBjb25zdCBsb2dvU3JjPWRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJy5icmFuZCBpbWcnKS5zcmM7CiAgICBjb25zdCBsb2dvQnl0ZXM9YXdhaXQgd2NHZXRJbWFnZUJ5dGVzKGxvZ29TcmMpOwogICAgY29uc3QgcmVwb3J0PWJ1aWxkRG9tYWluUmVwb3J0RG9jeChkb21haW4sbG9nb0J5dGVzKTsKICAgIGNvbnN0IGJsb2I9bmV3IEJsb2IoW3JlcG9ydC5ieXRlc10se3R5cGU6J2FwcGxpY2F0aW9uL3ZuZC5vcGVueG1sZm9ybWF0cy1vZmZpY2Vkb2N1bWVudC53b3JkcHJvY2Vzc2luZ21sLmRvY3VtZW50J30pOwogICAgY29uc3QgcGRmRmlsZW5hbWU9cmVwb3J0LmZpbGVuYW1lLnJlcGxhY2UoL1wuZG9jeCQvaSwnLnBkZicpOwogICAgYXdhaXQgd2NTYXZlRG9jeEJsb2JBc1BkZihibG9iLHBkZkZpbGVuYW1lKTsKICB9Y2F0Y2goZXJyKXsKICAgIGNvbnNvbGUuZXJyb3IoZXJyKTsKICAgIHN5c3RlbU5vdGljZShfX0ZBSUxfTVNHX0pTT05fXyk7CiAgfQp9').decode('utf-8')
-          targets = (
-              ('public/网站风险查询.html', 'PDF export failed. Please try again.'),
-              ('public/网站风险查询-德国.html', 'PDF-Export fehlgeschlagen. Bitte versuchen Sie es erneut.'),
-          )
+          logo = Path('public/图标.png').read_bytes()
+          data_uri = 'data:image/png;base64,' + base64.b64encode(logo).decode('ascii')
 
-          for filename, fail_msg in targets:
+          for filename in ('public/网站风险查询.html', 'public/网站风险查询-德国.html'):
               p = Path(filename)
-              s = p.read_text(encoding='utf-8')
-              if 'async function wcSaveDocxBlobAsPdf' in s:
-                  continue
-              start = s.rfind('function exportDocxReport(){')
-              end_marker = '\n}\n\n</script>'
-              end_base = s.find(end_marker, start)
-              if start < 0 or end_base < 0:
-                  raise RuntimeError(f'Export function not found in {filename}')
-              end = end_base + 2
-              block = export_block.replace('__FAIL_MSG_JSON__', json.dumps(fail_msg, ensure_ascii=False))
-              p.write_text(s[:start] + block + s[end:], encoding='utf-8')
+              text = p.read_text(encoding='utf-8')
+              text = text.replace('src="图标.png" alt="Whitfield & Crane logo"', f'src="{data_uri}" alt="Whitfield & Crane logo"', 1)
+              p.write_text(text, encoding='utf-8')
           PY
 
           cp -a public/. .
