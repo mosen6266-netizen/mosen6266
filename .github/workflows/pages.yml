@@ -100,7 +100,7 @@ jobs:
           s = s.replace(
               '</body>',
               '<script src="./docx-template-loader.js?v=4"></script>\n'
-              '<script src="./shared-order.js?v=3"></script>\n'
+              '<script src="./shared-order.js?v=4"></script>\n'
               '</body>'
           )
           p.write_text(s, encoding='utf-8')
