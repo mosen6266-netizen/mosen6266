@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-welcome",
-  "globalUpdatedAt": "2026-09-27T14:33:46.735Z",
+  "globalUpdatedAt": "2026-09-27T14:44:07.499Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -12,7 +12,7 @@
       "description": "这是一个可直接修改或删除的示例流程",
       "color": "#6d4aff",
       "createdAt": 1789659729157,
-      "updatedAt": 1790519606066,
+      "updatedAt": 1790520175738,
       "steps": [
         {
           "id": "step-hello",
@@ -130,13 +130,21 @@
         },
         {
           "id": "step-mujx39f8-j7ngje",
-          "title": "汇报调查结果发送截图和PDF",
+          "title": "汇报调查结果发送截图和PDF并且邀请客户建档",
           "type": "话术",
           "contentZh": "我有个好消息要告诉您：您的案件已完成初步审查，符合本所受理的标准\n\n我们处理过许多类似案件。根据我们的经验，涉案资金中很大一部分往往仍有望通过区块链技术追踪到\n\n为了开展更深入的调查，我们首先需要正式立案。由于目前尚未建立正式的委托关系，我们还无法获取某些额外数据或利用特定的调查途径。因此，我们需要正式受理此案，并与 Maximilian Weber 律师签署委托协议\n\n为此，我需要先向您了解一些基本情况。您现在方便吗？",
           "contentForeign": "Ich habe gute Nachrichten für Sie. Die erste Prüfung Ihres Falls ist inzwischen abgeschlossen, und Ihr Fall erfüllt die Voraussetzungen für eine Übernahme durch unsere Kanzlei\n\nWir haben bereits zahlreiche vergleichbare Fälle bearbeitet. Nach unserer bisherigen Erfahrung besteht bei solchen Fällen häufig eine gute Chance, dass sich ein erheblicher Teil der betroffenen Gelder weiterhin über die Blockchain nachvollziehen lässt\n\nDamit wir die Ermittlungen nun weiter vertiefen können, muss Ihr Fall zunächst offiziell bei uns aufgenommen werden. Da bisher noch kein formelles Mandat besteht, haben wir derzeit keinen Zugriff auf bestimmte weiterführende Daten und Ermittlungsmöglichkeiten. Dafür ist es erforderlich, den Fall offiziell anzulegen und eine Mandatsvereinbarung mit Rechtsanwalt Maximilian Weber abzuschließen\n\nDafür benötige ich zunächst einige grundlegende Angaben von Ihnen. Haben Sie gerade etwas Zeit?",
           "language": "auto",
           "note": "",
-          "attachments": [],
+          "attachments": [
+            {
+              "id": "att-mujx78ra-p2m8an",
+              "name": "PixPin_2026-09-27_16-34-54.png",
+              "type": "image/png",
+              "size": 1026035,
+              "url": "../data/chat-flow-assets/att-mujx78ra-p2m8an-PixPin_2026-09-27_16-34-54.png"
+            }
+          ],
           "toolLinks": [
             {
               "id": "tool-mujx3xet-ycworh",
@@ -145,6 +153,178 @@
               "category": "de"
             }
           ]
+        },
+        {
+          "id": "step-mujx8u9p-5zkr3d",
+          "title": "建档需要的信息列表",
+          "type": "话术",
+          "contentZh": "姓名：\n性别：\n年龄：\n国籍：\n证件号码（身份证或护照）：\n电话号码：\n电子邮箱：\n居住国：\n当前居住地（城市）：\n诈骗类型：\n首次转账的大致日期：\n末次转账的大致日期：\n诈骗平台名称：\n诈骗平台网址：\n在诈骗平台上的账户ID：\n涉嫌诈骗者使用的电话号码：\n总损失金额：\n诈骗平台显示的账户余额：\n转账或支付方式：\n\n请填写所有项目并尽快将信息发送给我。请放心：我们不会向第三方透露您的个人资料，也不会将其用于任何其他目的。我们严格遵守相关的保密及数据保护法规。您提供的所有信息将仅用于处理您的案件并协助追回损失",
+          "contentForeign": "Name:\nGeschlecht:\nAlter:\nStaatsangehörigkeit:\nAusweisnummer (Personalausweis oder Reisepass):\nTelefonnummer:\nE-Mail-Adresse:\nWohnsitzland:\nAktueller Wohnort (Stadt):\nArt des Betrugs:\nUngefähres Datum der ersten Überweisung:\nUngefähres Datum der letzten Überweisung:\nName der betrügerischen Plattform:\nWebsite der betrügerischen Plattform:\nKonto-ID auf der betrügerischen Plattform:\nVom mutmaßlichen Betrüger verwendete Telefonnummer:\nHöhe des Gesamtverlusts:\nAuf der betrügerischen Plattform angezeigtes Guthaben:\nÜberweisungs- bzw. Zahlungsmethode:\n\nBitte füllen Sie alle Angaben vollständig aus und senden Sie mir diese so bald wie möglich zu. Sie können beruhigt sein: Wir werden Ihre persönlichen Daten weder an Dritte weitergeben noch für andere Zwecke verwenden. Wir halten uns strikt an die geltenden Vertraulichkeits- und Datenschutzvorgaben. Sämtliche Angaben werden ausschließlich für die Bearbeitung Ihres Falls und zur Unterstützung bei der Rückholung Ihrer Verluste verwendet",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": [
+            {
+              "id": "tool-mujx9e99-5zmk20",
+              "path": "DOCX文件编辑器.html?template=templates%2F%E5%AE%A2%E6%88%B7%E5%BB%BA%E6%A1%A3%E6%A8%A1%E6%9D%BF-%E5%BE%B7%E5%9B%BD.docx",
+              "title": "客户建档模板-德国",
+              "category": "de"
+            }
+          ]
+        },
+        {
+          "id": "step-mujxae9o-eks6ze",
+          "title": "建档完成提交律师审阅",
+          "type": "话术",
+          "contentZh": "好的，我会尽快备妥您的案卷资料，并直接转交由 Maximilian Weber 律师亲自审阅。待他审阅完毕后，我们将与您敲定委托协议。随后，我们将立即着手开展进一步调查、追踪资金流向，并采取必要措施追回款项。在此期间，还请您耐心等待",
+          "contentForeign": "Gut, ich werde Ihre Fallakte so schnell wie möglich vollständig aufbereiten und direkt an Rechtsanwalt Maximilian Weber zur persönlichen Prüfung weiterleiten. Sobald er die Unterlagen geprüft hat, wird die Mandatsvereinbarung mit Ihnen abgeschlossen. Anschließend können wir umgehend mit den weiteren Ermittlungen, der Nachverfolgung der Geldflüsse und den erforderlichen Maßnahmen zur Rückholung der Gelder beginnen. Bitte haben Sie bis dahin noch etwas Geduld",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxaxxd-gezotj",
+          "title": "问客户是否报警过或找其他律师",
+          "type": "话术",
+          "contentZh": "感谢您的配合。请您如实告知，您是否已就此事向警方报案，或联系过检察机关或德国联邦金融监管局（BaFin）\n\n如果已经采取了上述行动，请提供相关的案件编号、报案或投诉日期，以及您收到的任何相关回复或往来函件。这些信息对于后续处理及推进您的案件至关重要",
+          "contentForeign": "Vielen Dank für Ihre Mitarbeit. Bitte teilen Sie mir jetzt offen mit, ob Sie den Fall bereits bei der Polizei angezeigt oder sich an die Staatsanwaltschaft bzw. die BaFin gewandt haben\n\nFalls ja, senden Sie mir bitte das jeweilige Aktenzeichen, das Datum der Anzeige bzw. Beschwerde sowie alle Antworten oder Schreiben, die Sie dazu erhalten haben. Diese Informationen sind für die weitere Bearbeitung und das Vorantreiben Ihres Falls sehr wichtig",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxbjj2-qzobn1",
+          "title": "和客户感慨报警没有用",
+          "type": "话术",
+          "contentZh": "在实践中，大多数受害者仅靠提起刑事控告或向有关部门投诉，很难追回损失的资金。特别是在涉及金额较小的个人诈骗案件中，德国当局往往仅对事件进行初步登记和记录，而不会立即投入大量资源进行深入调查或积极追回资产",
+          "contentForeign": "Für die meisten Betroffenen ist es in der Praxis sehr schwierig, allein durch eine Strafanzeige oder eine Beschwerde bei einer Behörde das verlorene Geld zurückzuerlangen. Gerade bei kleineren individuellen Betrugsfällen werden solche Vorgänge in Deutschland häufig zunächst aufgenommen und dokumentiert, ohne dass unmittelbar umfangreiche Ressourcen für eine vertiefte Ermittlung oder eine aktive Vermögensrückführung eingesetzt werden",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxbyxw-1b7na9",
+          "title": "报警没用的核心原理",
+          "type": "话术",
+          "contentZh": "问题在于，警方和检察机关通常依据现有的证据开展工作。尽管您可以提交诈骗者的账户信息以申请冻结账户，但您直接转账汇入的账户往往并非犯罪分子实际持有资金的最终账户\n\n此类收款账户通常仅充当资金流转的初始通道或中转站，用于转移并掩盖资金去向。资金一旦到账，便可迅速被转出、分散至多个账户、转移至境外或兑换成加密货币\n\n因此，在许多情况下，仅提供最初的收款账户信息是远远不够的。这使得警方、检察机关及法院难以直接追踪并保全涉案的剩余资产，从而大大增加了办案难度",
+          "contentForeign": "Das Problem ist, dass Polizei und Staatsanwaltschaft in der Regel auf Grundlage der bereits vorliegenden Beweise arbeiten. Sie können zwar auch die Kontodaten der Betrüger einreichen, damit eine Sperrung geprüft bzw. veranlasst werden kann. Allerdings handelt es sich bei den Konten, auf die Sie selbst überwiesen haben, häufig nicht um die Konten, auf denen die Täter das Geld tatsächlich halten\n\nSolche Empfängerkonten dienen oft lediglich als erste Durchlauf- oder Zwischenkonten, über die das Geld weitergeleitet und verschleiert wird. Sobald das Geld eingeht, kann es innerhalb kürzester Zeit weiterüberwiesen, auf mehrere Konten verteilt, ins Ausland transferiert oder in Kryptowährungen umgewandelt werden\n\nDeshalb reicht es in vielen Fällen nicht aus, nur das ursprüngliche Empfängerkonto anzugeben. Für Polizei, Staatsanwaltschaft und Gerichte ist es dadurch deutlich schwieriger, direkt auf die tatsächlich noch vorhandenen Vermögenswerte aus der Tat zuzugreifen und diese zu sichern",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxclqy-m37k9p",
+          "title": "询问是否需要社区帮助",
+          "type": "话术",
+          "contentZh": "我们迄今为止处理过的案例显示，作案者往往手段卑劣且冷酷无情。他们蓄意利用受害者容易信任他人及重感情的弱点，通过长时间的接触建立信任，最终将受害者逼至经济崩溃的边缘——甚至施压迫使受害者向亲友借款。在一些极端严重的案例中，受害者不得不变卖车辆甚至房产，最终落得几乎一无所有的境地\n\n你不必为这段痛苦的经历感到羞愧。你只是遭遇了那些处心积虑、手段老练的行骗者。作案者必须为其行为承担法律责任\n\n如果你愿意配合我们对你的当前状况进行简要评估，我们可以免费协助你联系当地合适的社会咨询与支持服务，并明确你可获得的援助途径",
+          "contentForeign": "Unsere bisherigen Fälle zeigen, wie skrupellos und menschenverachtend die Täter häufig vorgehen. Sie nutzen gezielt die Gutgläubigkeit und Gefühle ihrer Opfer aus, bauen über längere Zeit Vertrauen auf und bringen die Betroffenen anschließend teilweise bis an den Rand des finanziellen Ruins. Oft werden sie sogar dazu gedrängt, sich Geld von Familie oder Freunden zu leihen. In besonders schweren Fällen verkaufen Betroffene ihr Auto oder sogar ihr Haus und verlieren am Ende nahezu alles\n\nSie müssen sich für diese schmerzhafte Erfahrung nicht schämen. Sie sind lediglich an Menschen geraten, die ihre Täuschung äußerst gezielt und professionell vorbereitet haben. Die Verantwortlichen müssen sich für ihr Handeln rechtlich verantworten\n\nWenn Sie bereit sind, mit uns eine kurze Erfassung Ihrer aktuellen Situation als Geschädigter auszufüllen, können wir Ihnen außerdem kostenfrei dabei helfen, Kontakt zu geeigneten sozialen Beratungs- und Unterstützungsstellen in Ihrer Region aufzunehmen und zu prüfen, welche Hilfsangebote für Sie infrage kommen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxczri-y2rkxg",
+          "title": "是否负债",
+          "type": "话术",
+          "contentZh": "请问您目前是否有任何债务？",
+          "contentForeign": "Darf ich Sie fragen, ob Sie derzeit Schulden haben?",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxdcwc-0mqt3c",
+          "title": "是否借过钱",
+          "type": "话术",
+          "contentZh": "你是否受到诈骗分子的诱导或施压，向亲友借款？",
+          "contentForeign": "Wurden Sie von den Betrügern dazu gebracht oder gedrängt, sich Geld von Familienangehörigen oder Freunden zu leihen?",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxdpu3-g7r2c8",
+          "title": "是否卖过不动产",
+          "type": "话术",
+          "contentZh": "您是否因该欺诈行为而出售了您的房屋、汽车或其他资产或房地产？",
+          "contentForeign": "Haben Sie aufgrund des Betrugs Ihr Haus, Ihr Auto oder andere Vermögenswerte bzw. Immobilien verkauft?",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxecba-60anvo",
+          "title": "现在是否还有工作",
+          "type": "话术",
+          "contentZh": "您目前是在职、已退休还是失业？",
+          "contentForeign": "Sind Sie derzeit berufstätig, im Ruhestand oder arbeitslos?",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxeofu-1oc86a",
+          "title": "是不是自己一个人住",
+          "type": "话术",
+          "contentZh": "您目前是独自居住还是与家人同住？",
+          "contentForeign": "Leben Sie derzeit allein oder zusammen mit Ihrer Familie?",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxf4fw-fp97dv",
+          "title": "保证信息不会公开泄露",
+          "type": "话术",
+          "contentZh": "请放心，相关信息在进行匿名化处理后，将仅用于统计目的并提交给有关部门，以便在全国范围内追踪年度欺诈案件，并提高公众对此类欺诈手段的防范意识。您无需担心个人数据会被泄露或公开",
+          "contentForeign": "Gut, diese Angaben werden anonymisiert und anschließend für statistische Zwecke an die zuständigen Stellen weitergegeben, damit die jährlichen Betrugsfälle bundesweit erfasst und mehr Menschen über entsprechende Betrugsmaschen aufgeklärt werden können. Sie müssen sich keine Sorgen machen, dass Ihre persönlichen Daten offengelegt oder veröffentlicht werden",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxg5mq-9m3m0m",
+          "title": "预约第二天九点时间和律师交流",
+          "type": "话术",
+          "contentZh": "感谢您的配合。至少目前看来，事态正朝着积极的方向发展；我衷心希望您最终能成功追回资金\n\n我已经为您安排了明天上午 9:00 与律师 Maximilian Weber 的咨询会面。他的联系方式如下。您可以在会面前将您的案件编号（WC-CRYPTO-1068-0177）发送给他，以便他提前审阅您的案卷资料",
+          "contentForeign": "Vielen Dank für Ihre Mitarbeit. Zumindest im Moment entwickelt sich die Angelegenheit in eine positive Richtung, und ich hoffe sehr, dass Sie Ihre Gelder am Ende erfolgreich zurückerhalten\n\nIch habe für Sie morgen um 9:00 Uhr einen Beratungstermin mit Rechtsanwalt Maximilian Weber vereinbart. Nachfolgend erhalten Sie seine Kontaktdaten. Sie können ihm bereits vor dem Termin Ihre Fallnummer WC-CRYPTO-1068-0177 zusenden, damit er Ihre Fallakte vorab einsehen kann",
+          "language": "auto",
+          "note": "根据情况可以改，当天早上可以为客户预约下午时间，周五的话预约周一",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxgwer-mq4p7q",
+          "title": "推律师链接",
+          "type": "话术",
+          "contentZh": "链接\n\n您可以点击此链接，将您的案件编号直接发送给律师 Maximilian Weber。随后，他将亲自负责并统筹后续的所有调查工作及资金追回程序",
+          "contentForeign": "链接\n\nSie können auf diesen Link klicken und Ihre Fallnummer direkt an Rechtsanwalt Maximilian Weber senden. Die weiteren konkreten Ermittlungen sowie alle Schritte zur Rückholung der Gelder wird er anschließend persönlich übernehmen und weiter begleiten",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxhdoa-1tiqkp",
+          "title": "结束语",
+          "type": "话术",
+          "contentZh": "我真心希望，最终你能获得你应得的一切。如果日后你需要帮助，我随时都在",
+          "contentForeign": "Ich hoffe wirklich sehr, dass Sie am Ende alles zurückbekommen, was Ihnen zusteht. Und falls Sie mich im weiteren Verlauf noch brauchen, bin ich jederzeit für Sie da",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
         }
       ]
     }
