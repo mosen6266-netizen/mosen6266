@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-mujxptp2-mto2yy",
-  "globalUpdatedAt": "2026-09-27T14:58:34.105Z",
+  "globalUpdatedAt": "2026-09-27T15:10:33.110Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -334,7 +334,7 @@
       "description": "",
       "color": "#148a8a",
       "createdAt": 1790520569750,
-      "updatedAt": 1790521100191,
+      "updatedAt": 1790521825977,
       "steps": [
         {
           "id": "step-mujxqxd9-84gebh",
@@ -427,6 +427,252 @@
           "type": "话术",
           "contentZh": "请将您的电子邮箱地址发送给我。随后，我会通过电子邮件向您发送一份签署授权协议的邀请",
           "contentForeign": "Bitte senden Sie mir Ihre E-Mail-Adresse. Ich werde Ihnen anschließend per E-Mail eine Einladung zur Unterzeichnung der Mandatsvereinbarung zusenden",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy2gif-jx3809",
+          "title": "客户签署完委托协议并确认后继续调查",
+          "type": "话术",
+          "contentZh": "感谢您的配合。从现在起，您不再是独自面对这件事了。我和我的团队将竭尽全力，为您争取最佳结果。现阶段，还请您耐心等待。我们将继续调查您的案件，并随时向您通报任何重大进展",
+          "contentForeign": "Vielen Dank für Ihre Zusammenarbeit. Ab jetzt stehen Sie mit der Sache nicht mehr allein da. Mein Team und ich werden alles daransetzen, für Sie das bestmögliche Ergebnis zu erreichen. Vorerst bitte ich Sie noch um etwas Geduld. Wir werden die Ermittlungen in Ihrem Fall weiterführen und ich halte Sie über jeden wesentlichen Fortschritt auf dem Laufenden",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy33np-qbrr8b",
+          "title": "告诉客户不能再找其它律所处理该案件",
+          "type": "话术",
+          "contentZh": "还有一点需要明确：既然我们已正式签署委托协议，在我所处理本案期间，您不得就同一事项指示或同时聘请其他律师或律师事务所。Whitfield & Crane PartG mbB 将全权负责本案，以避免因多方同时处理而引发误解、工作重叠或不必要的延误",
+          "contentForeign": "Eine Sache müssen wir noch kurz klären. Da wir die Mandatsvereinbarung nun offiziell unterzeichnet haben, dürfen Sie während der Bearbeitung dieses Falls durch unsere Kanzlei keine weiteren Anwälte oder Kanzleien mit derselben Angelegenheit beauftragen oder parallel einschalten. Whitfield & Crane PartG mbB wird den Fall vollständig übernehmen, damit es durch eine parallele Bearbeitung nicht zu Missverständnissen, Überschneidungen oder unnötigen Verzögerungen kommt",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy3n5y-04thsj",
+          "title": "调查结果1",
+          "type": "话术",
+          "contentZh": "下午好。根据目前的调查情况及我方团队开展的技术分析，我们可以确信地得出结论：该平台及其运营方构成了一个典型的国际犯罪网络，专门从事跨境加密货币投资诈骗——即所谓的“杀猪盘”骗局\n\n此类犯罪活动通常源自东南亚地区（如柬埔寨、缅甸或老挝）。作案者蓄意建立私人关系或营造值得信赖的形象，并编造高回报投资机会，诱导受害者不断追加大额资金，最终将受害者的投资资产悉数卷走",
+          "contentForeign": "Guten Tag. Nach den bisherigen Ermittlungen und der technischen Auswertung durch unser Team können wir inzwischen mit Sicherheit davon ausgehen, dass es sich bei dieser Plattform und den dahinterstehenden Betreibern um ein typisches internationales kriminelles Netzwerk handelt, das auf grenzüberschreitenden Krypto-Anlagebetrug nach dem sogenannten Pig-Butchering-Modell spezialisiert ist\n\nSolche Strukturen operieren häufig aus Teilen Südostasiens, etwa aus Kambodscha, Myanmar oder Laos. Dabei werden gezielt persönliche oder vermeintlich vertrauensvolle Kontakte aufgebaut und angeblich besonders renditestarke Investitionsmöglichkeiten vorgetäuscht, um Betroffene dazu zu bringen, immer weitere Gelder zu überweisen. Am Ende werden die eingezahlten Vermögenswerte vollständig abgezogen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy40s3-193h7a",
+          "title": "调查结果2",
+          "type": "话术",
+          "contentZh": "这些架构利用高度组织化的洗钱链条，将 BTC、ETH 或 USDT 等加密货币进行反复流转与混币，随后将其转换为其他资产或法币，以此逃避追踪\n\n根据现有的链上数据及执法机构公开的信息，该网络与受制裁的汇旺集团（Huione Group）关系密切。据有关部门公开披露的信息，该集团已被认定存在重大洗钱风险。已发布的调查与执法文件显示，2021 年至 2025 年间，涉嫌通过这些架构清洗的非法资金总额至少约为 40 亿欧元；据信，其中很大一部分资金源自东南亚的欺诈活动以及朝鲜黑客组织的加密货币盗窃行为",
+          "contentForeign": "Dabei nutzen diese Strukturen hochgradig organisierte Geldwäscheketten, über die Kryptowährungen wie BTC, ETH oder USDT mehrfach weitergeleitet, vermischt und anschließend in andere Vermögenswerte oder Fiatgeld umgewandelt werden, um die Nachverfolgung zu erschweren\n\nNach den uns vorliegenden On-Chain-Daten und öffentlich zugänglichen Informationen der Strafverfolgungsbehörden weist dieses Netzwerk enge Verbindungen zur sanktionierten Huione Group auf. Nach öffentlich bekannten behördlichen Erkenntnissen wurde diese Gruppe als besonders relevantes Geldwäscherisiko eingestuft. Aus veröffentlichten Ermittlungs- und Durchsetzungsunterlagen geht hervor, dass zwischen 2021 und 2025 mindestens rund 4 Milliarden Euro an illegalen Geldern über entsprechende Strukturen gewaschen worden sein sollen. Ein erheblicher Teil davon soll aus Betrugsdelikten in Südostasien sowie aus Krypto-Diebstählen nordkoreanischer Hackergruppen stammen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy4huq-aybqu1",
+          "title": "调查结果3",
+          "type": "话术",
+          "contentZh": "德国及欧盟的相关监管与执法部门已针对东南亚的多个类似欺诈网络（包括“太子集团”跨国有组织犯罪网络等）实施了广泛制裁。这些措施涉及总计146家公司、组织及个人，导致价值数十亿的资产被冻结\n\n在我们近期处理的类似案件中，通过与德国联邦刑事警察局（BKA）、金融情报机构（FIU）、德国联邦金融监管局（BaFin）以及Tether公司的协作，我们成功冻结了受害者的资金，并在某些情况下实现了资金追回。一旦资金流入已被标记为高风险的地址，相关部门便能更迅速地启动资产保全与拦截措施，从而防止资金被进一步转移",
+          "contentForeign": "Die zuständigen Aufsichts- und Strafverfolgungsbehörden in Deutschland und der EU haben bereits umfassende Sanktionen gegen mehrere vergleichbare Betrugsnetzwerke in Südostasien verhängt, darunter auch gegen Strukturen wie die Prince Group TCO. Dabei wurden insgesamt 146 Unternehmen, Organisationen und Einzelpersonen erfasst und Vermögenswerte in Milliardenhöhe eingefroren\n\nBei vergleichbaren Fällen, die wir in letzter Zeit bearbeitet haben, konnten wir durch die Zusammenarbeit mit dem BKA, der FIU, der BaFin sowie Tether Gelder von Geschädigten erfolgreich einfrieren und teilweise zurückführen. Sobald Gelder auf bereits als besonders risikoreich eingestuften Adressen eingehen, können die zuständigen Stellen deutlich schneller Sicherungs- und Sperrmaßnahmen einleiten und dadurch weitere Transfers verhindern",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy4wfl-fiybau",
+          "title": "调查结果4",
+          "type": "话术",
+          "contentZh": "根据目前的调查情况，我们已确定诈骗者通过多家知名加密货币混币服务及跨境洗钱平台，分多个阶段转移了您的资金",
+          "contentForeign": "Nach dem derzeitigen Stand unserer Ermittlungen konnten wir bereits feststellen, dass Ihre Gelder von den Betrügern über mehrere bekannte Krypto-Mixing-Dienste und grenzüberschreitend genutzte Geldwäscheplattformen in mehreren Schritten weitergeleitet wurden",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy59q6-azkb0b",
+          "title": "调查结果5",
+          "type": "话术",
+          "contentZh": "起初，他们利用 Tornado Cash 掩盖资金流向，切断了区块链上的直接追踪线索。随后，这些资金被进一步拆分，并通过币安（Binance）和 OKX 平台上的多个高风险子地址，以及东南亚各地的场外交易（OTC）渠道进行分流\n\n最终，资金流向了由柬埔寨和缅甸实体控制的若干个钱包集群——这些集群已被金融情报机构（FIU）标记为与洗钱活动高度相关。调查显示，其意图是通过多个跨链桥转移资产，并利用匿名稳定币交易将其兑换为法币或比特币，从而进一步掩盖资金来源并最终实现套现",
+          "contentForeign": "Zunächst haben sie Tornado Cash genutzt, um die Gelder in einem ersten Schritt zu verschleiern und die direkte Nachverfolgung auf der Blockchain zu unterbrechen. Anschließend wurden die Gelder über einzelne risikobehaftete Unteradressen bei Binance und OKX sowie über verschiedene lokale OTC-Handelskanäle in Südostasien weiter aufgeteilt und verteilt\n\nLetztlich wurden die Gelder in mehrere Wallet-Cluster weitergeleitet, die von Strukturen in Kambodscha und Myanmar kontrolliert werden und von der FIU als besonders relevant im Zusammenhang mit Geldwäsche eingestuft wurden. Nach unseren Erkenntnissen besteht das Ziel darin, die Vermögenswerte über mehrere Cross-Chain-Bridges weiterzuleiten und über anonyme Stablecoin-Transaktionen in Fiatgeld oder Bitcoin umzuwandeln, um ihre Herkunft weiter zu verschleiern und sie schließlich zu verwerten",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy5r40-74sj06",
+          "title": "调查结果6",
+          "type": "话术",
+          "contentZh": "利用 Chainalysis 和 TRM Labs 的实时监控系统，我们得以完整追踪资金流转的关键环节，包括原始发送地址、中介钱包以及当前持有资金的钱包集群\n\n鉴于这些地址的交易频率极高且与已知的欺诈地址存在密切关联，系统将其判定为高风险地址。在我们看来，由此形成的证据链条清晰且极具说服力",
+          "contentForeign": "Über die Echtzeit-Monitoring-Systeme von Chainalysis und TRM Labs konnten wir die wesentlichen Stationen des Geldflusses vollständig nachvollziehen. Dazu gehören die ursprünglichen Absenderadressen, die zwischengeschalteten Wallets sowie die Wallet-Cluster, auf denen sich die Gelder derzeit befinden\n\nAufgrund der auffällig hohen Transaktionsfrequenz sowie der engen Verbindungen zu bereits bekannten Betrugsadressen wurden diese Adressen von den Systemen als Hochrisiko-Adressen eingestuft. Die daraus hervorgehende Beweiskette ist aus unserer Sicht sehr klar und schlüssig",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy6589-wf4ccz",
+          "title": "调查结果7",
+          "type": "话术",
+          "contentZh": "根据我们目前掌握的信息，这笔资金仍完全保留在区块链上，尚未被转移至其他地址。我们将立即联系相关监管机构（包括德国联邦刑事警察局 BKA、金融情报机构 FIU 以及德国联邦金融监管局 BaFin），并视具体情况向柏林地区法院（Landgericht Berlin II）申请紧急措施，以保全资产并启动追回程序\n\n一旦生效的冻结令发布并得到执行，涉案 USDT 即可直接在区块链上被锁定，从而防止任何进一步的转移或处置。收到相关指令后，我们将立即将其转交给 USDT 发行方及受影响交易所的合规部门，以便落实冻结措施并启动资金追回流程\n\n随后，Tether 的代表将直接与您联系，协调将该笔 USDT 转回至您提供的钱包地址",
+          "contentForeign": "Nach unserem derzeitigen Stand befinden sich die Gelder weiterhin vollständig auf der Blockchain und wurden noch nicht weitertransferiert. Wir werden nun umgehend die zuständigen Stellen, darunter das BKA, die FIU und die BaFin, einbeziehen und je nach Sachlage beim Landgericht Berlin II den Erlass dringender Maßnahmen zur Vermögenssicherung sowie entsprechender Rückführungsmaßnahmen beantragen\n\nSobald eine wirksame Sperre angeordnet und umgesetzt wurde, können die betreffenden USDT direkt auf der Blockchain blockiert werden, sodass eine weitere Übertragung oder Verwertung nicht mehr möglich ist. Sobald uns die entsprechenden Anordnungen vorliegen, werden wir diese unmittelbar an den USDT-Emittenten sowie an die zuständigen Compliance-Abteilungen der betroffenen Börsen weiterleiten, damit die Sperre umgesetzt und das Verfahren zur Rückführung der Gelder eingeleitet werden kann\n\nAnschließend wird sich ein zuständiger Vertreter von Tether direkt mit Ihnen in Verbindung setzen, um die Rückübertragung der USDT an die von Ihnen angegebene Wallet-Adresse zu koordinieren",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy7f43-a3hjzv",
+          "title": "发送调查报告PDF和截图",
+          "type": "话术",
+          "contentZh": "这些是迄今为止所开展调查的相关文件。您可以花时间仔细查阅，以了解当前状况及各项细节。我现在要去开个会，一旦有任何新进展，我会立即通知您",
+          "contentForeign": "Hier finden Sie die Unterlagen zu den bisherigen Ermittlungen. Sie können sich diese zunächst in Ruhe ansehen, um sich einen Überblick über den aktuellen Stand und die Einzelheiten zu verschaffen. Ich muss jetzt an einer Besprechung teilnehmen. Sobald es neue Entwicklungen gibt, werde ich Sie umgehend informieren",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-mujy8258-x2umro",
+              "name": "PixPin_2026-09-27_17-03-22.png",
+              "type": "image/png",
+              "size": 1063327,
+              "url": "../data/chat-flow-assets/att-mujy8258-x2umro-PixPin_2026-09-27_17-03-22.png"
+            }
+          ],
+          "toolLinks": [
+            {
+              "id": "tool-mujy7alw-x53dhq",
+              "path": "资金路径调查律师报告-德国.html",
+              "title": "资金路径调查律师报告",
+              "category": "de"
+            }
+          ]
+        },
+        {
+          "id": "step-mujy9r0a-8f4a1n",
+          "title": "冻结令和资金返还令被柏林法院批准",
+          "type": "话术",
+          "contentZh": "我们已成功向柏林第二地方法院提交相关申请，并获得了关于紧急保全及追回资产的法院命令。目前，这两项法院命令均已正式生效，并具有完全法律效力",
+          "contentForeign": "Wir haben den entsprechenden Antrag beim Landgericht Berlin II erfolgreich gestellt und die gerichtlichen Anordnungen zur dringenden Vermögenssicherung sowie zur Rückführung der Vermögenswerte erwirkt. Beide gerichtlichen Anordnungen sind inzwischen offiziell wirksam und entfalten die entsprechende Rechtswirkung",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujyameh-ehvsme",
+          "title": "发送冻结令和资金返还令副本PDF给客户",
+          "type": "话术",
+          "contentZh": "这是我们为保全资产而取得的紧急命令，以及关于资产遣返的命令的副本。您可以随时查阅这些文件",
+          "contentForeign": "Hier sind die Kopien der von uns erwirkten Eilanordnung zur Vermögenssicherung und der Anordnung zur Rückführung der Vermögenswerte. Sie können sich die Unterlagen zunächst in Ruhe ansehen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": [
+            {
+              "id": "tool-mujyalpq-h1weqm",
+              "path": "DOCX文件编辑器.html?template=templates%2F%E5%86%BB%E7%BB%93%E4%BB%A4%E5%92%8C%E8%B5%84%E9%87%91%E8%BF%94%E8%BF%98%E4%BB%A4%E6%A8%A1%E6%9D%BF-%E5%BE%B7%E5%9B%BD.docx",
+              "title": "冻结令和资金返还令模板-德国",
+              "category": "de"
+            }
+          ]
+        },
+        {
+          "id": "step-mujybhrv-29p2po",
+          "title": "接下来需要将冻结令和案件文件提交给Tether公司执行冻结",
+          "type": "话术",
+          "contentZh": "接下来，我们将立即向 Tether 提交完整的法院文件、监管链记录、您的身份证明及授权协议，并请求永久冻结与本案相关的钱包地址中持有的所有 USDT，以防止发生任何进一步的转账或兑换行为\n\n随后，Tether 将启动内部合规与资产追回流程，并根据法院关于资产返还的命令，将冻结资金全额退还至您提供的加密货币钱包地址",
+          "contentForeign": "Im nächsten Schritt werden wir Tether umgehend die vollständigen gerichtlichen Unterlagen, die Beweiskette, Ihren Identitätsnachweis sowie die Mandatsvereinbarung übermitteln und die dauerhafte Sperrung sämtlicher USDT beantragen, die sich auf den mit diesem Fall in Zusammenhang stehenden Wallet-Adressen befinden. Damit sollen weitere Übertragungen oder Umtauschvorgänge ausgeschlossen werden\n\nAnschließend wird Tether das interne Compliance- und Rückerstattungsverfahren einleiten und die eingefrorenen Gelder auf Grundlage der gerichtlichen Anordnung zur Rückführung der Vermögenswerte vollständig an die von Ihnen angegebene Krypto-Wallet-Adresse zurückführen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujyc6ag-fkcmdx",
+          "title": "Tether公司已经批准并执行冻结",
+          "type": "话术",
+          "contentZh": "您好。我想向您通报关于当前情况的最新进展，这是一个非常积极的消息。我们刚刚收到 Tether 的正式确认：基于我们提交的紧急资产冻结与资金返还指令、监管链（chain of custody）、相关的德国联邦刑事警察局（BKA）案件编号，以及德国金融情报机构（FIU）和联邦金融监管局（BaFin）的联合请求，Tether 已采取紧急措施，封锁了上述目标地址\n\n涉案资金目前已在区块链上被完全冻结，无法进行转账、兑换或提现。这一举措是整个追回流程中的关键一环，因为它阻止了资产的进一步流失。目前资金已得到控制，从而为后续的资金返还法律程序争取到了必要的时间",
+          "contentForeign": "Guten Tag, ich möchte Ihnen ein sehr positives Update zum aktuellen Stand geben. Wir haben soeben eine offizielle Bestätigung von Tether erhalten: Auf Grundlage der von uns eingereichten Eilanordnung zur Vermögenssicherung und der Anordnung zur Rückführung der Vermögenswerte, der Beweiskette, des zugehörigen Aktenzeichens beim BKA sowie des gemeinsamen Ersuchens von FIU und BaFin hat Tether die oben genannten Zieladressen im Rahmen einer Eilmaßnahme gesperrt\n\nDie betreffenden Gelder sind derzeit vollständig auf der Blockchain blockiert und können weder weitertransferiert noch umgetauscht oder ausgezahlt werden. Dieser Schritt ist einer der entscheidenden Punkte im gesamten Rückgewinnungsverfahren, da dadurch weitere Vermögensabflüsse verhindert werden. Die Gelder sind nun gesichert, sodass für die anschließenden rechtlichen Schritte zur Rückführung die notwendige Zeit zur Verfügung steht",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujycwh1-vay6ir",
+          "title": "发送Tether公司的冻结截图和冻结报告PDF",
+          "type": "话术",
+          "contentZh": "Tether 发布的关于封锁操作的正式通知是一份书面文件的副本。该文件确认，根据相关法律措施，涉案地址因涉嫌欺诈活动已被封锁\n\n文件中明确列出了被封锁的地址、冻结金额、时间戳，并注明此举是应执法部门要求采取的行动。这表明相关部门已全面介入此事，且您的案件正作为优先事项进行处理\n\n接下来，Tether 指定的代表将直接与您联系，协调将 USDT 安全退还至您提供的钱包地址",
+          "contentForeign": "Bei der von Tether offiziell übermittelten Mitteilung über die Sperrung handelt es sich um die Kopie eines formellen schriftlichen Dokuments. Darin wird bestätigt, dass die betreffenden Adressen wegen des Verdachts auf betrügerische Aktivitäten auf Grundlage der entsprechenden rechtlichen Maßnahmen gesperrt wurden\n\nIn dem Dokument sind die gesperrten Adressen, der Umfang der eingefrorenen Beträge, der Zeitstempel sowie der Hinweis auf die Reaktion auf ein Ersuchen der Strafverfolgungsbehörden eindeutig aufgeführt. Dies zeigt, dass die zuständigen Behörden inzwischen umfassend in den Fall eingebunden sind und Ihr Fall nun mit erhöhter Priorität bearbeitet wird\n\nIm nächsten Schritt wird sich ein von Tether benannter Ansprechpartner direkt mit Ihnen in Verbindung setzen, um die sichere Rückführung der USDT an die von Ihnen angegebene Wallet-Adresse zu koordinieren",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-mujydefa-zpy06j",
+              "name": "PixPin_2026-09-27_17-07-46.png",
+              "type": "image/png",
+              "size": 2575487,
+              "url": "../data/chat-flow-assets/att-mujydefa-zpy06j-PixPin_2026-09-27_17-07-46.png"
+            }
+          ],
+          "toolLinks": [
+            {
+              "id": "tool-mujycvg5-ronumd",
+              "path": "Tether冻结报告-德国.html",
+              "title": "Tether 冻结报告",
+              "category": "de"
+            }
+          ]
+        },
+        {
+          "id": "step-mujyeq16-95bh7o",
+          "title": "目前使用Signal和客户聊天的推退款专员联系方式",
+          "type": "话术",
+          "contentZh": "我已经与相关部门协调好了退款的后续事宜，现将联系方式发送给您。请仅提供您的案例编号，切勿透露任何密码、访问码或支付信息",
+          "contentForeign": "Ich habe die nächsten Schritte für die Rückerstattung mit der zuständigen Stelle abgestimmt. Ich sende Ihnen jetzt die Kontaktdaten. Bitte geben Sie dort ausschließlich Ihre Fallnummer an und teilen Sie keine Passwörter, Zugangscodes oder Zahlungsdaten mit",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujyfimb-v0n48p",
+          "title": "目前不在Signal和客户聊天的客户推专员",
+          "type": "话术",
+          "contentZh": "我已经与 Tether 指定负责退款事宜的联系人落实了相关安排。关于退款流程的执行与确认，所有沟通均仅通过 Signal 应用程序进行\n\n请下载并安装 Signal 应用程序。安装完成后，请告知我，届时我会将该负责人的 Signal 联系方式发送给您",
+          "contentForeign": "Ich habe die Abstimmung mit dem von Tether eingesetzten Ansprechpartner für die Rückerstattung inzwischen abgeschlossen. Für die Durchführung und Bestätigung des Rückerstattungsverfahrens erfolgt die Kommunikation ausschließlich über Signal\n\nBitte laden Sie Signal herunter und installieren Sie die App. Sobald das erledigt ist, geben Sie mir kurz Bescheid. Ich sende Ihnen dann die Signal-Kontaktdaten des zuständigen Ansprechpartners",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujyg3bq-f9nxev",
+          "title": "推专员链接",
+          "type": "话术",
+          "contentZh": "链接\n\n您可以通过此链接将您的工单编号发送给负责此事的 Tether 代表。随后，他们将指导您完成后续退款流程，并与您协调接下来的步骤",
+          "contentForeign": "链接\n\nSie können über diesen Link dem zuständigen Tether-Mitarbeiter Ihre Fallnummer senden. Er wird Sie anschließend durch den weiteren Rückerstattungsprozess begleiten und die nächsten Schritte mit Ihnen koordinieren",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujygr09-46y2ft",
+          "title": "结束语并强调客户不要再跟无关人员联系",
+          "type": "话术",
+          "contentZh": "整个过程绝非易事，但我很高兴我们的团队在此案中表现出色。在您实际收到追回的资金之前，您无需支付约定的全部服务费用。我在此明确重申：我们绝不会向您索取任何预付款\n\n如果有人自称是政府机构、官方组织或涉案公司的员工并要求您付款，这极有可能是诈骗企图。遗憾的是，根据过往受害者的反馈，此类事件在这一特定阶段时有发生\n\n请务必注意，在此关键阶段，切勿与任何与本案无关的人员联系。如果您通过 Telegram 或 WhatsApp 收到有关本案的信息，请立即拉黑发件人或直接与我联系，因为这些平台常被诈骗分子利用\n\n今后关于本案及资金追回处理的所有沟通，将严格按照相关准则，仅通过 Signal 进行——这是一款具备端到端加密功能的非营利性通讯应用\n\n祝您一切顺利",
+          "contentForeign": "Der gesamte Prozess war wirklich nicht einfach, aber ich bin froh, dass unser Team in diesem Fall sehr gute Arbeit geleistet hat. Sie müssen die vereinbarte Gesamtvergütung für unsere Leistungen erst dann zahlen, wenn die zurückgeführten Gelder tatsächlich bei Ihnen eingegangen sind. Ich möchte Sie noch einmal ausdrücklich darauf hinweisen, dass wir von Ihnen keinerlei Vorauszahlungen verlangen werden\n\nSollte sich jemand als Mitarbeiter einer Behörde, einer offiziellen Stelle oder eines beteiligten Unternehmens ausgeben und Sie zu einer Zahlung auffordern, handelt es sich mit sehr hoher Wahrscheinlichkeit um einen Betrugsversuch. Nach den Rückmeldungen früherer Geschädigter kommt so etwas gerade in dieser Phase leider immer wieder vor\n\nBitte nehmen Sie in dieser entscheidenden Phase keinen Kontakt zu Personen auf, die mit diesem Fall nichts zu tun haben. Wenn Sie über Telegram oder WhatsApp Nachrichten erhalten, in denen Ihr Fall angesprochen wird, blockieren Sie den Absender bitte umgehend oder melden Sie sich direkt bei mir, da diese Plattformen häufig von Betrügern genutzt werden\n\nDie weitere Kommunikation zu diesem Fall sowie die Abwicklung der Rückführung erfolgen entsprechend den geltenden Vorgaben ausschließlich über Signal, einen nicht gewinnorientiert betriebenen Messenger mit Ende-zu-Ende-Verschlüsselung\n\nIch wünsche Ihnen viel Erfolg",
           "language": "auto",
           "note": "",
           "attachments": [],
