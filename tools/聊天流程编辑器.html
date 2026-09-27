@@ -216,6 +216,7 @@
     let embedded;
     try{embedded=JSON.parse(flowData.textContent)}catch(e){embedded={version:2,bundleId:uid('bundle'),shareMode:false,theme:'light',workflows:[],activeWorkflowId:null}}
     const storageKey='mosen-flow-studio:'+embedded.bundleId;
+    if(IS_HOSTED){try{localStorage.removeItem(storageKey)}catch(e){}}
     let state=embedded;
     if(!embedded.shareMode&&!IS_HOSTED){try{const local=localStorage.getItem(storageKey);if(local)state=JSON.parse(local)}catch(e){}}
     state.version=2; state.bundleId=state.bundleId||uid('bundle'); state.workflows=Array.isArray(state.workflows)?state.workflows:[];
@@ -232,7 +233,7 @@
     function isPdf(a){return a.type==='application/pdf'||/\.pdf$/i.test(a.name||'')}
     function attachmentSrc(a){return a.data||a.url||''}
     function activeFlow(){return state.workflows.find(f=>f.id===state.activeWorkflowId)||null}
-    function persist(){if(state.shareMode)return;try{localStorage.setItem(storageKey,JSON.stringify(state))}catch(e){showToast('本地空间不足，请立即保存为 HTML 文件')};flowData.textContent=safeJson(state)}
+    function persist(){if(state.shareMode)return;if(!IS_HOSTED){try{localStorage.setItem(storageKey,JSON.stringify(state))}catch(e){showToast('本地空间不足，请立即保存为 HTML 文件')}}flowData.textContent=safeJson(state)}
     function touch(flow=activeFlow()){if(flow)flow.updatedAt=now();persist()}
     function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2300)}
     function icon(name){const icons={copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 10v7m4-7v7"/></svg>',more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>',chev:'<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>',plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',empty:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg>'};return icons[name]||''}
