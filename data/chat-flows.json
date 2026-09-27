@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-welcome",
-  "globalUpdatedAt": "2026-09-19T14:00:02.365Z",
+  "globalUpdatedAt": "2026-09-27T14:33:46.735Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -12,7 +12,7 @@
       "description": "这是一个可直接修改或删除的示例流程",
       "color": "#6d4aff",
       "createdAt": 1789659729157,
-      "updatedAt": 1789826373806,
+      "updatedAt": 1790519606066,
       "steps": [
         {
           "id": "step-hello",
@@ -22,7 +22,8 @@
           "contentForeign": "Hallo, mein Name ist Lena S Moeller, ich bin die Assistentin von Rechtsanwalt Maximilian Weber. Gerne biete ich Ihnen eine kostenlose Erstberatung zu Ihrem Fall im Bereich Online-Betrug an",
           "language": "auto",
           "note": "",
-          "attachments": []
+          "attachments": [],
+          "toolLinks": []
         },
         {
           "id": "step-mu8gbm7t-hw4t9k",
@@ -32,7 +33,8 @@
           "contentForeign": "Zunächst möchte ich, um Missverständnisse zu vermeiden, darauf hinweisen, dass Sie gerne Screenshots unseres Chatverlaufs aufbewahren können. Alles, was ich Ihnen hier mitteile, ist rechtlich verbindlich. Gleichzeitig versichere ich Ihnen ausdrücklich, dass wir keinerlei Informationen weitergeben werden, die Ihre Privatsphäre oder persönlichen Daten betreffen. Sie können sich darauf verlassen",
           "language": "auto",
           "note": "",
-          "attachments": []
+          "attachments": [],
+          "toolLinks": []
         },
         {
           "id": "step-mu8gclna-p01swn",
@@ -42,7 +44,8 @@
           "contentForeign": "Außerdem ist wichtig für Sie zu wissen, dass wir keinerlei Kosten im Voraus verlangen, bevor die durch den Betrug verlorenen Gelder erfolgreich zurückgeholt und vollständig auf das Konto des Geschädigten zurückgeführt wurden. Erst wenn wir Ihnen erfolgreich bei der Rückholung der Gelder geholfen haben und der Betrag auf dem Konto des Geschädigten eingegangen ist, berechnen wir eine pauschale Servicegebühr in Höhe von 15 %\n\nDiese Servicegebühr umfasst sämtliche im Rahmen der Rückholung anfallenden Kosten und professionellen Leistungen, einschließlich der Nachverfolgung der Geldflüsse und technischen Ermittlungen, der Erstellung rechtlicher Unterlagen und Fallvorbereitung, des Fallmanagements sowie der Abstimmung mit zuständigen Stellen und beteiligten Dritten\n\nWir versichern Ihnen ausdrücklich, dass Whitfield & Crane PartG mbB während der gesamten Bearbeitung Ihres Falls weder eine Kaution noch Vorauszahlungen, Bearbeitungsgebühren, Freigabegebühren oder sonstige versteckte bzw. zusätzliche Kosten verlangen wird",
           "language": "auto",
           "note": "",
-          "attachments": []
+          "attachments": [],
+          "toolLinks": []
         },
         {
           "id": "step-mu8gds6a-7ykwp4",
@@ -52,7 +55,8 @@
           "contentForeign": "Damit wir Ihren Fall möglichst präzise und effizient aufnehmen und anschließend mit den weiteren Ermittlungen und der Beweissicherung beginnen können, brauche ich zunächst einen kurzen Überblick darüber, wie der Betrug abgelaufen ist. Das wird nicht viel Zeit in Anspruch nehmen. Es reicht, wenn Sie mir einige wichtige Punkte kurz schildern. Haben Sie gerade einen Moment Zeit?",
           "language": "auto",
           "note": "",
-          "attachments": []
+          "attachments": [],
+          "toolLinks": []
         },
         {
           "id": "step-mu8geh6g-5zovim",
@@ -62,7 +66,85 @@
           "contentForeign": "Über welchen Kanal sind Sie mit der betreffenden Person oder den betreffenden Personen in Kontakt gekommen?\n\nHandelte es sich hauptsächlich um eine Anlageplattform, Kryptowährungen oder eine andere Form des Betrugs?\n\nWie hoch ist Ihr gesamter Verlust ungefähr, und wird auf einem der Plattformkonten noch ein Guthaben angezeigt?\n\nHaben Sie noch Beweismaterial wie Chatverläufe, Screenshots von Überweisungen oder Zahlungen, Links zu den Plattformen oder ähnliche Unterlagen?\n\nJe genauer die Informationen sind, desto besser. Falls Sie sich an einzelne Punkte im Moment nicht mehr genau erinnern, ist das aber kein Problem. Wir können alles Schritt für Schritt durchgehen. Sie können mir die Informationen direkt jetzt schicken oder auch in mehreren Nachrichten senden. Sämtliche Angaben werden selbstverständlich vertraulich behandelt und ausschließlich für die Bearbeitung Ihres Falls verwendet",
           "language": "auto",
           "note": "",
-          "attachments": []
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujx01p3-4o2b5x",
+          "title": "切断客户和骗子继续联系",
+          "type": "话术",
+          "contentZh": "顺便提一下，如果您仍与涉事人员保持联系，我强烈建议您立即停止一切沟通。从现在起，请勿回复任何信息、语音留言或视频通话，也不要打开对方发送的任何链接或文件\n\n这一点至关重要。一旦诈骗者意识到您已识破骗局并停止回应，他们往往会试图迅速转移剩余资金，并通过多个中转环节进行流转。正是在这一阶段，尽快追踪资金流向——并在必要时采取措施保全资产——显得尤为重要",
+          "contentForeign": "Übrigens, falls Sie noch Kontakt mit der betreffenden Person oder den betreffenden Personen haben, rate ich Ihnen dringend, die Kommunikation sofort vollständig einzustellen. Antworten Sie ab jetzt auf keine Nachrichten, Sprachnachrichten oder Videoanrufe mehr und öffnen Sie auch keine Links oder Dateien, die Ihnen geschickt werden\n\nDas ist sehr wichtig. Sobald die Täter merken, dass Sie den Betrug erkannt haben und nicht mehr reagieren, versuchen sie häufig, noch vorhandene Gelder schnell weiterzuleiten und über mehrere Stationen zu verschieben. Gerade in dieser Phase kann es besonders wichtig sein, die Geldflüsse möglichst schnell nachzuverfolgen und gegebenenfalls Maßnahmen zur Sicherung der Vermögenswerte einzuleiten",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujx0r59-igniew",
+          "title": "让客户等待我们评估他的证据",
+          "type": "话术",
+          "contentZh": "我将仔细审阅您提供的文件，进行系统整理并将其汇编成连贯的证据链，随后转交给我们相关的评估部门\n\n一旦您的案件符合进一步处理的标准，我会立即将其上报并移交给专业律师，以便启动后续的关键调查程序。在此期间，请您耐心等待；一旦有最新进展，我会第一时间与您联系",
+          "contentForeign": "Ich werde die von Ihnen bereitgestellten Unterlagen sorgfältig prüfen, strukturiert aufbereiten und zu einer nachvollziehbaren Beweiskette zusammenstellen, bevor ich sie an unsere zuständige Bewertungsabteilung weiterleite\n\nSobald Ihr Fall unsere Kriterien für die weitere Bearbeitung erfüllt, werde ich ihn umgehend entsprechend hochstufen und an einen spezialisierten Rechtsanwalt übergeben, damit die nächsten, entscheidenden Ermittlungsschritte eingeleitet werden können. Bitte haben Sie bis dahin etwas Geduld. Ich melde mich bei Ihnen, sobald es Neuigkeiten gibt",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujx1cx5-vrvops",
+          "title": "让客户继续补充证据",
+          "type": "话术",
+          "contentZh": "我将仔细审阅您提供的文件，进行系统整理并将其汇编成连贯的证据链，随后转交给我们相关的评估部门\n\n一旦您的案件符合进一步处理的标准，我会立即将其上报并移交给专业律师，以便启动后续的关键调查程序。在此期间，请您耐心等待；一旦有最新进展，我会第一时间与您联系",
+          "contentForeign": "Bitte senden Sie mir möglichst alle Beweismittel, die Sie noch sichern können. Die Nachverfolgung der Geldflüsse ist in der Regel gut möglich, wenn wir beim ursprünglichen Empfängerkonto der Betrüger ansetzen. Von dort aus lassen sich die weiteren Transaktionen Schritt für Schritt auswerten und die nachgelagerten Konten beziehungsweise Wallets nachvollziehen\n\nEntscheidend ist jedoch, dass die Beweislage ausreichend vollständig ist. Sobald wir das Konto oder die Wallet identifiziert haben, auf dem beziehungsweise der sich die Gelder letztlich befinden, müssen die notwendigen rechtlichen Sicherungsmaßnahmen vorbereitet werden. Wenn wichtige Nachweise fehlen, kann das die weitere Prüfung und die Beantragung entsprechender Maßnahmen erschweren oder verzögern und im ungünstigsten Fall dazu führen, dass wertvolle Zeit verloren geht\n\nBitte senden Sie mir daher jederzeit alles zu, was Ihnen noch einfällt oder was Sie noch sichern können. Ich werde die Unterlagen einheitlich ordnen und zur Beweissammlung dieses Falls hinzufügen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujx1w8f-ai0alj",
+          "title": "开始调查",
+          "type": "话术",
+          "contentZh": "您好。我们现已全面审查并整理了您提交的所有证据\n\n为避免浪费宝贵时间，我们的技术团队已正式部署 Whitfield & Crane PartG mbB 内部的区块链调查工具，并着手对涉案人员使用的加密货币地址进行初步链上追踪及证据保全\n\n一旦有进一步的进展或新发现，我会立即通知您",
+          "contentForeign": "Guten Tag, wir haben inzwischen sämtliche von Ihnen übermittelten Beweismittel vollständig gesichtet und geordnet\n\nUm keine wertvolle Zeit zu verlieren, hat unser technisches Team nun offiziell das interne Blockchain-Ermittlungstool von Whitfield & Crane PartG mbB eingesetzt und mit der ersten On-Chain-Nachverfolgung sowie der Beweissicherung zu den von den Tätern verwendeten Kryptowährungsadressen begonnen\n\nSobald es hierzu weitere Ergebnisse oder neue Erkenntnisse gibt, werde ich Sie umgehend informieren",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-mujx5641-y15c04",
+              "name": "PixPin_2026-09-27_16-33-03.png",
+              "type": "image/png",
+              "size": 1327686,
+              "url": "../data/chat-flow-assets/att-mujx5641-y15c04-PixPin_2026-09-27_16-33-03.png"
+            }
+          ],
+          "toolLinks": [
+            {
+              "id": "tool-mujx3ihr-1fenym",
+              "path": "资金路径调查-德国.html",
+              "title": "资金路径调查",
+              "category": "de"
+            }
+          ]
+        },
+        {
+          "id": "step-mujx39f8-j7ngje",
+          "title": "汇报调查结果发送截图和PDF",
+          "type": "话术",
+          "contentZh": "我有个好消息要告诉您：您的案件已完成初步审查，符合本所受理的标准\n\n我们处理过许多类似案件。根据我们的经验，涉案资金中很大一部分往往仍有望通过区块链技术追踪到\n\n为了开展更深入的调查，我们首先需要正式立案。由于目前尚未建立正式的委托关系，我们还无法获取某些额外数据或利用特定的调查途径。因此，我们需要正式受理此案，并与 Maximilian Weber 律师签署委托协议\n\n为此，我需要先向您了解一些基本情况。您现在方便吗？",
+          "contentForeign": "Ich habe gute Nachrichten für Sie. Die erste Prüfung Ihres Falls ist inzwischen abgeschlossen, und Ihr Fall erfüllt die Voraussetzungen für eine Übernahme durch unsere Kanzlei\n\nWir haben bereits zahlreiche vergleichbare Fälle bearbeitet. Nach unserer bisherigen Erfahrung besteht bei solchen Fällen häufig eine gute Chance, dass sich ein erheblicher Teil der betroffenen Gelder weiterhin über die Blockchain nachvollziehen lässt\n\nDamit wir die Ermittlungen nun weiter vertiefen können, muss Ihr Fall zunächst offiziell bei uns aufgenommen werden. Da bisher noch kein formelles Mandat besteht, haben wir derzeit keinen Zugriff auf bestimmte weiterführende Daten und Ermittlungsmöglichkeiten. Dafür ist es erforderlich, den Fall offiziell anzulegen und eine Mandatsvereinbarung mit Rechtsanwalt Maximilian Weber abzuschließen\n\nDafür benötige ich zunächst einige grundlegende Angaben von Ihnen. Haben Sie gerade etwas Zeit?",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": [
+            {
+              "id": "tool-mujx3xet-ycworh",
+              "path": "资金路径调查助理报告-德国.html",
+              "title": "资金路径调查助理报告",
+              "category": "de"
+            }
+          ]
         }
       ]
     }
