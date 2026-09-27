@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-mujxptp2-mto2yy",
-  "globalUpdatedAt": "2026-09-27T14:55:12.451Z",
+  "globalUpdatedAt": "2026-09-27T14:58:34.105Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -334,7 +334,7 @@
       "description": "",
       "color": "#148a8a",
       "createdAt": 1790520569750,
-      "updatedAt": 1790520895898,
+      "updatedAt": 1790521100191,
       "steps": [
         {
           "id": "step-mujxqxd9-84gebh",
@@ -394,6 +394,39 @@
           "type": "话术",
           "contentZh": "请稍等，我正在调取并查看您的案件档案与最新进展。同时，我也会为您梳理后续的调查方向和具体步骤，稍后为您详细说明，请您稍作等待",
           "contentForeign": "Bitte haben Sie einen Moment Geduld. Ich rufe gerade Ihre Fallakte auf und prüfe den aktuellen Stand. Gleichzeitig werde ich die nächsten Ermittlungsansätze und die weiteren konkreten Schritte für Sie zusammenstellen. Ich melde mich gleich mit einer ausführlichen Erklärung bei Ihnen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxz9xo-bi7z3d",
+          "title": "查看档案后符合立案标准",
+          "type": "话术",
+          "contentZh": "我已仔细审阅了您的案卷。相关证据确凿，资金流向清晰可循。因此，您的案件完全符合 Whitfield & Crane PartG mbB 旗下加密资产追踪与追回团队的正式受理标准",
+          "contentForeign": "Ich habe Ihre Fallakte bereits sorgfältig geprüft. Die Beweislage ist schlüssig und die Geldflüsse lassen sich klar nachvollziehen. Ihr Fall erfüllt damit vollständig die formellen Annahmekriterien des Teams für die Rückverfolgung und Rückgewinnung von Krypto-Vermögenswerten bei Whitfield & Crane PartG mbB",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxzq31-25za6b",
+          "title": "告诉客户需要签署委托协议",
+          "type": "话术",
+          "contentZh": "现需您在委托协议上签字。若无此协议，我们将无法开展若干重要的调查步骤，包括：对完整的链上交易数据进行详细分析；通过德国联邦刑事警察局（BKA）和金融情报机构（FIU）获取相关区块链信息；以及直接向银行、加密资产发行方或托管机构提出申请，以保全或冻结资产。唯有在您给予必要授权后，我们方可在法律允许的范围内调取、使用相关数据及访问权限",
+          "contentForeign": "Wir benötigen jetzt Ihre Unterschrift unter die Mandatsvereinbarung. Ohne diese Vereinbarung können wir mehrere wichtige Ermittlungsschritte nicht weiterverfolgen. Dazu gehören eine vertiefte Prüfung der vollständigen On-Chain-Transaktionsdaten, die Einholung relevanter Blockchain-Informationen über das BKA und die FIU sowie die direkte Übermittlung von Sicherungs- bzw. Sperranfragen an Banken, Emittenten von Kryptowerten oder Verwahrstellen. Erst nach Ihrer entsprechenden Bevollmächtigung können wir diese Daten und Zugriffsrechte im rechtlich zulässigen Rahmen anfordern und nutzen",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujy03qw-kaqg9j",
+          "title": "问客户要邮箱签署委托协议（邮箱发到文件确认群让后台发送委托协议邀请）",
+          "type": "话术",
+          "contentZh": "请将您的电子邮箱地址发送给我。随后，我会通过电子邮件向您发送一份签署授权协议的邀请",
+          "contentForeign": "Bitte senden Sie mir Ihre E-Mail-Adresse. Ich werde Ihnen anschließend per E-Mail eine Einladung zur Unterzeichnung der Mandatsvereinbarung zusenden",
           "language": "auto",
           "note": "",
           "attachments": [],
