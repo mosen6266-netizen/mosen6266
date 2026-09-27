@@ -6,6 +6,8 @@
   const BRANCH = 'main';
   const INDEX_URL = './tools/index.json';
   const GLOBAL_ORDER_URL = './global-order.json';
+  const OBSOLETE_TOOL_IDS = new Set(['dynamic-0efef7208498']);
+  const OBSOLETE_TOOL_PATHS = new Set(['tools/手机截图状态栏编辑器.html']);
 
   const US_FLAG = `<span class="tool-country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#fff"/><g fill="#B22234"><rect y="0" width="28" height="1.4"/><rect y="2.8" width="28" height="1.4"/><rect y="5.6" width="28" height="1.4"/><rect y="8.4" width="28" height="1.4"/><rect y="11.2" width="28" height="1.4"/><rect y="14" width="28" height="1.4"/><rect y="16.6" width="28" height="1.4"/></g><rect width="11.8" height="9.8" rx="1" fill="#3C3B6E"/><g fill="#fff"><circle cx="2" cy="2" r=".65"/><circle cx="4.4" cy="2" r=".65"/><circle cx="6.8" cy="2" r=".65"/><circle cx="9.2" cy="2" r=".65"/><circle cx="3.2" cy="4" r=".65"/><circle cx="5.6" cy="4" r=".65"/><circle cx="8" cy="4" r=".65"/><circle cx="2" cy="6" r=".65"/><circle cx="4.4" cy="6" r=".65"/><circle cx="6.8" cy="6" r=".65"/><circle cx="9.2" cy="6" r=".65"/><circle cx="3.2" cy="8" r=".65"/><circle cx="5.6" cy="8" r=".65"/><circle cx="8" cy="8" r=".65"/></g></svg></span>`;
   const DE_FLAG = `<span class="tool-country-flag" aria-hidden="true"><svg viewBox="0 0 28 18" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="18" rx="2" fill="#000"/><rect y="6" width="28" height="6" fill="#DD0000"/><rect y="12" width="28" height="6" rx="0 0 2 2" fill="#FFCE00"/></svg></span>`;
@@ -254,7 +256,13 @@
     enableCrossCategoryDrag();
     let data = {tools:[]};
     try{ data = await fetchJson(INDEX_URL); }catch(err){ console.warn('无法读取动态工具目录：', err); }
-    const tools = Array.isArray(data && data.tools) ? data.tools : [];
+    document.querySelectorAll('.card[data-id]').forEach(card => {
+      const href = card.getAttribute('href') || '';
+      if(OBSOLETE_TOOL_IDS.has(card.dataset.id) || OBSOLETE_TOOL_PATHS.has(href)) card.remove();
+    });
+    const tools = (Array.isArray(data && data.tools) ? data.tools : []).filter(item =>
+      item && !OBSOLETE_TOOL_IDS.has(item.id) && !OBSOLETE_TOOL_PATHS.has(item.path)
+    );
     const existing = new Set([...document.querySelectorAll('.card[data-id]')].map(c => c.dataset.id));
     tools.forEach(item => {
       if(!item || !item.id || !item.path || existing.has(item.id)) return;
