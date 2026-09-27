@@ -94,6 +94,10 @@
     dialog{border:1px solid var(--line);border-radius:20px;background:var(--panel);color:var(--text);padding:0;box-shadow:0 24px 80px rgba(0,0,0,.25);width:min(560px,calc(100vw - 28px))}dialog::backdrop{background:rgba(12,14,18,.55);backdrop-filter:blur(4px)}
     .dialog-head{padding:22px 22px 14px;display:flex;justify-content:space-between;align-items:flex-start}.dialog-head h3{margin:0;font-size:19px}.dialog-head p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.55}.dialog-body{padding:4px 22px 22px}.export-option{width:100%;border:1px solid var(--line);background:var(--panel-2);border-radius:14px;padding:16px;display:flex;gap:13px;text-align:left;margin-top:10px}.export-option:hover{border-color:var(--brand);transform:translateY(-1px)}.option-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);flex:0 0 auto}.option-copy strong{display:block;font-size:14px}.option-copy span{display:block;font-size:12px;color:var(--muted);line-height:1.55;margin-top:4px}
     .notice{font-size:12px;color:var(--muted);background:var(--panel-2);border-radius:11px;padding:11px 12px;line-height:1.55;margin-top:12px}
+    .add-step-dialog{width:min(720px,calc(100vw - 28px));max-height:min(88vh,820px);overflow:auto}
+    .add-step-grid{display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:14px}
+    .add-step-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+    @media(max-width:640px){.add-step-grid{grid-template-columns:1fr}.add-step-dialog{max-height:92vh}}
     .image-viewer{width:min(1100px,calc(100vw - 28px));height:min(88vh,850px);background:transparent;border:0;box-shadow:none;overflow:visible}.image-viewer::backdrop{background:rgba(7,9,13,.88);backdrop-filter:blur(5px)}.viewer-stage{width:100%;height:100%;display:grid;place-items:center;position:relative}.viewer-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;box-shadow:0 18px 70px rgba(0,0,0,.45)}.viewer-stage iframe{display:none;width:calc(100% - 18px);height:calc(100% - 34px);margin-top:4px;border:0;border-radius:10px;background:#fff;box-shadow:0 18px 70px rgba(0,0,0,.45)}.image-viewer.pdf-mode .viewer-stage img{display:none}.image-viewer.pdf-mode .viewer-stage iframe{display:block}.viewer-close{position:absolute;right:0;top:-4px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:#20232a;font-size:22px;z-index:2}.viewer-caption{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:rgba(10,12,16,.72);color:white;border-radius:999px;padding:8px 13px;font-size:12px;white-space:nowrap;max-width:80%;overflow:hidden;text-overflow:ellipsis;z-index:2}
     .read-banner{display:none;background:#fff4d8;color:#765600;border:1px solid #ffe09a;border-radius:12px;padding:10px 13px;margin-bottom:14px;font-size:13px}.read-only .read-banner{display:block}.read-only .edit-only{display:none!important}.read-only input,.read-only textarea,.read-only select{pointer-events:none}.read-only .title-input,.read-only .desc-input{box-shadow:none}.read-only .drag-handle{display:none}.read-only .step-body{display:block}.read-only .step-card .step-header{border-bottom-color:var(--line)}.read-only .chevron{display:none}
     .mobile-menu{display:none}
@@ -147,6 +151,28 @@
       <button class="export-option" data-export="editable"><span class="option-icon">✎</span><span class="option-copy"><strong>保存可编辑版</strong><span>保留全部编辑功能，适合你自己备份后继续维护。</span></span></button>
       <button class="export-option" data-export="readonly"><span class="option-icon">◉</span><span class="option-copy"><strong>导出只读分享版</strong><span>收件人可以查看、复制、打印和下载附件，编辑按钮会隐藏。</span></span></button>
       <div class="notice" id="sizeNotice">提示：每次修改后都需要重新保存并发送新的 HTML 文件，已发出的旧文件不会自动同步更新。</div>
+    </div>
+  </dialog>
+  <dialog id="addStepDialog" class="add-step-dialog">
+    <div class="dialog-head">
+      <div><h3>添加步骤</h3><p>先在这里填写新步骤，添加后页面不会自动滚动到底部，可以继续直接添加下一条。</p></div>
+      <button class="icon-btn" id="closeAddStepDialog" type="button" aria-label="关闭">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="add-step-grid">
+        <div class="field"><label>步骤标题</label><input id="newStepTitle" value="新步骤" placeholder="例如：开场问候"></div>
+        <div class="field"><label>内容类型</label><select id="newStepType"><option>话术</option><option>提问</option><option>客户回复</option><option>操作提示</option><option>说明</option><option>结束语</option></select></div>
+      </div>
+      <div class="field content-field"><label>中文版本</label><textarea id="newStepZh" placeholder="输入方便自己理解的中文话术…"></textarea></div>
+      <div class="field content-field">
+        <div class="lang-label-row"><label>英文 / 德语版本</label><select class="language-select" id="newStepLanguage"><option value="auto">自动识别</option><option value="en">English</option><option value="de">Deutsch</option></select></div>
+        <textarea id="newStepForeign" placeholder="输入要实际发送的英文或德语话术…"></textarea>
+      </div>
+      <div class="field" style="margin-top:14px"><label>内部备注（可选）</label><textarea class="note" id="newStepNote" placeholder="例如：客户回答“是”时进入下一步…"></textarea></div>
+      <div class="add-step-actions">
+        <button class="ghost" id="cancelAddStep" type="button">取消</button>
+        <button class="primary" id="confirmAddStep" type="button">添加步骤</button>
+      </div>
     </div>
   </dialog>
   <dialog id="imageViewer" class="image-viewer"><div class="viewer-stage" id="viewerStage"><button class="viewer-close" id="viewerClose" aria-label="关闭">✕</button><img id="viewerImage" alt="图片预览"><iframe id="viewerPdf" title="PDF 预览"></iframe><div class="viewer-caption" id="viewerCaption"></div></div></dialog>
@@ -275,7 +301,8 @@
     function createFlow(){const f={id:uid('flow'),name:'新建聊天流程',description:'',color:COLORS[state.workflows.length%COLORS.length],createdAt:now(),updatedAt:now(),steps:[]};state.workflows.push(f);state.activeWorkflowId=f.id;touch(f);render();setTimeout(()=>{$('#flowName')?.select()},0);sidebar.classList.remove('mobile-open')}
     function duplicateFlow(f){const c=JSON.parse(JSON.stringify(f));c.id=uid('flow');c.name=f.name+'（副本）';c.createdAt=c.updatedAt=now();c.color=COLORS[(state.workflows.indexOf(f)+1)%COLORS.length];c.steps.forEach(s=>{s.id=uid('step');s.attachments.forEach(a=>a.id=uid('att'))});state.workflows.push(c);state.activeWorkflowId=c.id;touch(c);render();showToast('流程已复制')}
     function deleteFlow(f){if(!confirm(`确定删除“${f.name}”吗？此操作不会影响已导出的旧文件。`))return;state.workflows=state.workflows.filter(x=>x.id!==f.id);state.activeWorkflowId=state.workflows[0]?.id||null;persist();render();showToast('流程已删除')}
-    function addStep(f){const s={id:uid('step'),title:'新步骤',type:'话术',contentZh:'',contentForeign:'',language:'auto',note:'',attachments:[],toolLinks:[]};f.steps.push(s);openSteps.add(s.id);touch(f);renderWorkspace();setTimeout(()=>{const c=$(`[data-step-id="${s.id}"]`);c?.scrollIntoView({behavior:'smooth',block:'center'});$('[data-field="title"]',c)?.select()},20)}
+    function addStep(f){if(!f)return;$('#newStepTitle').value='新步骤';$('#newStepType').value='话术';$('#newStepZh').value='';$('#newStepForeign').value='';$('#newStepLanguage').value='auto';$('#newStepNote').value='';$('#addStepDialog').showModal();setTimeout(()=>$('#newStepTitle')?.select(),20)}
+    function confirmAddStep(){const f=activeFlow();if(!f)return $('#addStepDialog').close();const s={id:uid('step'),title:$('#newStepTitle').value.trim()||'新步骤',type:$('#newStepType').value,contentZh:$('#newStepZh').value,contentForeign:$('#newStepForeign').value,language:$('#newStepLanguage').value,note:$('#newStepNote').value,attachments:[],toolLinks:[]};f.steps.push(s);touch(f);$('#addStepDialog').close();renderWorkspace();showToast('步骤已添加')}
     function moveStep(f,id,d){const i=f.steps.findIndex(x=>x.id===id),j=i+d;if(j<0||j>=f.steps.length)return;[f.steps[i],f.steps[j]]=[f.steps[j],f.steps[i]];touch(f);renderWorkspace()}
     async function addAttachments(f,s,files){const maxOne=20*1024*1024,totalNow=state.workflows.flatMap(x=>x.steps).flatMap(x=>x.attachments).reduce((n,a)=>n+(a.size||0),0);let running=totalNow,added=0;for(const file of files){if(file.size>maxOne){showToast(`${file.name} 超过 20MB，已跳过`);continue}if(running+file.size>50*1024*1024){showToast('全部附件已接近 50MB，请先精简文件');break}try{const data=await readFile(file);s.attachments.push({id:uid('att'),name:file.name,type:file.type||'application/octet-stream',size:file.size,data});running+=file.size;added++}catch(e){showToast(`${file.name} 读取失败`)}}if(added){touch(f);renderWorkspace();showToast(`已添加 ${added} 个附件`)} }
     function readFile(file){return new Promise((res,rej)=>{const r=new FileReader;r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
@@ -307,6 +334,7 @@
     $('#saveHtmlBtn').addEventListener('click',()=>{persist();$('#sizeNotice').textContent=`当前附件共 ${formatBytes(attachmentBytes())}。每次修改后都需要重新保存并发送新的 HTML 文件，已发出的旧文件不会自动同步更新。`;$('#exportDialog').showModal()});
     $('#syncBtn').addEventListener('click',syncPublic);
     $('#closeDialog').addEventListener('click',()=>$('#exportDialog').close());$('#exportDialog').addEventListener('click',e=>{if(e.target===$('#exportDialog'))e.target.close()});
+    $('#closeAddStepDialog').addEventListener('click',()=>$('#addStepDialog').close());$('#cancelAddStep').addEventListener('click',()=>$('#addStepDialog').close());$('#confirmAddStep').addEventListener('click',confirmAddStep);$('#addStepDialog').addEventListener('click',e=>{if(e.target===$('#addStepDialog'))e.target.close()});
     $$('[data-export]').forEach(b=>b.addEventListener('click',()=>exportHtml(b.dataset.export==='readonly')));
     $('#viewerClose').addEventListener('click',()=>$('#imageViewer').close());$('#imageViewer').addEventListener('click',e=>{if(e.target===$('#imageViewer')||e.target===$('#viewerStage'))$('#imageViewer').close()});$('#imageViewer').addEventListener('close',()=>{previewOpener?.blur();previewOpener=null;$('#viewerPdf').src='about:blank';$('#imageViewer').classList.remove('pdf-mode')});
     $('#backupBtn').addEventListener('click',backup);$('#importBtn').addEventListener('click',()=>$('#importInput').click());$('#importInput').addEventListener('change',e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value=''})
