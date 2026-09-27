@@ -26,6 +26,15 @@
       "path": "tools/聊天流程编辑器.html",
       "category": "other",
       "icon": ""
+    },
+    {
+      "id": "dynamic-statusbar-editor-20260927",
+      "name": "手机截图状态栏编辑器.html",
+      "title": "手机截图状态栏编辑器",
+      "description": "上传手机截图，自由修改时间、电量、信号与 Wi‑Fi / 4G / 5G，并按原尺寸导出。",
+      "path": "tools/手机截图状态栏编辑器.html",
+      "category": "other",
+      "icon": "../图标.png"
     }
   ]
 }
