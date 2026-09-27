@@ -3,8 +3,8 @@
   "bundleId": "mosen-public-flows",
   "shareMode": false,
   "theme": "light",
-  "activeWorkflowId": "flow-welcome",
-  "globalUpdatedAt": "2026-09-27T14:44:07.499Z",
+  "activeWorkflowId": "flow-mujxptp2-mto2yy",
+  "globalUpdatedAt": "2026-09-27T14:55:12.451Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -321,6 +321,79 @@
           "type": "话术",
           "contentZh": "我真心希望，最终你能获得你应得的一切。如果日后你需要帮助，我随时都在",
           "contentForeign": "Ich hoffe wirklich sehr, dass Sie am Ende alles zurückbekommen, was Ihnen zusteht. Und falls Sie mich im weiteren Verlauf noch brauchen, bin ich jederzeit für Sie da",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        }
+      ]
+    },
+    {
+      "id": "flow-mujxptp2-mto2yy",
+      "name": "德国律师接待流程",
+      "description": "",
+      "color": "#148a8a",
+      "createdAt": 1790520569750,
+      "updatedAt": 1790520895898,
+      "steps": [
+        {
+          "id": "step-mujxqxd9-84gebh",
+          "title": "询问是否和助理预约了我九点的时间",
+          "type": "话术",
+          "contentZh": "早上好，我是马克西米利安·韦伯（Maximilian Weber）。您是否和我的助理莉娜（Lena）约好在9点钟见我？",
+          "contentForeign": "Guten Tag, hier ist Maximilian Weber. Haben Sie mit meiner Assistentin Lena einen Termin für 9 Uhr bei mir vereinbart?",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxricx-hiy4pr",
+          "title": "对待已经发送案件编号的客户的回复",
+          "type": "话术",
+          "contentZh": "好的，请稍等一下。我马上调出您的档案和相关信息",
+          "contentForeign": "Alles klar, einen kleinen Moment bitte. Ich rufe kurz Ihre Akte und die dazugehörigen Informationen auf",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxrv1k-2u96ox",
+          "title": "向客户索要案件编号",
+          "type": "话术",
+          "contentZh": "请发送您的案件编号，以便我调取您的档案",
+          "contentForeign": "Bitte senden Sie mir Ihre Fallnummer, damit ich Ihre Akte aufrufen kann",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxt4ye-btyk9i",
+          "title": "发送律师工作证",
+          "type": "话术",
+          "contentZh": "这是我所在律师事务所的证件",
+          "contentForeign": "Das ist mein Dienstausweis unserer Kanzlei",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-mujxt2y9-agt88t",
+              "name": "德国律师工作证.jpg",
+              "type": "image/jpeg",
+              "size": 1134499,
+              "url": "../data/chat-flow-assets/att-mujxt2y9-agt88t-德国律师工作证.jpg"
+            }
+          ],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mujxwtcq-9n3v6f",
+          "title": "让客户等一下，我们现在查看他的案件信息",
+          "type": "话术",
+          "contentZh": "请稍等，我正在调取并查看您的案件档案与最新进展。同时，我也会为您梳理后续的调查方向和具体步骤，稍后为您详细说明，请您稍作等待",
+          "contentForeign": "Bitte haben Sie einen Moment Geduld. Ich rufe gerade Ihre Fallakte auf und prüfe den aktuellen Stand. Gleichzeitig werde ich die nächsten Ermittlungsansätze und die weiteren konkreten Schritte für Sie zusammenstellen. Ich melde mich gleich mit einer ausführlichen Erklärung bei Ihnen",
           "language": "auto",
           "note": "",
           "attachments": [],
