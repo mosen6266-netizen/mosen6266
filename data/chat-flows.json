@@ -3,8 +3,8 @@
   "bundleId": "mosen-public-flows",
   "shareMode": false,
   "theme": "light",
-  "activeWorkflowId": "flow-welcome",
-  "globalUpdatedAt": "2026-09-28T17:21:22.508Z",
+  "activeWorkflowId": "flow-mulgwpws-xrm5yz",
+  "globalUpdatedAt": "2026-09-28T21:04:42.812Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -786,7 +786,7 @@
       "description": "",
       "color": "#b33d76",
       "createdAt": 1790613270316,
-      "updatedAt": 1790615993922,
+      "updatedAt": 1790629345239,
       "steps": [
         {
           "id": "step-mulgxkjf-gbemmc",
@@ -974,6 +974,28 @@
           "type": "话术",
           "contentZh": "在我们过往处理的案件中表明骗子的诈骗手段极其的没有人性，他们通常会利用受骗者的善良和感情建立信任后将受害者骗的破产并诱导他们向自己的家人朋友借钱，部分更为严重的情况受害者甚至会卖车卖房最终失去一切，但这并不是受害者的错，也不必为这次伤痛的经历的感到羞耻，你只是不幸遇到了一群精心伪造的恶魔，法律的正义最终一定会审判他们，如果你愿意配合我们完成一个简单的受骗者情况登记，我们会无偿的为你联系当地的福利社区为你申请对应的帮助\n",
           "contentForeign": "Based on many cases we have seen, fraudsters can be extremely manipulative and ruthless. They often gain a victim's trust by taking advantage of their kindness and emotions, then convince them to send more and more money. In some cases, victims are persuaded to borrow money from family and friends, and in more serious situations, they may even sell their cars or homes and lose everything. Please do not feel ashamed of what happened. You were targeted by people who intentionally deceived and manipulated others for their own gain. If you are willing to complete a simple victim assistance form, we can help connect you with local community resources that may be able to provide support at no cost to you\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulqgiwf-qq9v36",
+          "title": "是否负债",
+          "type": "话术",
+          "contentZh": "问下是否是负债状态？\n",
+          "contentForeign": "Are you currently dealing with any debt as a result of this situation?\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulqh9ef-yn6qdp",
+          "title": "是否找家人朋友借钱",
+          "type": "话术",
+          "contentZh": "问下是否被引导向亲朋好友借钱？\n",
+          "contentForeign": "Were you encouraged or pressured to borrow money from family members or friends?\n",
           "language": "auto",
           "note": "",
           "attachments": [],
