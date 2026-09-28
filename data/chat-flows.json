@@ -3,8 +3,8 @@
   "bundleId": "mosen-public-flows",
   "shareMode": false,
   "theme": "light",
-  "activeWorkflowId": "flow-mujyhdat-fesm0k",
-  "globalUpdatedAt": "2026-09-27T15:14:41.123Z",
+  "activeWorkflowId": "flow-mulgwpws-xrm5yz",
+  "globalUpdatedAt": "2026-09-28T16:40:29.750Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -779,6 +779,91 @@
           "toolLinks": []
         }
       ]
+    },
+    {
+      "id": "flow-mulgwpws-xrm5yz",
+      "name": "美国助理接待流程",
+      "description": "",
+      "color": "#b33d76",
+      "createdAt": 1790613270316,
+      "updatedAt": 1790613611708,
+      "steps": [
+        {
+          "id": "step-mulgxkjf-gbemmc",
+          "title": "自我介绍",
+          "type": "话术",
+          "contentZh": "你好，我是Daniel Okafor律师的助理Margaret Carter，我很乐意为你提供一次免费网络欺诈案件咨询服务\n",
+          "contentForeign": "Hi, I'm Margaret Carter, Attorney Daniel Okafor legal assistant. I'd be happy to offer you a free consultation regarding your online fraud case\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulgy938-vidn0i",
+          "title": "法律声明",
+          "type": "话术",
+          "contentZh": "首先，为了避免误解，您可以保留本次聊天记录的截图，我在这里所说的一切都具有法律效力。同时，我郑重声明，我们绝不会泄露任何涉及您个人隐私的信息，请您完全放心。\n",
+          "contentForeign": "First, to avoid any misunderstandings, I encourage you to keep screenshots of our conversation for your records. Please be assured that all information you share with us will be treated confidentially, and we will not disclose any personal information without your authorization\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulgywp4-gj1nwg",
+          "title": "声明成功后收费",
+          "type": "话术",
+          "contentZh": "另外你可以知道在任何被盗资金成功追回并全额返还至受害者账户之前，我们不会收取任何前期费用。我们只会在成功帮助你追回资金并存入受害者账户后收取15%的综合服务费，综合服务费涵盖追回过程中涉及的所有成本和专业服务，包括资金追踪和技术调查、法律文件和案件准备、案件管理以及与相关机构和第三方的协调。我们在此郑重承诺，在整个案件处理过程中，Whitfield & Crane LLP不会收取任何押金、预付款、手续费、解除费、预付款或任何其他隐性或额外费用。\n",
+          "contentForeign": "In addition, please be advised that we do not charge any upfront fees before stolen funds are successfully recovered and returned to a victim's account.Our firm only charges a 15% contingency based service fee after we successfully recover funds and those funds have been deposited back into the victim's account. This fee covers all services and costs associated with the recovery process, including fund tracing and investigative work, legal documentation and case preparation, case management, and coordination with relevant institutions and third parties.We are committed to maintaining a transparent fee structure throughout the process. You will not be required to pay any retainers, advance payments, processing fees, release fees, deposits, or other hidden charges before funds are successfully recovered and returned\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulgzn0d-49s91x",
+          "title": "询问案件情况",
+          "type": "话术",
+          "contentZh": "好的，为了能更准确、高效地帮您建立案件档案，并启动后续的调查取证工作，我需要对您的被骗过程做一个简单清晰的了解。这不会花您太多时间，只需要您简要告诉我几个关键点，你现在有时间吗？\n",
+          "contentForeign": "Okay. To help us accurately set up your case file and begin the investigation process, I'd like to get a brief understanding of what happened. It won't take much of your time. I'll just need a few key details about how the fraud occurred. Do you have a few minutes to discuss it now?\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulh1at9-6r62vz",
+          "title": "问题",
+          "type": "话术",
+          "contentZh": "你在什么渠道接触了对方？\n诈骗类型主要是投资平台、加密货币还是其他形式？\n您总共损失了多少金额（大致范围即可），以及有没有平台账户里还显示剩余余额？\n您是否还保留了聊天记录、转账截图、平台链接等证据？\n\n这些信息越详细越好，但如果有些暂时想不起来也没关系，我们可以一步步来。您可以现在直接回复我，或者分几次发过来都行。我会严格保密所有内容，只用于案件处理。\n\n\n",
+          "contentForeign": "How did you first come into contact with them?\n\nWas the fraud related to an investment platform, cryptocurrency, or another type of scheme?\n\nApproximately how much money did you lose, and does your account still show any remaining balance?\n\nDo you still have any evidence, such as chat records, transaction screenshots, or the platform's website link?\n\nThe more details you can provide, the better. However, if there are certain details you can't remember right now, that's completely fine，we can go through everything step by step. You can reply now or send the information in multiple messages, whichever is more convenient for you. All information you share will be kept strictly confidential and used solely for the purpose of reviewing and handling your case\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulh41bw-dslx6f",
+          "title": "切断客户和骗子继续联系",
+          "type": "话术",
+          "contentZh": "对了，假设你如果你和对方还保持联系，我强烈建议你立即停止一切沟通，从现在起不要回复他们的任何消息、语音、视频，甚至不要点开他们发来的任何链接或文件。这样做非常关键，一旦他们察觉你已经醒悟、不再上钩，他们通常会立刻慌乱地把剩余资金转移走，进行多层洗钱操作。这反而是我们追踪和冻结资金的最好时机\n",
+          "contentForeign": "By the way, if you are still in contact with the individuals involved, I strongly recommend that you stop all communication with them immediately. Please do not respond to any messages, calls, voice notes, or videos, and do not open any links or files they may send you. This is extremely important. Once fraudsters realize that a victim is no longer cooperating or sending funds, they often attempt to move assets quickly through multiple accounts or platforms. Preserving all communications while avoiding further contact can be very important for the investigation and may help us identify potential avenues for tracing the movement of funds\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        }
+      ]
+    },
+    {
+      "id": "flow-mulgz90k-atd1m3",
+      "name": "新建聊天流程",
+      "description": "",
+      "color": "#2776c7",
+      "createdAt": 1790613388388,
+      "updatedAt": 1790613388388,
+      "steps": []
     }
   ]
 }
