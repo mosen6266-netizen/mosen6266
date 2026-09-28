@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-mulgwpws-xrm5yz",
-  "globalUpdatedAt": "2026-09-28T16:40:29.750Z",
+  "globalUpdatedAt": "2026-09-28T17:04:59.164Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -786,7 +786,7 @@
       "description": "",
       "color": "#b33d76",
       "createdAt": 1790613270316,
-      "updatedAt": 1790613611708,
+      "updatedAt": 1790615060358,
       "steps": [
         {
           "id": "step-mulgxkjf-gbemmc",
@@ -853,6 +853,35 @@
           "note": "",
           "attachments": [],
           "toolLinks": []
+        },
+        {
+          "id": "step-mulhx6pe-a75d1q",
+          "title": "等待整理证据提交评估部门",
+          "type": "话术",
+          "contentZh": "我会细心将你提供的资料整理为正确流程的证据链提交给我们的评估部门，一旦你的案件符合我们的立案标准我会第一时间将你的案件升级并提交给专业律师接手推进到更关键的下步调查，请耐心等待我的消息\n",
+          "contentForeign": "I will carefully organize the information and supporting materials you provide and submit them to our case evaluation team for review. If your matter meets our case acceptance criteria, I will promptly escalate it and refer it to one of our attorneys for further review and the next stage of the investigation. In the meantime, please be patient and I will keep you updated as soon as I receive any developments\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulhyqpy-3nnefh",
+          "title": "开始初步调查",
+          "type": "话术",
+          "contentZh": "您好，目前我们已经将您发送的证据全部整理完毕。为了抢占黄金时间，我们技术团队已正式启用 Whitfield & Crane LLP 律所专属的内部区块链调查工具，开始对骗子的加密货币地址进行初步的链上追踪与取证。当后续有任何的结果时我都会第一时间联系你\n",
+          "contentForeign": "Hi, we’ve gathered all the evidence you sent over. To make the most of the golden window, our tech team officially booted up the proprietary in house blockchain investigation tool from Whitfield & Crane LLP and started the initial on chain tracking and forensics on the scammer's crypto address. I'll reach out as soon as we get any results\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": [
+            {
+              "id": "tool-mulhz346-otba73",
+              "path": "资金路径调查.html",
+              "title": "资金路径调查",
+              "category": "us"
+            }
+          ]
         }
       ]
     },
