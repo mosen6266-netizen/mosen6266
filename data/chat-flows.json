@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-mulgz90k-atd1m3",
-  "globalUpdatedAt": "2026-09-28T22:10:27.505Z",
+  "globalUpdatedAt": "2026-09-28T22:16:53.453Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -1064,7 +1064,7 @@
       "description": "",
       "color": "#2776c7",
       "createdAt": 1790613388388,
-      "updatedAt": 1790633411572,
+      "updatedAt": 1790633789092,
       "steps": [
         {
           "id": "step-muls75ha-37e5n0",
@@ -1300,6 +1300,94 @@
           "type": "话术",
           "contentZh": "首先，他们利用Tornado Cash进行初步清洗，切断直接链上追踪。再通过Binance和OKX的部分高风险子地址，以及一些东南亚本地OTC场外交易通道，将资金进一步分散。最终汇入几个被FinCEN标记为首要洗钱关注机构的柬埔寨和缅甸控制的钱包集群，打算通过多层跨链桥接和匿名稳定币兑换成法币或比特币，彻底洗白并变现。\n",
           "contentForeign": "First, they used Tornado Cash to conduct an initial round of laundering in an attempt to break the direct on-chain trail. The funds were then further dispersed through certain high-risk addresses associated with Binance and OKX, as well as several OTC trading channels operating in Southeast Asia. Ultimately, the funds were transferred into wallet clusters believed to be controlled by entities in Cambodia and Myanmar that have been identified by FinCEN as posing significant money laundering concerns. The apparent objective was to move the funds through multiple cross-chain transfers and anonymous stablecoin conversions before ultimately cashing out into fiat currency or Bitcoin\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsxrzw-lrzzy8",
+          "title": "深入调查报告6",
+          "type": "话术",
+          "contentZh": "我们已经通过Chainalysis和TRM Labs的实时监控系统完整锁定了这条资金路径的所有关键节点，包括起始转出地址、中间跳板钱包，以及当前停留的最终集群地址。这些地址的高频转入转出、与已知诈骗地址的强关联已被系统标记为高风险，证据链条非常清晰。\n",
+          "contentForeign": "We have used the real-time monitoring systems of Chainalysis and TRM Labs to trace the key stages of this fund flow, including the originating wallet, intermediary wallets, and the current destination cluster. The transaction activity associated with these addresses, including frequent transfers and connections to known fraudulent addresses, has been flagged as high risk by the monitoring systems. Based on our review, the flow of funds and supporting evidence appear to be clearly documented\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsz8aw-hkl6ap",
+          "title": "告诉客户资金还100%保留发送截图和PDF",
+          "type": "话术",
+          "contentZh": "目前资金还100%的保留在区块链上，未被转移。我们会立刻联合FBI的IC3、CFPB、FinCEN等团队，并且申向美国联邦法院请紧急资产冻结令及资产返还令。一旦冻结成功，这笔USDT将被直接锁定在链上，无法再被转移或兑现。并且我们一旦获取这些命令后，我们会直接提交给USDT发行方和交易所合规部门，以强制执行冻结并且启动返还资金流程。届时，Tether的指定代表会将会直接与你取得联系，安排将USDT返还到你指定的钱包地址\n",
+          "contentForeign": "At this time, our investigation indicates that the funds remain on the blockchain and have not yet been moved. As part of our recovery efforts, we are preparing to coordinate with the FBI's Internet Crime Complaint Center (IC3), FinCEN, and other appropriate regulatory and law enforcement authorities, while pursuing an Emergency Freeze Order and an Asset Return Order through the U.S. Federal Court. If granted, these court orders would provide a legal basis to restrict further movement of the USDT and support the recovery process. Once the necessary orders are obtained, we will submit them to Tether and the compliance departments of the relevant exchanges to enforce the freeze and assist in the asset recovery process. If the recovery is approved, arrangements may then be made for the funds to be returned to a wallet address designated by you\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-mulszjxz-bfdo7a",
+              "name": "PixPin_2026-09-28_13-07-05.png",
+              "type": "image/png",
+              "size": 822451,
+              "url": "../data/chat-flow-assets/att-mulszjxz-bfdo7a-PixPin_2026-09-28_13-07-05.png"
+            }
+          ],
+          "toolLinks": [
+            {
+              "id": "tool-mulsyxyl-ini3ha",
+              "path": "资金路径调查律师报告.html",
+              "title": "资金路径调查律师报告",
+              "category": "us"
+            }
+          ]
+        },
+        {
+          "id": "step-mult0gz8-ycg6jx",
+          "title": "告诉客户还有会议",
+          "type": "话术",
+          "contentZh": "我现在必须走了，我还有一个会议，当有更新的进展我会及时告知你\n",
+          "contentForeign": "I have to go now as I have another meeting to attend. If there are any updates or developments regarding your case, I will be sure to keep you informed as soon as possible\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mult2fux-58ogqu",
+          "title": "批准双令",
+          "type": "话术",
+          "contentZh": "我们已成功向美国联邦法院提出申请，并获得了紧急冻结令及资产返还令。两项法院命令现已正式生效，具有完全的法律效力\n",
+          "contentForeign": "We have successfully filed the necessary applications with the U.S. Federal Court and have obtained both an Emergency Freeze Order and an Asset Return Order. These court orders are now officially in effect and carry full legal force and effect.\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mult34h0-okd7q6",
+          "title": "发双令副本",
+          "type": "话术",
+          "contentZh": "这是我们获得的紧急冻结令及资产返还令的副本\n",
+          "contentForeign": "Attached is a copy of the Emergency Freeze Order and Asset Return Order that we have obtained from the U.S. Federal Court.\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": [
+            {
+              "id": "tool-mult3329-6t5lxs",
+              "path": "DOCX文件编辑器.html?template=templates%2F%E5%86%BB%E7%BB%93%E4%BB%A4%E5%92%8C%E8%B5%84%E9%87%91%E8%BF%94%E8%BF%98%E4%BB%A4%E6%A8%A1%E6%9D%BF.docx",
+              "title": "冻结令和资金返还令模板",
+              "category": "us"
+            }
+          ]
+        },
+        {
+          "id": "step-mult4ias-fii0ne",
+          "title": "将证据提交给Tether执行冻结",
+          "type": "话术",
+          "contentZh": "下一步，我们将立即向Tether提交完整的法院文件,证据链,受害者身份证明文件以及委托协议，并要求其永久冻结与本案相关的钱包地址中持有的所有USDT，禁止任何转移或兑换。之后，Tether将启动内部和解及合规的退款流程，并根据法院的资产返还令，将冻结的资金全部返还至您指定的加密货币钱包地址\n",
+          "contentForeign": "Our next step is to submit the complete court orders, supporting evidence, proof of identity, and the engagement agreement to Tether for review. We will request that all USDT associated with the wallet addresses identified in this matter remain frozen and unavailable for transfer or redemption. Following its compliance review process, Tether will determine the appropriate actions to be taken in accordance with the court orders and applicable regulations. If approved, the frozen assets may then be released and returned to the cryptocurrency wallet address designated by you.\n",
           "language": "auto",
           "note": "",
           "attachments": [],
