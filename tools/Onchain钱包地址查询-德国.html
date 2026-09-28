@@ -764,6 +764,13 @@ function parseOrderDirection(value){
 function randomEthereumBlock(){
   return String(18000000+Math.floor(Math.random()*7000000));
 }
+function extractRightmostSlashTriple(line){
+  const re=/([+-]?\d+(?:[.,]\d+)?)\s*\/\s*([+-]?\d+(?:[.,]\d+)?)\s*\/\s*([+-]?\d+(?:[.,]\d+)?)/g;
+  let last=null,match;
+  while((match=re.exec(String(line??'')))!==null) last=match;
+  if(!last) return null;
+  return [canonicalOrderNumber(last[1]),canonicalOrderNumber(last[2]),canonicalOrderNumber(last[3])];
+}
 function parsePastedOrder(raw){
   const lines=String(raw??'').split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
   if(lines.length!==1) throw new Error('Bitte fügen Sie genau einen Bestelldatensatz ein.');
@@ -779,7 +786,8 @@ function parsePastedOrder(raw){
   const rawCounterparty=extractOrderWallet(parts[4]);
   const assetMatch=String(parts[5]||'').toUpperCase().match(/[A-Z0-9]+/);
   const asset=assetMatch?assetMatch[0]:'USDT';
-  const values=parts.slice(6).join(' ').split('/').map(canonicalOrderNumber);
+  const values=extractRightmostSlashTriple(line);
+  if(!values) throw new Error('Die drei durch / getrennten Zahlen am rechten Ende konnten nicht gelesen werden.');
   const ethFee=values[0]||'';
   const usdtAmount=values[1]||'';
   const usdcAmount=values[2]||'';
@@ -821,7 +829,7 @@ function applyAutoReadTx(){
     saveDB();
     autoReadDialog.close();
     render(currentRecord);
-    setMessage('Der ausgewählte Transaktionsdatensatz wurde aus den eingefügten Bestelldaten aktualisiert.','ok');
+    setFixedAccountNotice();
   }catch(err){
     $('autoReadError').textContent=err?.message||'Die Bestelldaten konnten nicht verarbeitet werden.';
   }
