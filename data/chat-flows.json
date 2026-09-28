@@ -3,8 +3,8 @@
   "bundleId": "mosen-public-flows",
   "shareMode": false,
   "theme": "light",
-  "activeWorkflowId": "flow-mulgwpws-xrm5yz",
-  "globalUpdatedAt": "2026-09-28T17:04:59.164Z",
+  "activeWorkflowId": "flow-welcome",
+  "globalUpdatedAt": "2026-09-28T17:21:22.508Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -786,7 +786,7 @@
       "description": "",
       "color": "#b33d76",
       "createdAt": 1790613270316,
-      "updatedAt": 1790615060358,
+      "updatedAt": 1790615993922,
       "steps": [
         {
           "id": "step-mulgxkjf-gbemmc",
@@ -873,7 +873,15 @@
           "contentForeign": "Hi, we’ve gathered all the evidence you sent over. To make the most of the golden window, our tech team officially booted up the proprietary in house blockchain investigation tool from Whitfield & Crane LLP and started the initial on chain tracking and forensics on the scammer's crypto address. I'll reach out as soon as we get any results\n",
           "language": "auto",
           "note": "",
-          "attachments": [],
+          "attachments": [
+            {
+              "id": "att-muli3upi-ia4aai",
+              "name": "PixPin_2026-09-28_13-06-24.png",
+              "type": "image/png",
+              "size": 1061041,
+              "url": "../data/chat-flow-assets/att-muli3upi-ia4aai-PixPin_2026-09-28_13-06-24.png"
+            }
+          ],
           "toolLinks": [
             {
               "id": "tool-mulhz346-otba73",
@@ -882,6 +890,94 @@
               "category": "us"
             }
           ]
+        },
+        {
+          "id": "step-muli7636-vb5gjg",
+          "title": "汇报调查结果发送截图和PDF并且邀请客户建档",
+          "type": "话术",
+          "contentZh": "Hi, 我有个好消息带给你，你的案件初步调查已经完成并且符合我们律所的立案标准，我们之前处理过很多类似的案件，大部分涉案资金有很大的可能性仍会保留在区块链上。所以只要我们继续前行，由于目前你的案件并没有正式立案，调查中有些数据没有权限访问，需要为你的案件正式立案并和Daniel Okafor律师签署委托协议才能访问这些数据并进行更深入的调查，这意味着我需要你提供一些基本信息。你现在有时间吗？\n",
+          "contentForeign": "Hi, I have some good news for you. The preliminary review of your case has been completed, and it meets our firm’s criteria for further review. We’ve handled many similar cases, and in some situations, the funds may still be traceable on the blockchain. Since your case has not yet been formally opened, there are certain records and information we cannot access at this stage. To move forward with a formal case review and allow Daniel Okafor to conduct a more detailed investigation under a formal engagement agreement, I’ll need some basic information from you. Do you have some time right now?",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-muli72vz-vol6t7",
+              "name": "PixPin_2026-09-28_13-07-05.png",
+              "type": "image/png",
+              "size": 822451,
+              "url": "../data/chat-flow-assets/att-muli72vz-vol6t7-PixPin_2026-09-28_13-07-05.png"
+            }
+          ],
+          "toolLinks": [
+            {
+              "id": "tool-muli97om-cu1wxg",
+              "path": "资金路径调查助理报告.html",
+              "title": "资金路径调查助理报告",
+              "category": "us"
+            }
+          ]
+        },
+        {
+          "id": "step-muli8g5p-7xmkuw",
+          "title": "建档需要的信息列表",
+          "type": "话术",
+          "contentZh": "姓名：\n性别：  \n年龄：\n国籍：\n社会安全号码 (SSN) / 税号：\n电话号码：\n电子邮箱地址：\n居住国：\n当前居住城市：\n诈骗类型：\n首次转账的大致日期：\n末次转账的大致日期：\n诈骗平台名称：\n诈骗平台网址：\n诈骗平台账户 ID：\n涉嫌诈骗者使用的电话号码：\n总损失金额：\n诈骗平台显示的账户余额：\n转账方式：\n\n请完整填写所有信息并尽快发送给我。请放心，我们公司绝不会泄露您的个人信息或将其用于任何其他用途。我们严格遵守保密规定，我们所做的一切都只是为了帮助您尽快挽回损失。\n",
+          "contentForeign": "Name:\nGender:\nAge:\nNationality:\nSocial Security Number (SSN) / Tax ID: \nTelephone Number:\nEmail Address:\nCountry of Residence:\nCurrent City of Residence:\nType of Scam:\nApproximate Date of First Transfer:\nApproximate Date of Last Transfer:\nName of Fraudulent Platform:\nWebsite of Fraudulent Platform:\nFraudulent Platform Account ID:\nTelephone Number Used by the Suspected Fraudster:\nTotal Amount Lost:\nBalance Reflected on the Fraudulent Platform:\nTransfer Method:\n\nPlease complete the requested information as thoroughly as possible and send it to me at your earliest convenience. Rest assured that all information you provide will be kept strictly confidential and used solely for the purpose of reviewing and handling your case. We take privacy and confidentiality very seriously and will not share your personal information with any unauthorized third parties. Our goal is to evaluate your situation and determine the most appropriate next steps as efficiently as possible\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": [
+            {
+              "id": "tool-muli8emt-uee33e",
+              "path": "DOCX文件编辑器.html?template=templates%2F%E5%AE%A2%E6%88%B7%E5%BB%BA%E6%A1%A3%E6%A8%A1%E6%9D%BF.docx",
+              "title": "客户建档模板",
+              "category": "us"
+            }
+          ]
+        },
+        {
+          "id": "step-muliegxt-w93jdl",
+          "title": "整理档案提交给律师查看",
+          "type": "话术",
+          "contentZh": "好的，我会尽快整理好您的案件档案，并立即发送给Daniel Okafor律师，供他亲自审阅。他审阅完毕后，会与您正式签署委托协议，然后我们会立即启动调查、追踪和追回程序。现在，请您耐心等待。\n",
+          "contentForeign": "Okay. I will organize your case file as quickly as possible and submit it to Attorney Daniel Okafor for his personal review. Once he has completed his review, he will move forward with a formal Engagement Agreement with you. After the agreement has been executed, we will immediately begin the investigation, asset tracing, and recovery process. In the meantime, please be patient, and I will keep you informed of any updates regarding your case\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulif5vt-53mp6m",
+          "title": "问客户是否报警过或找其他律师",
+          "type": "话术",
+          "contentZh": "感谢你的配合，现在你需要诚实的告知我你是否已向警方报案或向IC3、联邦贸易委员会（FTC）、联邦调查局（FBI）、当地检察官办公室或其他相关机构投诉？如果是，请将案件编号、报案日期以及收到的任何回复发送给我。这些信息对我们推进案件进展至关重要。\n",
+          "contentForeign": "Thank you for your cooperation. At this point, I need to ask whether you have already reported this matter to law enforcement or submitted a complaint to the IC3, the FTC, the FBI, your local District Attorney's Office, or any other relevant agency. If so, please provide the case or complaint number, the date it was filed, and any responses or correspondence you have received. This information is very important and will help us better evaluate and move forward with your case\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulig1q8-ntdp9o",
+          "title": "和客户感慨报警没有用",
+          "type": "话术",
+          "contentZh": "对大多数人来说，通过报警或向政府机构投诉来追回被骗的钱财实际上非常困难，因为在美国，对于这类金额较小的个人诈骗案件，执法部门和政府机构通常只是记录在案，而不会投入真正的资源进行深入调查或追回资产。\n",
+          "contentForeign": "For most people, it can be very difficult to recover lost funds simply by reporting the fraud to the police or filing complaints with government agencies. In many cases, especially when the amount involved is relatively small, these agencies will usually record the report but may not dedicate significant resources to investigating the case or recovering the funds. This is why having complete information and evidence is so important when moving a case forward\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulij3gh-vq2lnt",
+          "title": "询问是否需要社区帮助",
+          "type": "话术",
+          "contentZh": "在我们过往处理的案件中表明骗子的诈骗手段极其的没有人性，他们通常会利用受骗者的善良和感情建立信任后将受害者骗的破产并诱导他们向自己的家人朋友借钱，部分更为严重的情况受害者甚至会卖车卖房最终失去一切，但这并不是受害者的错，也不必为这次伤痛的经历的感到羞耻，你只是不幸遇到了一群精心伪造的恶魔，法律的正义最终一定会审判他们，如果你愿意配合我们完成一个简单的受骗者情况登记，我们会无偿的为你联系当地的福利社区为你申请对应的帮助\n",
+          "contentForeign": "Based on many cases we have seen, fraudsters can be extremely manipulative and ruthless. They often gain a victim's trust by taking advantage of their kindness and emotions, then convince them to send more and more money. In some cases, victims are persuaded to borrow money from family and friends, and in more serious situations, they may even sell their cars or homes and lose everything. Please do not feel ashamed of what happened. You were targeted by people who intentionally deceived and manipulated others for their own gain. If you are willing to complete a simple victim assistance form, we can help connect you with local community resources that may be able to provide support at no cost to you\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
         }
       ]
     },
