@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-mulgz90k-atd1m3",
-  "globalUpdatedAt": "2026-09-28T22:16:53.453Z",
+  "globalUpdatedAt": "2026-09-28T22:22:22.798Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -1064,7 +1064,7 @@
       "description": "",
       "color": "#2776c7",
       "createdAt": 1790613388388,
-      "updatedAt": 1790633789092,
+      "updatedAt": 1790634131293,
       "steps": [
         {
           "id": "step-muls75ha-37e5n0",
@@ -1388,6 +1388,65 @@
           "type": "话术",
           "contentZh": "下一步，我们将立即向Tether提交完整的法院文件,证据链,受害者身份证明文件以及委托协议，并要求其永久冻结与本案相关的钱包地址中持有的所有USDT，禁止任何转移或兑换。之后，Tether将启动内部和解及合规的退款流程，并根据法院的资产返还令，将冻结的资金全部返还至您指定的加密货币钱包地址\n",
           "contentForeign": "Our next step is to submit the complete court orders, supporting evidence, proof of identity, and the engagement agreement to Tether for review. We will request that all USDT associated with the wallet addresses identified in this matter remain frozen and unavailable for transfer or redemption. Following its compliance review process, Tether will determine the appropriate actions to be taken in accordance with the court orders and applicable regulations. If approved, the frozen assets may then be released and returned to the cryptocurrency wallet address designated by you.\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mult6gys-dsavs0",
+          "title": "获得Tether批准",
+          "type": "话术",
+          "contentZh": "你好，我现在给您汇报一个非常积极的最新进展，就在刚才，我们收到了Tether官方的正式确认通知：基于我们提交的紧急冻结令和资产返还令，证据链、FBI IC3的案件编号以及CFPB的联合申请，Tether已对上述最终停留地址实施了紧急冻结操作。目前这笔资金已被完全锁定在链上，无法再被转移、兑换或提现。这一步是我们追回过程中的最关键止损环节，资金现在动弹不得，为后续司法返还程序争取到了宝贵时间\n",
+          "contentForeign": "Hello, I would like to share a very positive update regarding your case. We have just received formal confirmation from Tether that, based on the Emergency Freeze Order and Asset Return Order obtained through the U.S. Federal Court, together with the supporting evidence, the FBI IC3 case reference number, and the compliance materials submitted on your behalf, Tether has implemented an emergency freeze on the wallet addresses identified in this matter. As a result, the funds associated with those addresses have been secured and are no longer available for transfer, redemption, or withdrawal. This represents one of the most critical stages of the recovery process, as it prevents any further movement of the assets and preserves them while the asset return procedures continue, providing valuable time and legal protection for the next phase of the recovery effort\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mult7qp4-s6wvp9",
+          "title": "发送冻结截图和PDF",
+          "type": "话术",
+          "contentZh": "这份 Tether 官方发来的冻结通知属于正式书面文件副本，已确认针对涉嫌欺诈的违规地址完成了司法冻结。文件中清晰标注了冻结地址、冻结金额范围、时间戳，以及响应执法请求的字样。这表明执法部门已正式深度介入，您的案件已全面升级为优先处理级别。接下来，Tether 的指定代表将直接与您取得联系，安排将 USDT 安全返还至您指定的钱包地址。\n",
+          "contentForeign": "This Tether official freeze notification is a copy of the formal written document, confirming that judicial freezes have been completed against the suspected fraudulent addresses. The document clearly indicates the frozen addresses, range of frozen amounts, timestamps, and wording responding to law enforcement requests. This shows that law enforcement has officially intervened at a deep level, and your case has been fully escalated to a priority handling level. Next, a designated representative from Tether will contact you directly to arrange for the safe return of USDT to your designated wallet address\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-mult7pu8-38sxnt",
+              "name": "PixPin_2026-09-28_18-17-12.png",
+              "type": "image/png",
+              "size": 1744505,
+              "url": "../data/chat-flow-assets/att-mult7pu8-38sxnt-PixPin_2026-09-28_18-17-12.png"
+            }
+          ],
+          "toolLinks": [
+            {
+              "id": "tool-mult7lt5-bdxu7t",
+              "path": "Tether冻结报告.html",
+              "title": "Tether 冻结报告",
+              "category": "us"
+            }
+          ]
+        },
+        {
+          "id": "step-multb8p8-3opnz6",
+          "title": "推专员",
+          "type": "话术",
+          "contentZh": "您可以通过此链接将您的工单编号发送给负责此事的 Tether 代表。随后，他们将指导您完成后续退款流程，并与您协调接下来的步骤",
+          "contentForeign": "You can send your case number to the Tether representative handling this matter via this link. They will then guide you through the refund process and coordinate the next steps with you.",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-multbucd-fu1dqn",
+          "title": "结束语并强调客户不要再跟无关人员联系",
+          "type": "话术",
+          "contentZh": "哇，这个过程太不容易了，但庆幸我们的团队在此次案件中完成的很出色，你只需要在你拿到你的退款资金后付给我们对应的综合服务费，我需要提醒你我们不会以任何方式向你提前收费，如果有人冒充官方人员联系你付款那一定是假的，在过往的受害者反馈中这种情况经常发生，在这个关键的时候请不要跟任何跟本案件无关的人员联系，如果你在电报或者Whatsapp上收到了任何讨论案件的消息一定要及时屏蔽或者跟我联系，因为那里是骗子出现的重灾区，本次案件沟通与后续的退款流程都遵循相关监管部门的规定只会使用非盈利机构运营且拥有端对端私密的Signal进行，祝你好运\n",
+          "contentForeign": "Wow, this process has certainly not been easy, but I'm very pleased with the progress we've made and the work our team has done on your case. As agreed, you will only be responsible for paying our service fee after you have successfully received your recovered funds. I want to remind you that we will never ask you for any payment in advance under any circumstances. If anyone contacts you pretending to be an official representative and asks you to send money, it is a scam. We have seen this happen frequently in past cases. At this critical stage, please do not communicate with anyone who is not directly involved in your case. If you receive any messages on Telegram or WhatsApp discussing your case, please block them immediately or contact me first, as those platforms are commonly used by scammers. All communications regarding this matter and the remaining refund process will be conducted through Signal, a non-profit messaging platform that provides end-to-end encrypted communications. Best of luck, and I look forward to seeing this process successfully completed for you\n",
           "language": "auto",
           "note": "",
           "attachments": [],
