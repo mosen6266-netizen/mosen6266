@@ -712,6 +712,13 @@ function parseOrderDirection(value){
 function randomEthereumBlock(){
   return String(18000000+Math.floor(Math.random()*7000000));
 }
+function extractRightmostSlashTriple(line){
+  const re=/([+-]?\d+(?:[.,]\d+)?)\s*\/\s*([+-]?\d+(?:[.,]\d+)?)\s*\/\s*([+-]?\d+(?:[.,]\d+)?)/g;
+  let last=null,match;
+  while((match=re.exec(String(line??'')))!==null) last=match;
+  if(!last) return null;
+  return [canonicalOrderNumber(last[1]),canonicalOrderNumber(last[2]),canonicalOrderNumber(last[3])];
+}
 function parsePastedOrder(raw){
   const lines=String(raw??'').split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
   if(lines.length!==1) throw new Error('Please paste exactly one order record.');
@@ -727,7 +734,8 @@ function parsePastedOrder(raw){
   const rawCounterparty=extractOrderWallet(parts[4]);
   const assetMatch=String(parts[5]||'').toUpperCase().match(/[A-Z0-9]+/);
   const asset=assetMatch?assetMatch[0]:'USDT';
-  const values=parts.slice(6).join(' ').split('/').map(canonicalOrderNumber);
+  const values=extractRightmostSlashTriple(line);
+  if(!values) throw new Error('Could not read the three slash-separated numbers at the far right.');
   const ethFee=values[0]||'';
   const usdtAmount=values[1]||'';
   const usdcAmount=values[2]||'';
@@ -769,7 +777,7 @@ function applyAutoReadTx(){
     saveDB();
     autoReadDialog.close();
     render(currentRecord);
-    setMessage('The selected transfer record was updated from the pasted order information.','ok');
+    setFixedAccountNotice();
   }catch(err){
     $('autoReadError').textContent=err?.message||'Could not process the pasted order information.';
   }
