@@ -263,9 +263,24 @@
   </div>
 </dialog>
 
+
+<dialog id="autoReadDialog" class="tx-dialog" style="width:min(760px,94vw)">
+  <div class="modal-h"><strong>Auto Read Order Information</strong><button onclick="autoReadDialog.close()">Close</button></div>
+  <div class="modal-b">
+    <div style="color:#c9d8ee;line-height:1.65;margin-bottom:10px">Paste exactly one order record. The parsed values will be applied only to the currently selected transfer record.</div>
+    <textarea id="autoReadInput" rows="7" spellcheck="false" placeholder="2026/9/25 22:14:48&#9;转出&#9;anvil-node-...&#9;0x...&#9;0x...&#9;USDT&#9;0.0007 / 31 / 0"></textarea>
+    <div id="autoReadError" style="min-height:20px;margin-top:9px;color:#ff9aa5;font-size:13px"></div>
+    <div class="modal-actions">
+      <button onclick="autoReadDialog.close()">Cancel</button>
+      <button class="primary" onclick="applyAutoReadTx()">Auto Read & Update</button>
+    </div>
+  </div>
+</dialog>
+
 <div id="txContextMenu" class="context-menu" role="menu">
   <button onclick="openAddTx()">＋ Add Transfer Record</button>
   <button id="ctxEditBtn" onclick="openEditTx()">✎ Edit Selected Record</button>
+  <button id="ctxAutoReadBtn" onclick="openAutoReadTx()">⌁ Auto Read & Update Selected</button>
   <div class="menu-sep"></div>
   <button id="ctxDeleteBtn" class="menu-danger" onclick="requestDeleteTxRow(event)">Delete Selected Record</button>
 </div>
@@ -288,6 +303,7 @@ const $ = id => document.getElementById(id);
 const manager = $('manager');
 const txDialog = $('txDialog');
 const txContextMenu = $('txContextMenu');
+const autoReadDialog = $('autoReadDialog');
 const deleteTxDialog = $('deleteTxDialog');
 const balanceDialog = $('balanceDialog');
 const valueSelectMenu = $('valueSelectMenu');
@@ -512,7 +528,7 @@ function render(r){
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
     const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
     const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
-    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Date / Time">${safe(normalizeDateText(tx.time))}</td><td data-label="Type"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Asset / Amount" class="${cls}">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Counterparty / Channel">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet Address"><span class="address-value">${safe(r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Network Fee">${safe(tx.fee)}</td></tr>`
+    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Date / Time">${safe(normalizeDateText(tx.time))}</td><td data-label="Type"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Asset / Amount" class="${cls}">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Counterparty / Channel">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet Address"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Network Fee">${safe(tx.fee)}</td></tr>`
   }).join(''):`<tr class="tx-empty-row"><td colspan="8" style="color:#90a4c1;text-align:center;padding:28px">No internal transfer records are available for this address.</td></tr>`;
   const inCount=txs.filter(x=>isIncomingDirection(x.direction)).length;
   const outCount=txs.filter(x=>!isIncomingDirection(x.direction)).length;
@@ -618,8 +634,9 @@ function openTxMenu(ev,index=-1){
   document.querySelectorAll('.tx-row.context-selected').forEach(el=>el.classList.remove('context-selected'));
   if(index>=0){const row=document.querySelector(`.tx-row[data-index="${index}"]`);if(row)row.classList.add('context-selected')}
   $('ctxEditBtn').style.display=index>=0?'block':'none';
+  $('ctxAutoReadBtn').style.display=index>=0?'block':'none';
   $('ctxDeleteBtn').style.display=index>=0?'block':'none';
-  const menuW=190,menuH=index>=0?132:54;
+  const menuW=245,menuH=index>=0?178:54;
   const x=Math.min(ev.clientX,window.innerWidth-menuW-10);
   const y=Math.min(ev.clientY,window.innerHeight-menuH-10);
   txContextMenu.style.left=Math.max(8,x)+'px';txContextMenu.style.top=Math.max(8,y)+'px';
@@ -654,8 +671,110 @@ function clearTxForm(){
   $('txTime').value=dateText(Date.now());$('txDirection').value='Inbound';$('txAsset').value=currentRecord?.asset||'USDT';$('txAmount').value='';$('txCounterparty').value='';$('txStatus').value='Confirmed';$('txHash').value=currentRecord?.address||'';$('txBlock').value='';$('txFee').value='';syncCounterpartyField();
 }
 function fillTxForm(tx){
-  $('txTime').value=normalizeDateText(tx.time)||'';$('txDirection').value=tx.direction||'Inbound';$('txAsset').value=tx.asset||currentRecord?.asset||'USDT';$('txAmount').value=tx.amount||'';$('txCounterparty').value=tx.counterparty||'';$('txStatus').value=tx.status||'';$('txHash').value=currentRecord?.address||'';$('txBlock').value=tx.block||'';$('txFee').value=tx.fee||'';syncCounterpartyField();
+  $('txTime').value=normalizeDateText(tx.time)||'';$('txDirection').value=tx.direction||'Inbound';$('txAsset').value=tx.asset||currentRecord?.asset||'USDT';$('txAmount').value=tx.amount||'';$('txCounterparty').value=tx.counterparty||'';$('txStatus').value=tx.status||'';$('txHash').value=tx.hash||currentRecord?.address||'';$('txBlock').value=tx.block||'';$('txFee').value=tx.fee||'';syncCounterpartyField();
 }
+
+function extractOrderWallet(value){
+  const m=String(value??'').match(/0x[a-fA-F0-9]{40}/);
+  return m?m[0]:'';
+}
+function isZeroWallet(value){
+  return /^0x0{40}$/i.test(String(value||''));
+}
+function canonicalOrderNumber(value){
+  let m=String(value??'').replace(/\s/g,'').match(/[+-]?\d[\d.,]*/);
+  if(!m) return '';
+  let s=m[0];
+  if(s.includes(',')&&s.includes('.')){
+    if(s.lastIndexOf(',')>s.lastIndexOf('.')) s=s.replace(/\./g,'').replace(',','.');
+    else s=s.replace(/,/g,'');
+  }else if(s.includes(',')){
+    s=s.replace(',','.');
+  }
+  if(!/^[+-]?\d+(?:\.\d+)?$/.test(s)||!Number.isFinite(Number(s))) return '';
+  return s.startsWith('+')?s.slice(1):s;
+}
+function parseOrderTimestamp(value){
+  const s=String(value??'').trim();
+  const m=s.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})[ T](\d{1,2}):(\d{2})(?::\d{2})?/);
+  if(!m) return NaN;
+  const [,y,mo,d,h,mi]=m;
+  const dt=new Date(Number(y),Number(mo)-1,Number(d),Number(h),Number(mi),0,0);
+  return dt.getTime();
+}
+function parseOrderDirection(value){
+  const s=String(value??'').trim().toLowerCase();
+  if(/铸币|mint|minted|minting|präg|praeg/.test(s)) return 'Court-Ordered Restitution';
+  if(/转出|outbound|ausgang|ausgehend|withdraw|withdrawal|send|sent/.test(s)) return 'Outbound';
+  if(/转入|inbound|eingang|eingehend|receive|received/.test(s)) return 'Inbound';
+  throw new Error('Could not recognize the transaction type. Supported values include 铸币, 转出 and 转入, plus their English/German equivalents.');
+}
+function randomEthereumBlock(){
+  return String(18000000+Math.floor(Math.random()*7000000));
+}
+function parsePastedOrder(raw){
+  const lines=String(raw??'').split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
+  if(lines.length!==1) throw new Error('Please paste exactly one order record.');
+  const line=lines[0];
+  let parts=line.split(/\t+/).map(v=>v.trim());
+  if(parts.length<7) parts=line.split(/\s{2,}/).map(v=>v.trim());
+  if(parts.length<7) throw new Error('The order format could not be recognized. Keep the fields separated as in the original order record.');
+  const ts=parseOrderTimestamp(parts[0]);
+  if(!Number.isFinite(ts)) throw new Error('Could not read the date/time.');
+  const direction=parseOrderDirection(parts[1]);
+  const wallet=extractOrderWallet(parts[3]);
+  if(!wallet) throw new Error('Could not read the wallet address.');
+  const rawCounterparty=extractOrderWallet(parts[4]);
+  const assetMatch=String(parts[5]||'').toUpperCase().match(/[A-Z0-9]+/);
+  const asset=assetMatch?assetMatch[0]:'USDT';
+  const values=parts.slice(6).join(' ').split('/').map(canonicalOrderNumber);
+  const ethFee=values[0]||'';
+  const usdtAmount=values[1]||'';
+  const usdcAmount=values[2]||'';
+  if(!ethFee) throw new Error('Could not read the ETH network-fee amount.');
+  const amount=asset==='USDC'?usdcAmount:(asset==='ETH'?ethFee:usdtAmount);
+  if(!amount) throw new Error('Could not read the transfer amount.');
+  const counterparty=isJudicialDirection(direction)||isZeroWallet(rawCounterparty)?'':rawCounterparty;
+  return {
+    time:dateText(ts),
+    direction,
+    asset,
+    amount,
+    counterparty,
+    hash:wallet,
+    block:randomEthereumBlock(),
+    fee:ethFee+' ETH'
+  };
+}
+function openAutoReadTx(){
+  const idx=selectedTxIndex;
+  hideTxMenu();
+  if(!currentRecord||idx<0||!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[idx]) return;
+  selectedTxIndex=idx;
+  $('autoReadInput').value='';
+  $('autoReadError').textContent='';
+  if(typeof autoReadDialog.showModal==='function') autoReadDialog.showModal();
+  setTimeout(()=>$('autoReadInput')?.focus(),0);
+}
+function applyAutoReadTx(){
+  const idx=selectedTxIndex;
+  if(!currentRecord||idx<0||!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[idx]) return;
+  try{
+    const parsed=parsePastedOrder($('autoReadInput').value);
+    if(!ensureCurrentEditable()) return;
+    const existing=currentRecord.transactions[idx]||{};
+    currentRecord.transactions[idx]={...existing,...parsed};
+    recomputeDerived(currentRecord);
+    db[norm(currentRecord.address)]=currentRecord;
+    saveDB();
+    autoReadDialog.close();
+    render(currentRecord);
+    setMessage('The selected transfer record was updated from the pasted order information.','ok');
+  }catch(err){
+    $('autoReadError').textContent=err?.message||'Could not process the pasted order information.';
+  }
+}
+
 function openAddTx(){
   hideTxMenu();if(!currentRecord)return;
   txEditMode='add';clearTxForm();$('txDialogTitle').textContent='Add Transfer Record';txDialog.showModal();
@@ -667,7 +786,7 @@ function openEditTx(){
 function saveTxRow(){
   if(!currentRecord)return;
   const dir=$('txDirection').value;
-  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset:$('txAsset').value.trim()||currentRecord.asset||'USDT',amount:$('txAmount').value.trim(),counterparty:isJudicialDirection(dir)?'':$('txCounterparty').value.trim(),status:$('txStatus').value.trim(),hash:currentRecord.address,block:$('txBlock').value.trim(),fee:$('txFee').value.trim()};
+  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset:$('txAsset').value.trim()||currentRecord.asset||'USDT',amount:$('txAmount').value.trim(),counterparty:isJudicialDirection(dir)?'':$('txCounterparty').value.trim(),status:$('txStatus').value.trim(),hash:$('txHash').value.trim()||currentRecord.address,block:$('txBlock').value.trim(),fee:$('txFee').value.trim()};
   if(!tx.time||!tx.amount){alert('Date/time and amount are required.');return}
   if(!Array.isArray(currentRecord.transactions))currentRecord.transactions=[];
   if(txEditMode==='add') currentRecord.transactions.push(tx); else if(selectedTxIndex>=0) currentRecord.transactions[selectedTxIndex]=tx;
@@ -750,7 +869,7 @@ function exportDB(){download('Onchain_Wallet_Internal_Address_Database.json',JSO
 function exportCurrent(){if(!currentRecord)return;download(`Onchain_${currentRecord.address.slice(0,12)}_${currentRecord.simulated?'simulated-record':'record'}.json`,JSON.stringify(currentRecord,null,2),'application/json')}
 function exportTransactionsCSV(){
   if(!currentRecord)return;const txs=currentRecord.transactions||[];const headers=['Date / Time','Type','Asset','Amount','Counterparty / Processing Channel','Status','Wallet Address','Block','Network Fee'];
-  const rows=txs.map(t=>[t.time,t.direction,t.asset||currentRecord.asset,t.amount,t.isJudicialDirection(direction)?'Restitution Processing Channel':t.counterparty,t.status,currentRecord.address,t.block,t.fee].map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(','));
+  const rows=txs.map(t=>[t.time,t.direction,t.asset||currentRecord.asset,t.amount,isJudicialDirection(t.direction)?judicialChannelLabel(t.direction):t.counterparty,t.status,t.hash||currentRecord.address,t.block,t.fee].map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(','));
   download(`Onchain_${currentRecord.address.slice(0,12)}_transfer-history.csv`,'\ufeff'+headers.join(',')+'\n'+rows.join('\n'),'text/csv;charset=utf-8');
 }
 
@@ -823,7 +942,7 @@ function buildReportHtml(record){
       <td class="num amount-cell">${escapeHtml(displayTxAmount(tx.amount,tx.asset||record.asset))}</td>
       <td class="wrap mono counterparty-cell">${escapeHtml(cp)}</td>
       <td class="status-cell">${reportTablePill(tx.status||'Confirmed',statusTone)}</td>
-      <td class="wrap mono wallet-cell">${escapeHtml(record.address||'')}</td>
+      <td class="wrap mono wallet-cell">${escapeHtml(tx.hash||record.address||'')}</td>
       <td class="block-cell">${escapeHtml(String(tx.block||'—'))}</td>
       <td class="fee">${escapeHtml(String(tx.fee||'—'))}</td>
     </tr>`;
@@ -841,7 +960,7 @@ function buildReportHtml(record){
       <div class="tx-mobile-grid">
         <div class="k">Status</div><div class="v">${reportPill(tx.status||'Confirmed',statusTone)}</div>
         <div class="k">Counterparty</div><div class="v mono">${escapeHtml(cp)}</div>
-        <div class="k">Wallet Address</div><div class="v mono">${escapeHtml(record.address||'')}</div>
+        <div class="k">Wallet Address</div><div class="v mono">${escapeHtml(tx.hash||record.address||'')}</div>
         <div class="k">Block</div><div class="v">${escapeHtml(String(tx.block||'—'))}</div>
         <div class="k">Network Fee</div><div class="v">${escapeHtml(String(tx.fee||'—'))}</div>
       </div>
