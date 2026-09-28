@@ -4,7 +4,7 @@
   "shareMode": false,
   "theme": "light",
   "activeWorkflowId": "flow-mulgwpws-xrm5yz",
-  "globalUpdatedAt": "2026-09-28T21:04:42.812Z",
+  "globalUpdatedAt": "2026-09-28T21:49:09.981Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -786,7 +786,7 @@
       "description": "",
       "color": "#b33d76",
       "createdAt": 1790613270316,
-      "updatedAt": 1790629345239,
+      "updatedAt": 1790632137190,
       "steps": [
         {
           "id": "step-mulgxkjf-gbemmc",
@@ -996,6 +996,61 @@
           "type": "话术",
           "contentZh": "问下是否被引导向亲朋好友借钱？\n",
           "contentForeign": "Were you encouraged or pressured to borrow money from family members or friends?\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls0k6i-qserrs",
+          "title": "是否变卖不动产",
+          "type": "话术",
+          "contentZh": "问下是否出现了变卖不动产的情况？\n",
+          "contentForeign": " Have you sold, or considered selling, any property or other major assets because of this situation?\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls1hlb-3s1dlp",
+          "title": "保证信息不会公开泄露",
+          "type": "话术",
+          "contentZh": "该登记会做匿名处理后提交给相关部门统计全国每年受骗数据去普及给更多的人防止受骗，你无需担心个人信息会泄露或者被公开\n",
+          "contentForeign": "This registration will be submitted to the appropriate agencies in an anonymized form and used for statistical and educational purposes to help track fraud trends and raise public awareness. You do not need to worry about your personal information being disclosed or made public, as your identifying information will remain confidential\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls27u2-kabtc7",
+          "title": "预约第二天九点时间和律师交流",
+          "type": "话术",
+          "contentZh": "感谢你的配合，至少目前来看，事情正在朝着积极的方向发展。我希望你最终能够顺利追回属于你的资金。我已经为你预约了明天上午9点与 Daniel Okafor 律师的咨询时间。以下是他的联系方式，你可以在预约时间之前向他发送你的案件编号：WC-CRYPTO-1068-0177，以便他提前查阅你的案件档案。\n",
+          "contentForeign": "Thank you for your cooperation. At this point, things appear to be moving in a positive direction, and I hope you will ultimately be able to recover your funds.I have scheduled a consultation with Attorney Daniel Okafor for tomorrow at 9:00 AM. Below is his contact information. Before the appointment, please send him your case number,WC-CRYPTO-1068-0177， so he can review your file in advance\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls4ia2-7bi2u1",
+          "title": "推律师",
+          "type": "话术",
+          "contentZh": "您可以点击此链接，将您的案件编号直接发送给律师丹尼尔·奥卡福。他将亲自监督和协调后续的调查步骤以及追回您的资金。",
+          "contentForeign": "You can click this link to send your case number directly to attorney Daniel Okafor. He will then personally oversee and coordinate the next steps of the investigation and the process of recovering your funds",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls53om-md623g",
+          "title": "结束语",
+          "type": "话术",
+          "contentZh": "真心希望你能找回属于你的一切，另外后续当你需要我的时候我会一直在这里\n",
+          "contentForeign": "I sincerely hope you are able to recover everything that rightfully belongs to you. No matter what happens, if you ever need my assistance in the future, I will be here to help",
           "language": "auto",
           "note": "",
           "attachments": [],
