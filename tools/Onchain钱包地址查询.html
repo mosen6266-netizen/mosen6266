@@ -422,9 +422,14 @@ function dateText(value){
 }
 function normalizeDateText(value){const ts=parseDateValue(value);return Number.isFinite(ts)?dateText(ts):String(value??'').trim()}
 function fmtAmount(n,symbol){
-  const num=Number(n||0);
+  const num=Number(String(n??0).replaceAll(',',''));
   const digits=symbol==='ETH'?6:2;
-  return num.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+  const safeNum=Number.isFinite(num)?num:0;
+  return safeNum.toLocaleString('en-US',{useGrouping:true,minimumFractionDigits:digits,maximumFractionDigits:digits});
+}
+function displayTxAmount(value,symbol){
+  if(value===undefined||value===null||String(value).trim()==='') return '—';
+  return fmtAmount(txAmountNumber(value),String(symbol||'USDT').toUpperCase());
 }
 function buildBalances(base,address){
   return {ETH:'0.000000',USDT:'0.00',USDC:'0.00'};
@@ -507,7 +512,7 @@ function render(r){
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
     const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
     const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
-    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Date / Time">${safe(normalizeDateText(tx.time))}</td><td data-label="Type"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Asset / Amount" class="${cls}">${safe(tx.amount)} ${safe(tx.asset||r.asset)}</td><td data-label="Counterparty / Channel">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet Address"><span class="address-value">${safe(r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Network Fee">${safe(tx.fee)}</td></tr>`
+    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Date / Time">${safe(normalizeDateText(tx.time))}</td><td data-label="Type"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Asset / Amount" class="${cls}">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Counterparty / Channel">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet Address"><span class="address-value">${safe(r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Network Fee">${safe(tx.fee)}</td></tr>`
   }).join(''):`<tr class="tx-empty-row"><td colspan="8" style="color:#90a4c1;text-align:center;padding:28px">No internal transfer records are available for this address.</td></tr>`;
   const inCount=txs.filter(x=>isIncomingDirection(x.direction)).length;
   const outCount=txs.filter(x=>!isIncomingDirection(x.direction)).length;
@@ -679,7 +684,7 @@ function requestDeleteTxRow(ev){
   if(!currentRecord||idx<0||!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[idx]){hideTxMenu();return}
   pendingDeleteTxIndex=idx;
   const tx=currentRecord.transactions[idx];
-  $('deleteTxPreview').textContent=`${normalizeDateText(tx.time)||'—'} · ${tx.direction||'—'} · ${tx.amount||'—'} ${tx.asset||currentRecord.asset||''} · ${isJudicialDirection(tx.direction)?judicialChannelLabel(tx.direction):(tx.counterparty||'—')}`;
+  $('deleteTxPreview').textContent=`${normalizeDateText(tx.time)||'—'} · ${tx.direction||'—'} · ${displayTxAmount(tx.amount,tx.asset||currentRecord.asset)} ${tx.asset||currentRecord.asset||''} · ${isJudicialDirection(tx.direction)?judicialChannelLabel(tx.direction):(tx.counterparty||'—')}`;
   hideTxMenu();
   if(typeof deleteTxDialog.showModal==='function') deleteTxDialog.showModal();
 }
@@ -815,7 +820,7 @@ function buildReportHtml(record){
       <td class="date-cell">${escapeHtml(normalizeDateText(tx.time))}</td>
       <td class="type-cell">${reportTablePill(directionDisplay(dir),dirTone)}</td>
       <td class="asset-cell">${escapeHtml(String(tx.asset||record.asset||'USDT'))}</td>
-      <td class="num amount-cell">${escapeHtml(String(tx.amount||''))}</td>
+      <td class="num amount-cell">${escapeHtml(displayTxAmount(tx.amount,tx.asset||record.asset))}</td>
       <td class="wrap mono counterparty-cell">${escapeHtml(cp)}</td>
       <td class="status-cell">${reportTablePill(tx.status||'Confirmed',statusTone)}</td>
       <td class="wrap mono wallet-cell">${escapeHtml(record.address||'')}</td>
@@ -831,7 +836,7 @@ function buildReportHtml(record){
     return `<article class="tx-mobile-card">
       <div class="tx-mobile-head">
         <div><div class="tx-mobile-date">${escapeHtml(normalizeDateText(tx.time))}</div><div style="margin-top:7px">${reportPill(directionDisplay(dir),dirTone)}</div></div>
-        <div class="tx-mobile-amount">${escapeHtml(String(tx.amount||''))}<div style="font-size:11px;color:var(--muted);margin-top:2px">${escapeHtml(String(tx.asset||record.asset||'USDT'))}</div></div>
+        <div class="tx-mobile-amount">${escapeHtml(displayTxAmount(tx.amount,tx.asset||record.asset))}<div style="font-size:11px;color:var(--muted);margin-top:2px">${escapeHtml(String(tx.asset||record.asset||'USDT'))}</div></div>
       </div>
       <div class="tx-mobile-grid">
         <div class="k">Status</div><div class="v">${reportPill(tx.status||'Confirmed',statusTone)}</div>
