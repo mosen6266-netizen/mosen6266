@@ -226,7 +226,7 @@
   <div class="modal-b">
     <div class="tx-form">
       <div class="f"><label>Date / Time</label><input id="txTime" placeholder="09/20/2026 6:30 PM"></div>
-      <div class="f"><label>Type</label><select id="txDirection" onchange="syncCounterpartyField()"><option>Inbound</option><option>Outbound</option><option>Court-Ordered Restitution</option></select></div>
+      <div class="f"><label>Type</label><select id="txDirection" onchange="syncCounterpartyField()"><option>Inbound</option><option>Outbound</option><option>Court-Ordered Refund</option><option>Court-Ordered Restitution</option></select></div>
       <div class="f"><label>Asset</label><input id="txAsset" placeholder="USDT"></div>
       <div class="f"><label>Amount</label><input id="txAmount" placeholder="0.00"></div>
       <div class="f span2"><label>Counterparty / Processing Channel</label><input id="txCounterparty" class="mono" placeholder="0x..."></div>
@@ -298,7 +298,13 @@ function txAmountNumber(v){
   return Number.isFinite(n)?n:0;
 }
 function isIncomingDirection(direction){
-  return ['Inbound','Court-Ordered Restitution'].includes(String(direction||''));
+  return ['Inbound','Court-Ordered Refund','Court-Ordered Restitution'].includes(String(direction||''));
+}
+function isJudicialDirection(direction){
+  return ['Court-Ordered Refund','Court-Ordered Restitution'].includes(String(direction||''));
+}
+function judicialChannelLabel(direction){
+  return String(direction||'')==='Court-Ordered Refund'?'Court-Ordered Refund Processing Channel':'Restitution Processing Channel';
 }
 function recomputeDerived(record){
   const txs=Array.isArray(record.transactions)?record.transactions:[];
@@ -330,7 +336,7 @@ let valueSelectContext = null;
 const LEGACY_TEXT_MAP={
   '正常':'Active','受限':'Restricted','冻结':'Frozen','观察中':'Under Review','已关闭':'Closed',
   '低':'Low','中':'Medium','高':'High','严重':'Critical',
-  '转入':'Inbound','转出':'Outbound','司法返还':'Court-Ordered Restitution',
+  '转入':'Inbound','转出':'Outbound','司法退款':'Court-Ordered Refund','司法返还':'Court-Ordered Restitution',
   '已确认':'Confirmed','处理中':'Processing','待审核':'Pending Review','已拒绝':'Rejected','已撤销':'Canceled',
   '内部普通账户':'Internal Account','资金归集地址':'Consolidation Wallet','历史活跃地址':'Previously Active Address','重点观察地址':'Watchlist Address',
   '个人钱包':'Personal Wallet','热钱包':'Hot Wallet','归集地址':'Consolidation Wallet','中转地址':'Transit Wallet',
@@ -363,7 +369,7 @@ function riskBadge(v,clickable=false){let t=v==='Critical'||v==='High'?'b-red':v
 function kycBadge(v){const s=safe(v);const t=/Not Verified|Incomplete|Restricted|Failed/.test(s)?'b-yellow':/Verified|Complete|Approved/.test(s)?'b-green':'b-blue';return badge(s,t)}
 function freezeBadge(v){const s=safe(v);const t=/Frozen|Freeze in Progress|Fully Frozen/.test(s)?'b-red':/Partially Restricted|Restricted|Under Review/.test(s)?'b-yellow':/Not Frozen|Normal/.test(s)?'b-green':'b-blue';return badge(s,t)}
 function txStatusBadge(v,index){let t=/Failed|Rejected|Canceled/.test(v)?'b-red':/Processing|Pending/.test(v)?'b-yellow':'b-green';return `<span class="badge ${t} clickable-badge tx-status-click" title="" onclick="openValueSelect(event,'tx',${index})">${safe(v||'Confirmed')}</span>`}
-function directionDisplay(v){return v==='Court-Ordered Restitution'?'Restitution':safe(v)}
+function directionDisplay(v){return v==='Court-Ordered Refund'?'Refund':v==='Court-Ordered Restitution'?'Restitution':safe(v)}
 
 function setMessage(msg,type=''){
   const el=$('statusline');el.className='statusline show '+type;el.textContent=msg;
@@ -421,13 +427,7 @@ function fmtAmount(n,symbol){
   return num.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
 }
 function buildBalances(base,address){
-  const seed=hashSeed('bal:'+norm(address));
-  const r=seeded(seed);
-  const baseNum=Math.max(Number(base)||0,1000+r()*90000);
-  const eth=(0.35+r()*18.6)+(baseNum/18000);
-  const usdt=baseNum*(0.85+r()*1.4);
-  const usdc=baseNum*(0.7+r()*1.2);
-  return {ETH:eth.toFixed(6),USDT:usdt.toFixed(2),USDC:usdc.toFixed(2)};
+  return {ETH:'0.000000',USDT:'0.00',USDC:'0.00'};
 }
 function ensureBalances(rec){
   if(!rec.balances||typeof rec.balances!=='object'){
@@ -454,35 +454,31 @@ function generateMockRecord(address){
   const seed=hashSeed(norm(address));
   const r=seeded(seed);
   const chain='Ethereum';
-  const asset=pick(r,['USDT','USDC','ETH']);
-  const status=pick(r,['Active','Active','Active','Under Review','Restricted']);
+  const asset='USDT';
+  const status='Under Review';
   const risk=pick(r,['Low','Low','Medium','Medium','High']);
   const now=new Date('2026-09-20T20:00:00Z').getTime();
-  const first=now-Math.floor((40+r()*420)*86400000);
-  const count=6+Math.floor(r()*7);
-  const txs=[];let totalIn=0,totalOut=0,lastTs=first;
-  for(let i=0;i<count;i++){
-    const ts=first+Math.floor(((i+1)/(count+1))*(now-first))+Math.floor(r()*7200000);
-    lastTs=Math.max(lastTs,ts);
-    const incoming=r()>.46;
-    const amount=asset==='BTC'?(0.002+r()*1.2):(120+r()*24500);
-    if(incoming) totalIn+=amount; else totalOut+=amount;
+  const directions=['Outbound','Court-Ordered Refund','Outbound','Court-Ordered Restitution'];
+  const txs=[];let totalIn=0,totalOut=0;
+  directions.forEach((direction,i)=>{
+    const ts=now-((directions.length-1-i)*86400000)-Math.floor(r()*7200000);
+    const amount=120+r()*24500;
+    if(isIncomingDirection(direction)) totalIn+=amount; else totalOut+=amount;
     txs.push({
-      time:dateText(ts),direction:incoming?'Inbound':'Outbound',asset,amount:asset==='BTC'?amount.toFixed(6):amount.toFixed(2),
-      counterparty:fakeCounterparty(r,chain),status:pick(r,['Confirmed','Confirmed','Confirmed','Processing']),
+      time:dateText(ts),direction,asset,amount:amount.toFixed(2),
+      counterparty:isJudicialDirection(direction)?'':fakeCounterparty(r,chain),status:'Confirmed',
       hash:address,block:String(18000000+Math.floor(r()*6500000)),
       fee:(0.00008+r()*0.0056).toFixed(6)+' ETH'
     });
-  }
-  const balance=Math.max(0,totalIn-totalOut+r()*8000);
-  const balances=buildBalances(balance.toFixed(2),address);
+  });
+  const balances={ETH:'0.000000',USDT:'0.00',USDC:'0.00'};
   return {
-    address,chain,status,asset,balance:balance.toFixed(2),balances,risk,
+    address,chain,status,asset,balance:'0.00',balances,risk,
     label:pick(r,['Internal Account','Consolidation Wallet','Previously Active Address','Watchlist Address']),
     type:pick(r,['Personal Wallet','Hot Wallet','Consolidation Wallet','Transit Wallet']),kyc:'Not Verified',
-    firstActivity:dateText(first),lastActivity:dateText(lastTs),freezeStatus:status==='Restricted'?'Partially Restricted':'Not Frozen',
+    firstActivity:txs[0]?.time||dateText(now),lastActivity:txs[txs.length-1]?.time||dateText(now),freezeStatus:'Not Frozen',
     totalIn:totalIn.toFixed(2),totalOut:totalOut.toFixed(2),
-    counterparties:String(4+Math.floor(r()*18)),note:OFFICIAL_KYC_NOTE,transactions:txs,simulated:true
+    counterparties:'4',note:OFFICIAL_KYC_NOTE,transactions:txs,simulated:true
   };
 }
 function queryAddress(){
@@ -497,7 +493,7 @@ function render(r){
   $('result').style.display='block';
   ensureBalances(r);
   const derived=recomputeDerived(r);
-  $('accountStatus').innerHTML=statusBadge(r.status||'Active',true);
+  $('accountStatus').innerHTML=statusBadge(r.status||'Under Review',true);
   $('ethBalance').innerHTML=`<div class="coin-top">${coinIcon('ETH',22)}<span>${fmtAmount(r.balances?.ETH,'ETH')} ETH</span></div>`;
   $('usdtBalance').innerHTML=`<div class="coin-top">${coinIcon('USDT',22)}<span>${fmtAmount(r.balances?.USDT,'USDT')} USDT</span></div>`;
   $('usdcBalance').innerHTML=`<div class="coin-top">${coinIcon('USDC',22)}<span>${fmtAmount(r.balances?.USDC,'USDC')} USDC</span></div>`;
@@ -509,8 +505,8 @@ function render(r){
   $('details').innerHTML=items.map(x=>`<div>${x[0]}</div><div>${x[1]}</div>`).join('');
   $('txBody').innerHTML=txs.length?txs.map((tx,i)=>{
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
-    const dirClass=dir==='Court-Ordered Restitution'?'judicial':incoming?'b-green':'b-red';
-    const cp=dir==='Court-Ordered Restitution'?'<span class="badge b-blue channel-badge">Restitution Processing Channel</span>':`<span class="address-value">${safe(tx.counterparty)}</span>`;
+    const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
+    const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
     return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Date / Time">${safe(normalizeDateText(tx.time))}</td><td data-label="Type"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Asset / Amount" class="${cls}">${safe(tx.amount)} ${safe(tx.asset||r.asset)}</td><td data-label="Counterparty / Channel">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet Address"><span class="address-value">${safe(r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Network Fee">${safe(tx.fee)}</td></tr>`
   }).join(''):`<tr class="tx-empty-row"><td colspan="8" style="color:#90a4c1;text-align:center;padding:28px">No internal transfer records are available for this address.</td></tr>`;
   const inCount=txs.filter(x=>isIncomingDirection(x.direction)).length;
@@ -539,14 +535,14 @@ function openValueSelect(ev,type,index=-1){
   if(ev){ev.preventDefault();ev.stopPropagation()}
   if(!currentRecord) return;
   let values=[],current='';
-  if(type==='account'){values=['Active','Under Review','Restricted','Frozen','Closed'];current=currentRecord.status||'Active'}
+  if(type==='account'){values=['Active','Under Review','Restricted','Frozen','Closed'];current=currentRecord.status||'Under Review'}
   else if(type==='risk'){values=['Low','Medium','High','Critical'];current=currentRecord.risk||'Low'}
   else if(type==='tx'){
     if(!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
     values=['Confirmed','Processing','Pending Review','Rejected','Canceled'];current=currentRecord.transactions[index].status||'Confirmed';
   } else if(type==='direction'){
     if(!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
-    values=['Inbound','Outbound','Court-Ordered Restitution'];current=currentRecord.transactions[index].direction||'Inbound';
+    values=['Inbound','Outbound','Court-Ordered Refund','Court-Ordered Restitution'];current=currentRecord.transactions[index].direction||'Inbound';
   } else return;
   valueSelectContext={type,index};
   valueSelectMenu.innerHTML=values.map(v=>`<button class="${v===current?'active':''}" onclick="selectValueOption(event,'${v}')"><span>${v}</span><span class="select-dot"></span></button>`).join('');
@@ -578,7 +574,7 @@ function selectValueOption(ev,value){
   }
   if(ctx.type==='direction'&&Array.isArray(currentRecord.transactions)&&currentRecord.transactions[ctx.index]){
     currentRecord.transactions[ctx.index].direction=value;
-    if(value==='Court-Ordered Restitution') currentRecord.transactions[ctx.index].counterparty='';
+    if(isJudicialDirection(value)) currentRecord.transactions[ctx.index].counterparty='';
     hideValueSelect();persistCurrent();return;
   }
   hideValueSelect();
@@ -638,12 +634,12 @@ function ensureCurrentEditable(){
   return true;
 }
 function syncCounterpartyField(){
-  const isJudicial=$('txDirection').value==='Court-Ordered Restitution';
+  const isJudicial=$('txDirection').isJudicialDirection(value);
   const input=$('txCounterparty');
   if(isJudicial){
     input.value='';
     input.disabled=true;
-    input.placeholder='Restitution Processing Channel';
+    input.placeholder=judicialChannelLabel($('txDirection').value);
   }else{
     input.disabled=false;
     input.placeholder='0x...';
@@ -666,7 +662,7 @@ function openEditTx(){
 function saveTxRow(){
   if(!currentRecord)return;
   const dir=$('txDirection').value;
-  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset:$('txAsset').value.trim()||currentRecord.asset||'USDT',amount:$('txAmount').value.trim(),counterparty:dir==='Court-Ordered Restitution'?'':$('txCounterparty').value.trim(),status:$('txStatus').value.trim(),hash:currentRecord.address,block:$('txBlock').value.trim(),fee:$('txFee').value.trim()};
+  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset:$('txAsset').value.trim()||currentRecord.asset||'USDT',amount:$('txAmount').value.trim(),counterparty:isJudicialDirection(dir)?'':$('txCounterparty').value.trim(),status:$('txStatus').value.trim(),hash:currentRecord.address,block:$('txBlock').value.trim(),fee:$('txFee').value.trim()};
   if(!tx.time||!tx.amount){alert('Date/time and amount are required.');return}
   if(!Array.isArray(currentRecord.transactions))currentRecord.transactions=[];
   if(txEditMode==='add') currentRecord.transactions.push(tx); else if(selectedTxIndex>=0) currentRecord.transactions[selectedTxIndex]=tx;
@@ -683,7 +679,7 @@ function requestDeleteTxRow(ev){
   if(!currentRecord||idx<0||!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[idx]){hideTxMenu();return}
   pendingDeleteTxIndex=idx;
   const tx=currentRecord.transactions[idx];
-  $('deleteTxPreview').textContent=`${normalizeDateText(tx.time)||'—'} · ${tx.direction||'—'} · ${tx.amount||'—'} ${tx.asset||currentRecord.asset||''} · ${tx.direction==='Court-Ordered Restitution'?'Restitution Processing Channel':(tx.counterparty||'—')}`;
+  $('deleteTxPreview').textContent=`${normalizeDateText(tx.time)||'—'} · ${tx.direction||'—'} · ${tx.amount||'—'} ${tx.asset||currentRecord.asset||''} · ${isJudicialDirection(tx.direction)?judicialChannelLabel(tx.direction):(tx.counterparty||'—')}`;
   hideTxMenu();
   if(typeof deleteTxDialog.showModal==='function') deleteTxDialog.showModal();
 }
@@ -727,7 +723,7 @@ function fillForm(r){
 }
 function clearForm(){
   ['fAddress','fChain','fAsset','fBalance','fLabel','fType','fKyc','fFirst','fLast','fFreeze','fIn','fOut','fCounterparties','fNote','fTx'].forEach(id=>$(id).value='');
-  $('fStatus').value='Active';$('fRisk').value='Low';
+  $('fStatus').value='Under Review';$('fRisk').value='Low';
 }
 function saveRecord(){
   const address=$('fAddress').value.trim();if(!address){alert('Wallet address is required.');return}
@@ -749,7 +745,7 @@ function exportDB(){download('Onchain_Wallet_Internal_Address_Database.json',JSO
 function exportCurrent(){if(!currentRecord)return;download(`Onchain_${currentRecord.address.slice(0,12)}_${currentRecord.simulated?'simulated-record':'record'}.json`,JSON.stringify(currentRecord,null,2),'application/json')}
 function exportTransactionsCSV(){
   if(!currentRecord)return;const txs=currentRecord.transactions||[];const headers=['Date / Time','Type','Asset','Amount','Counterparty / Processing Channel','Status','Wallet Address','Block','Network Fee'];
-  const rows=txs.map(t=>[t.time,t.direction,t.asset||currentRecord.asset,t.amount,t.direction==='Court-Ordered Restitution'?'Restitution Processing Channel':t.counterparty,t.status,currentRecord.address,t.block,t.fee].map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(','));
+  const rows=txs.map(t=>[t.time,t.direction,t.asset||currentRecord.asset,t.amount,t.isJudicialDirection(direction)?'Restitution Processing Channel':t.counterparty,t.status,currentRecord.address,t.block,t.fee].map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(','));
   download(`Onchain_${currentRecord.address.slice(0,12)}_transfer-history.csv`,'\ufeff'+headers.join(',')+'\n'+rows.join('\n'),'text/csv;charset=utf-8');
 }
 
@@ -805,16 +801,16 @@ function buildReportHtml(record){
   const txs=Array.isArray(record.transactions)?record.transactions:[];
   const generatedAt=dateText(Date.now());
   const logoSrc=getReportLogoSrc();
-  const statusPill=reportPill(record.status||'Active',reportTone('status',record.status||'Active'));
+  const statusPill=reportPill(record.status||'Under Review',reportTone('status',record.status||'Under Review'));
   const riskPill=reportPill(record.risk||'Low',reportTone('risk',record.risk||'Low'));
   const kycPill=reportPill(record.kyc||'Not Verified',reportTone('kyc',record.kyc||'Not Verified'));
   const freezePill=reportPill(record.freezeStatus||'Not Frozen',reportTone('freeze',record.freezeStatus||'Not Frozen'));
   const recordType=record.simulated?'Simulated Test Data':'Internal Address Record';
   const txRows=txs.length?txs.map(tx=>{
     const dir=tx.direction||'—';
-    const dirTone=dir==='Court-Ordered Restitution'?'blue':(isIncomingDirection(dir)?'green':'red');
+    const dirTone=isJudicialDirection(dir)?'blue':(isIncomingDirection(dir)?'green':'red');
     const statusTone=/Rejected|Canceled/.test(tx.status||'')?'red':/Processing|Pending/.test(tx.status||'')?'yellow':'green';
-    const cp=dir==='Court-Ordered Restitution'?'Restitution Processing Channel':safe(tx.counterparty);
+    const cp=isJudicialDirection(dir)?judicialChannelLabel(dir):safe(tx.counterparty);
     return `<tr>
       <td class="date-cell">${escapeHtml(normalizeDateText(tx.time))}</td>
       <td class="type-cell">${reportTablePill(directionDisplay(dir),dirTone)}</td>
@@ -829,9 +825,9 @@ function buildReportHtml(record){
   }).join(''):`<tr><td colspan="9" class="empty">No internal transfer records are available for this address.</td></tr>`;
   const txMobileCards=txs.length?txs.map(tx=>{
     const dir=tx.direction||'—';
-    const dirTone=dir==='Court-Ordered Restitution'?'blue':(isIncomingDirection(dir)?'green':'red');
+    const dirTone=isJudicialDirection(dir)?'blue':(isIncomingDirection(dir)?'green':'red');
     const statusTone=/Rejected|Canceled/.test(tx.status||'')?'red':/Processing|Pending/.test(tx.status||'')?'yellow':'green';
-    const cp=dir==='Court-Ordered Restitution'?'Restitution Processing Channel':safe(tx.counterparty);
+    const cp=isJudicialDirection(dir)?judicialChannelLabel(dir):safe(tx.counterparty);
     return `<article class="tx-mobile-card">
       <div class="tx-mobile-head">
         <div><div class="tx-mobile-date">${escapeHtml(normalizeDateText(tx.time))}</div><div style="margin-top:7px">${reportPill(directionDisplay(dir),dirTone)}</div></div>
