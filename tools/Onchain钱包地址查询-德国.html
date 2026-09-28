@@ -226,7 +226,7 @@
   <div class="modal-b">
     <div class="tx-form">
       <div class="f"><label>Datum / Uhrzeit</label><input id="txTime" placeholder="20.09.2026 18:30"></div>
-      <div class="f"><label>Art</label><select id="txDirection" onchange="syncCounterpartyField()"><option value="Inbound">Eingang</option><option value="Outbound">Ausgang</option><option value="Court-Ordered Refund">Gerichtliche Rückerstattung</option><option value="Court-Ordered Restitution">Gerichtliche Rückführung</option></select></div>
+      <div class="f"><label>Art</label><select id="txDirection" onchange="syncCounterpartyField()"><option value="Inbound">Eingang</option><option value="Outbound">Ausgang</option><option value="Court-Ordered Restitution">Gerichtliche Rückführung</option></select></div>
       <div class="f"><label>Währung</label><input id="txAsset" placeholder="USDT"></div>
       <div class="f"><label>Betrag</label><input id="txAmount" placeholder="0,00"></div>
       <div class="f span2"><label>Gegenpartei / Abwicklungskanal</label><input id="txCounterparty" class="mono" placeholder="0x..."></div>
@@ -298,13 +298,13 @@ function txAmountNumber(v){
   return Number.isFinite(n)?n:0;
 }
 function isIncomingDirection(direction){
-  return ['Inbound','Court-Ordered Refund','Court-Ordered Restitution'].includes(String(direction||''));
+  return ['Inbound','Court-Ordered Restitution'].includes(String(direction||''));
 }
 function isJudicialDirection(direction){
-  return ['Court-Ordered Refund','Court-Ordered Restitution'].includes(String(direction||''));
+  return String(direction||'')==='Court-Ordered Restitution';
 }
-function judicialChannelLabel(direction){
-  return String(direction||'')==='Court-Ordered Refund'?'Gerichtliche Rückerstattungsabwicklung':'Rückführungsabwicklung';
+function judicialChannelLabel(){
+  return 'Rückführungsabwicklung';
 }
 function recomputeDerived(record){
   const txs=Array.isArray(record.transactions)?record.transactions:[];
@@ -335,7 +335,7 @@ let valueSelectContext = null;
 const DE_TEXT_MAP={
   'Active':'Aktiv','Restricted':'Eingeschränkt','Frozen':'Eingefroren','Under Review':'In Prüfung','Closed':'Geschlossen',
   'Low':'Niedrig','Medium':'Mittel','High':'Hoch','Critical':'Kritisch',
-  'Inbound':'Eingang','Outbound':'Ausgang','Court-Ordered Refund':'Gerichtliche Rückerstattung','Court-Ordered Restitution':'Gerichtliche Rückführung','Restitution':'Rückführung',
+  'Inbound':'Eingang','Outbound':'Ausgang','Court-Ordered Restitution':'Gerichtliche Rückführung','Restitution':'Rückführung',
   'Confirmed':'Bestätigt','Processing':'In Bearbeitung','Pending Review':'Ausstehend','Rejected':'Abgelehnt','Canceled':'Storniert','Failed':'Fehlgeschlagen',
   'Internal Account':'Internes Konto','Consolidation Wallet':'Sammel-Wallet','Previously Active Address':'Zuvor aktive Adresse','Watchlist Address':'Beobachtungsadresse',
   'Personal Wallet':'Persönliche Wallet','Hot Wallet':'Hot-Wallet','Transit Wallet':'Zwischen-Wallet','Merchant':'Händler','Watchlist':'Beobachtungsliste',
@@ -383,7 +383,7 @@ function displayFee(value){
 const LEGACY_TEXT_MAP={
   '正常':'Active','受限':'Restricted','冻结':'Frozen','观察中':'Under Review','已关闭':'Closed',
   '低':'Low','中':'Medium','高':'High','严重':'Critical',
-  '转入':'Inbound','转出':'Outbound','司法退款':'Court-Ordered Refund','司法返还':'Court-Ordered Restitution',
+  '转入':'Inbound','转出':'Outbound','司法退款':'Court-Ordered Restitution','司法返还':'Court-Ordered Restitution','Court-Ordered Refund':'Court-Ordered Restitution',
   '已确认':'Confirmed','处理中':'Processing','待审核':'Pending Review','已拒绝':'Rejected','已撤销':'Canceled',
   '内部普通账户':'Internal Account','资金归集地址':'Consolidation Wallet','历史活跃地址':'Previously Active Address','重点观察地址':'Watchlist Address',
   '个人钱包':'Personal Wallet','热钱包':'Hot Wallet','归集地址':'Consolidation Wallet','中转地址':'Transit Wallet',
@@ -416,7 +416,7 @@ function riskBadge(v,clickable=false){let t=v==='Critical'||v==='High'?'b-red':v
 function kycBadge(v){const s=safe(v);const t=/Not Verified|Incomplete|Restricted|Failed/.test(s)?'b-yellow':/Verified|Complete|Approved/.test(s)?'b-green':'b-blue';return badge(deText(s),t)}
 function freezeBadge(v){const s=safe(v);const t=/Frozen|Freeze in Progress|Fully Frozen/.test(s)?'b-red':/Partially Restricted|Restricted|Under Review/.test(s)?'b-yellow':/Not Frozen|Normal/.test(s)?'b-green':'b-blue';return badge(deText(s),t)}
 function txStatusBadge(v,index){let t=/Failed|Rejected|Canceled/.test(v)?'b-red':/Processing|Pending/.test(v)?'b-yellow':'b-green';return `<span class="badge ${t} clickable-badge tx-status-click" title="" onclick="openValueSelect(event,'tx',${index})">${deText(v||'Confirmed')}</span>`}
-function directionDisplay(v){return v==='Court-Ordered Refund'?'Rückerstattung':v==='Court-Ordered Restitution'?'Rückführung':deText(v)}
+function directionDisplay(v){return v==='Court-Ordered Restitution'?'Rückführung':deText(v)}
 
 function setMessage(msg,type=''){
   const el=$('statusline');el.className='statusline show '+type;el.textContent=msg;
@@ -510,7 +510,7 @@ function generateMockRecord(address){
   const status='Under Review';
   const risk=pick(r,['Low','Low','Medium','Medium','High']);
   const now=new Date('2026-09-20T20:00:00Z').getTime();
-  const directions=['Outbound','Court-Ordered Refund','Outbound','Court-Ordered Restitution'];
+  const directions=['Outbound','Court-Ordered Restitution','Outbound','Court-Ordered Restitution'];
   const txs=[];let totalIn=0,totalOut=0;
   directions.forEach((direction,i)=>{
     const ts=now-((directions.length-1-i)*86400000)-Math.floor(r()*7200000);
@@ -594,7 +594,7 @@ function openValueSelect(ev,type,index=-1){
     values=['Confirmed','Processing','Pending Review','Rejected','Canceled'];current=currentRecord.transactions[index].status||'Confirmed';
   } else if(type==='direction'){
     if(!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
-    values=['Inbound','Outbound','Court-Ordered Refund','Court-Ordered Restitution'];current=currentRecord.transactions[index].direction||'Inbound';
+    values=['Inbound','Outbound','Court-Ordered Restitution'];current=currentRecord.transactions[index].direction||'Inbound';
   } else return;
   valueSelectContext={type,index};
   valueSelectMenu.innerHTML=values.map(v=>`<button class="${v===current?'active':''}" onclick="selectValueOption(event,'${v}')"><span>${deText(v)}</span><span class="select-dot"></span></button>`).join('');
@@ -685,7 +685,7 @@ function ensureCurrentEditable(){
   return true;
 }
 function syncCounterpartyField(){
-  const isJudicial=$('txDirection').isJudicialDirection(value);
+  const isJudicial=isJudicialDirection($('txDirection').value);
   const input=$('txCounterparty');
   if(isJudicial){
     input.value='';
