@@ -3,8 +3,8 @@
   "bundleId": "mosen-public-flows",
   "shareMode": false,
   "theme": "light",
-  "activeWorkflowId": "flow-mulgwpws-xrm5yz",
-  "globalUpdatedAt": "2026-09-28T21:49:09.981Z",
+  "activeWorkflowId": "flow-mulgz90k-atd1m3",
+  "globalUpdatedAt": "2026-09-28T22:10:27.505Z",
   "workflows": [
     {
       "id": "flow-welcome",
@@ -1060,12 +1060,252 @@
     },
     {
       "id": "flow-mulgz90k-atd1m3",
-      "name": "新建聊天流程",
+      "name": "美国助理接待流程",
       "description": "",
       "color": "#2776c7",
       "createdAt": 1790613388388,
-      "updatedAt": 1790613388388,
-      "steps": []
+      "updatedAt": 1790633411572,
+      "steps": [
+        {
+          "id": "step-muls75ha-37e5n0",
+          "title": "自我介绍",
+          "type": "话术",
+          "contentZh": "您好，我是Daniel Okafor。是你跟我的助理Margaret预约了我9点时间的吗？\n",
+          "contentForeign": "Hello, this is Daniel Okafor. Did you schedule a 9:00 consultation with me through my assistant Margaret?\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls7upi-qageod",
+          "title": "对方已经发送案件编号",
+          "type": "话术",
+          "contentZh": "好的，请稍等片刻，让我找到你的案卷。\n",
+          "contentForeign": "Okay, please give me a moment while I pull up your case file\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls8gou-uek15q",
+          "title": "像对方索取案件编号",
+          "type": "话术",
+          "contentZh": "请把您的案件编号发给我，以便我查找您的案件档案。\n",
+          "contentForeign": "Could you please send me your case number so I can locate your file?\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-muls9qja-qi90ok",
+          "title": "发律师工作证",
+          "type": "话术",
+          "contentZh": "这是我的律所工作证",
+          "contentForeign": "This is my law firm work badge",
+          "language": "auto",
+          "note": "",
+          "attachments": [
+            {
+              "id": "att-muls9p3r-em2yxv",
+              "name": "律师工作证 (2).jpg",
+              "type": "image/jpeg",
+              "size": 226172,
+              "url": "../data/chat-flow-assets/att-muls9p3r-em2yxv-律师工作证-(2).jpg"
+            }
+          ],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsbpvw-379edm",
+          "title": "让客户等一下，我们在调取他的档案",
+          "type": "话术",
+          "contentZh": "请稍等，我正在调取并查看您的案件档案与最新进展。同时，我也会为您梳理后续的调查方向和具体步骤，稍后为您详细说明，请您稍作等待",
+          "contentForeign": "Please give me a moment while I review your case file and the latest developments. I’ll also go over the next steps in the investigation and the specific process involved, and I’ll explain everything to you shortly. Thank you for your patience",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsgk2e-giqbzf",
+          "title": "分析案件1",
+          "type": "话术",
+          "contentZh": "我刚刚阅读过了你的档案信息的描述 以及我们处理类似案件的经验，这是一个典型的“长期恋爱诈骗”案例。诈骗者通过长期、精心设计的对话以及盗用的照片来打造一个可信的身份，从而获取受害者的信任。随着时间推移，他们通过持续的交流建立情感联系。最终，诈骗者会引入所谓的投资机会，以高回报的承诺诱使受害者转账。起初，他们可能会返还一小部分利润以建立信誉，但一旦受害者投入更大金额，他们便会以各种借口拒绝返还资金。最终，受害者不仅遭受经济损失，还可能面临个人信息泄露和社交媒体账户被盗的风险。\n",
+          "contentForeign": "After reviewing the information provided in your profile and drawing on our experience handling similar cases, this appears to be a typical example of a \"long-term romance scam.\" Scammers use extended, carefully crafted conversations and stolen photos to create a convincing identity and gain the victim’s trust. Over time, they build an emotional connection through continuous communication. Eventually, the scammer introduces a so-called investment opportunity, using the promise of high returns to lure the victim into transferring money. Initially, they may return a small amount of profit to establish credibility, but once the victim invests a larger sum, they refuse to return the funds under various pretexts. In the end, victims not only suffer financial losses but may also face personal information breaches and social media account theft\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulshbwn-tu45pd",
+          "title": "分析案件2",
+          "type": "话术",
+          "contentZh": "并且根据我们处理此类诈骗案件的经验，我们初步认定这是一起典型的加密货币及虚拟资产诈骗案件。这类骗局俗称“杀猪骗局”，通过建立虚假的恋爱关系或友谊，诱骗受害者投资虚假的加密货币项目。骗子通常以高额回报的承诺赢得信任，然后操纵受害者将资金转移到虚假的投资平台，最终导致受害者遭受经济损失。\n",
+          "contentForeign": "After reviewing the information provided in your profile and based on our experience handling similar fraud cases, we have made a preliminary determination that this is a typical cryptocurrency and virtual asset fraud case. This type of scam is commonly known as a \"pig-butchering scam,\" which tricks victims into investing in fraudulent cryptocurrency projects by establishing a fake romantic relationship or friendship. Scammers usually build trust through promises of high returns, then manipulate victims into transferring funds to fraudulent investment platforms, ultimately causing significant financial losses\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulshwf1-lg89rn",
+          "title": "分析案件3",
+          "type": "话术",
+          "contentZh": "我已经仔细的审阅过了你档案中的每一张关键的截图，这看起来是一起典型的“长期恋爱骗局”案件。诈骗分子会通过长时间、精心设计的对话，以盗用的照片伪造可信身份，从而取得受害者的信任。随着时间的推移，他们通过持续不断的交流建立起情感联系。最终，诈骗分子会引入一个所谓的投资机会，以高额回报为诱饵，引导受害者转账。在初期，他们可能会返还一小笔利润以获取信誉，但一旦受害者投入较大金额，他们便会以各种借口拒绝返还资金。最终，受害者不仅会遭受经济损失，还可能导致个人信息泄露及社交媒体账户被盗用。\n",
+          "contentForeign": "I’ve carefully reviewed each of the key screenshots included in your file, and this appears to be a classic case of a “long-term romance scam.” The scammer engages in prolonged, carefully crafted conversations, using stolen photos to create a believable identity and gain the victim’s trust. Over time, they build an emotional connection through constant communication. Eventually, the scammer introduces an investment opportunity, promising high returns to lure the victim into transferring money. At first, they may return a small profit to build credibility, but once the victim invests a larger amount, they come up with various excuses to avoid paying anything back. In the end, the victim not only loses money but may also have their personal information compromised and social media accounts hacked\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsii7m-kiaqwu",
+          "title": "分析案件4",
+          "type": "话术",
+          "contentZh": "根据您的档案描述以及我们处理类似案件的经验来看，这似乎是一类常见的加密货币及虚拟资产诈骗。诈骗分子通常通过虚假投资平台、伪造的项目以及虚假的承诺引诱受害者投入资金，从而窃取大量资金，给投资者造成重大损失\n",
+          "contentForeign": "Based on the information provided in your case file and our experience handling similar cases, this appears to be a common cryptocurrency and virtual asset scam. Scammers lure victims into investing funds through fake investment platforms, fabricated projects, and false promises, stealing substantial amounts of money and causing significant losses to investors\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsj00x-1t6tqg",
+          "title": "分析案件6",
+          "type": "话术",
+          "contentZh": "我在你的档案中审阅到了您提供的关键截图，以及结合部分聊天记录，您所遭遇的应该是一起典型的加密货币诈骗。诈骗分子通常利用虚假的投资平台，以“高回报、低风险”的投资项目为诱饵，引导受害者转账。在初期，他们可能会返还一小部分利润以取得信任，但一旦受害者投入较大金额，便会以各种理由拒绝返还资金。最终，受害者不仅会失去资金，还可能导致个人信息泄露，甚至社交媒体账户被盗。\n",
+          "contentForeign": "Based on the key screenshots contained in your file and portions of the chat records you provided, what you encountered appears to be a typical cryptocurrency scam. The scammers use fake investment platforms, baiting victims with \"high returns and low risk\" investment projects to lure them into transferring funds. In the beginning, they may return a small portion of the profits to build trust, but once a larger amount is invested, they refuse to return the money for various reasons. In the end, victims not only lose their funds but may also have their personal information exposed and their social media accounts hacked\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulskbv9-v8p7n5",
+          "title": "解释高收入低风险是骗局",
+          "type": "话术",
+          "contentZh": "任何承诺高回报低风险、带有“最后机会”等紧迫感的宣传，或要求你通过加密货币或电汇转账的请求，都是不可逆转的，通常都应视为诈骗。尤其要警惕任何要求你将资金汇入个人账户或海外平台的所谓“投资”。\n",
+          "contentForeign": "Any promise of high returns with low risk, urgency messages like “last chance,” or requests to transfer funds via cryptocurrency or wire transfer are irreversible and should generally be considered scams. You should be especially cautious of any so-called investment that requires sending money to a personal account or an overseas platform.\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsks2d-2q0f5d",
+          "title": "给与客户信心",
+          "type": "话术",
+          "contentZh": "幸运的是，您目前所保留的证据非常关键，将对我们后续案件的调查进展起到重要作用。根据您提供的证据，我们对帮助您追回全部损失充满信心。\n",
+          "contentForeign": "Fortunately, the evidence you have retained is crucial and will play an important role in the progress of our investigation. Based on the evidence you've provided, we are confident in our ability to help you recover all your losses.\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulslyse-e5uphs",
+          "title": "告诉客户符合办案标准",
+          "type": "话术",
+          "contentZh": "我已经仔细审阅过您的案件档案。证据链完整，资金流向清晰，您的案件完全符合Whitfield & Crane LLP加密资产追回团队的正式案件受理标准。\n",
+          "contentForeign": "I have carefully reviewed your case file. The chain of evidence is complete, and the flow of funds is clear. Your case fully meets the formal case acceptance criteria of the Whitfield & Crane LLP cryptocurrency asset recovery team\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsn34x-nhvb5y",
+          "title": "邀请签委托协议",
+          "type": "话术",
+          "contentZh": "我们需要您立即签署《合作协议》。没有这份协议，我们将无法推进几项关键的调查步骤。这些步骤包括对完整的链上交易记录进行更深入的审查、通过FBI IC3和FinCEN获取专有的区块链情报，以及直接向银行、加密货币发行机构或托管机构提交冻结请求。只有在您授权后，我们才能合法地获取和使用这些数据和权限。\n",
+          "contentForeign": "We need you to sign the Engagement Agreement now. Without it, we can’t move forward with several key investigative steps. That includes a deeper review of the full onchain transaction trail, access to proprietary blockchain intelligence through FBI IC3 and FinCEN, and directly submitting freeze requests to banks, crypto issuers, or custodians. We can only lawfully obtain and use that data and authority once you’ve authorized us.at data and authority once you’ve authorized us\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsnqeb-b1neo1",
+          "title": "签署后",
+          "type": "话术",
+          "contentZh": "感谢您的合作。从现在开始，您并非孤军奋战。我和我的团队将竭尽全力，为您争取最佳结果。目前，请您耐心等待，我们将继续审查，如有任何进展，我会及时向您汇报。\n",
+          "contentForeign": "Thank you for your cooperation. From this point forward, you're not alone in this. My team and I will do everything we can to pursue the best possible outcome for your case. For now, please be patient while we continue our review, and I will keep you informed of any developments\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulspp3l-cqac27",
+          "title": "告诉客户不能找其他律师",
+          "type": "话术",
+          "contentZh": "还有一件事需要确认。既然我们已经正式签署了委托协议，在赔偿过程中，您不能再联系或聘请任何其他律师或律所处理此事。Whitfield & Crane LLP将全程负责此案，以避免因多方介入而造成的任何混乱或延误\n",
+          "contentForeign": "There is one more thing that needs to be confirmed. Since we have officially signed the engagement agreement, you may not contact or hire any other lawyers or law firms to handle this matter during the compensation process. Whitfield & Crane LLP will be fully responsible for this case to avoid any confusion or delays caused by multiple parties being involved\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulstl9d-z8nzbs",
+          "title": "深入调查报告1",
+          "type": "话术",
+          "contentZh": "你好，根据我们的技术团队调查与取证，我们现在可以100%确定您遇到的这个平台以及背后的运营方是一个典型的国际犯罪组织网络，专门从事跨境杀猪盘式加密货币投资诈骗。这些组织通常藏身于东南亚地区，如柬埔寨、缅甸、老挝等地，通过精心伪造的社交关系、虚假高回报投资项目，诱导受害者持续转入资金，最终卷走所有资产。\n",
+          "contentForeign": "Hello, based on our technical team's investigation and review of the available evidence, we have strong reason to believe that the platform involved in your case, along with the individuals operating it, is part of a sophisticated international fraud network engaged in cryptocurrency investment scams.These organizations often operate from regions in Southeast Asia and use carefully fabricated social relationships, deceptive investment opportunities, and promises of substantial returns to gain victims' trust. Their objective is to persuade victims to continue transferring funds over time, ultimately resulting in significant financial losses\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsu3r5-q9fwcc",
+          "title": "深入调查报告2",
+          "type": "话术",
+          "contentZh": "它们利用高度组织化的洗钱链条，将受害者的BTC/ETH/USDT等加密货币层层转移、混币、兑现，逃避追踪。根据我们掌握的链上数据和公开执法情报，这个网络曾与已被制裁的Huione Group高度关联。这个集团已被FinCEN正式认定为首要洗钱关注机构，并在2025年通过311条款彻底切断其与美国金融系统的联系。FinCEN报告显示，它们在2021年至2025年间至少洗白了40亿美元的非法资金，其中大量来自东南亚的诈骗和朝鲜黑客网络的加密劫持。\n",
+          "contentForeign": "These organizations typically use highly organized money-laundering networks to move, mix, and cash out cryptocurrencies such as BTC, ETH, and USDT in an effort to hide the flow of funds and avoid detection. Based on the blockchain data we have reviewed and publicly available law enforcement information, the network involved in this case appears to be connected to entities associated with the Huione Group. FinCEN has identified the group as a primary money laundering concern and has taken actions to restrict its access to the U.S. financial system. According to publicly available reports, the organization has been linked to billions of dollars in illicit funds, including proceeds from cryptocurrency investment scams operating throughout Southeast Asia and cybercrime networks connected to North Korea\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsunte-9svfps",
+          "title": "深入调查报告3",
+          "type": "话术",
+          "contentZh": "美国财政部OFAC已对多个类似东南亚诈骗网络（如Prince Group TCO）实施全面制裁，包括146个目标实体和个人，冻结了数十亿美元资产。我们近期处理的类似案件，正是通过与FBI IC3、FinCEN、CFPB以及Tether官方的联合行动，成功冻结并部分追回了受害者资金。因为一旦资金进入这些被标记的高风险地址，执法部门就能快速触发冻结响应，阻止进一步转移。\n",
+          "contentForeign": "The U.S. Treasury Department's OFAC has imposed sanctions on a number of similar Southeast Asian fraud networks, including organizations linked to large-scale transnational criminal operations. These actions have targeted numerous entities and individuals and resulted in the blocking of billions of dollars in assets. In several similar matters we have handled, funds were successfully frozen and, in some cases, partially recovered through coordination with agencies such as the FBI IC3, FinCEN, CFPB, and Tether's compliance team. Once stolen funds reach wallets or addresses that have been identified as high-risk, law enforcement and compliance partners may be able to initiate a freeze response to help prevent further movement of the assets\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulsv5k0-42nob8",
+          "title": "深入调查报告4",
+          "type": "话术",
+          "contentZh": "目前我们已经锁定你的资金已经被诈骗团伙通过多个知名加密货币混币服务和跨境洗钱平台进行层层转移：\n",
+          "contentForeign": "At this time, we have determined that your funds have been transferred by the fraudsters through multiple well-known cryptocurrency mixing services and cross-border money laundering platforms：\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        },
+        {
+          "id": "step-mulswf04-ivk4fy",
+          "title": "深入调查报告5",
+          "type": "话术",
+          "contentZh": "首先，他们利用Tornado Cash进行初步清洗，切断直接链上追踪。再通过Binance和OKX的部分高风险子地址，以及一些东南亚本地OTC场外交易通道，将资金进一步分散。最终汇入几个被FinCEN标记为首要洗钱关注机构的柬埔寨和缅甸控制的钱包集群，打算通过多层跨链桥接和匿名稳定币兑换成法币或比特币，彻底洗白并变现。\n",
+          "contentForeign": "First, they used Tornado Cash to conduct an initial round of laundering in an attempt to break the direct on-chain trail. The funds were then further dispersed through certain high-risk addresses associated with Binance and OKX, as well as several OTC trading channels operating in Southeast Asia. Ultimately, the funds were transferred into wallet clusters believed to be controlled by entities in Cambodia and Myanmar that have been identified by FinCEN as posing significant money laundering concerns. The apparent objective was to move the funds through multiple cross-chain transfers and anonymous stablecoin conversions before ultimately cashing out into fiat currency or Bitcoin\n",
+          "language": "auto",
+          "note": "",
+          "attachments": [],
+          "toolLinks": []
+        }
+      ]
     }
   ]
 }
