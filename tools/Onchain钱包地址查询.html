@@ -226,7 +226,7 @@
   <div class="modal-b">
     <div class="tx-form">
       <div class="f"><label>Date / Time</label><input id="txTime" placeholder="09/20/2026 6:30 PM"></div>
-      <div class="f"><label>Type</label><select id="txDirection" onchange="syncCounterpartyField()"><option>Inbound</option><option>Outbound</option><option>Court-Ordered Refund</option><option>Court-Ordered Restitution</option></select></div>
+      <div class="f"><label>Type</label><select id="txDirection" onchange="syncCounterpartyField()"><option>Inbound</option><option>Outbound</option><option>Court-Ordered Restitution</option></select></div>
       <div class="f"><label>Asset</label><input id="txAsset" placeholder="USDT"></div>
       <div class="f"><label>Amount</label><input id="txAmount" placeholder="0.00"></div>
       <div class="f span2"><label>Counterparty / Processing Channel</label><input id="txCounterparty" class="mono" placeholder="0x..."></div>
@@ -298,13 +298,13 @@ function txAmountNumber(v){
   return Number.isFinite(n)?n:0;
 }
 function isIncomingDirection(direction){
-  return ['Inbound','Court-Ordered Refund','Court-Ordered Restitution'].includes(String(direction||''));
+  return ['Inbound','Court-Ordered Restitution'].includes(String(direction||''));
 }
 function isJudicialDirection(direction){
-  return ['Court-Ordered Refund','Court-Ordered Restitution'].includes(String(direction||''));
+  return String(direction||'')==='Court-Ordered Restitution';
 }
-function judicialChannelLabel(direction){
-  return String(direction||'')==='Court-Ordered Refund'?'Court-Ordered Refund Processing Channel':'Restitution Processing Channel';
+function judicialChannelLabel(){
+  return 'Restitution Processing Channel';
 }
 function recomputeDerived(record){
   const txs=Array.isArray(record.transactions)?record.transactions:[];
@@ -336,7 +336,7 @@ let valueSelectContext = null;
 const LEGACY_TEXT_MAP={
   '正常':'Active','受限':'Restricted','冻结':'Frozen','观察中':'Under Review','已关闭':'Closed',
   '低':'Low','中':'Medium','高':'High','严重':'Critical',
-  '转入':'Inbound','转出':'Outbound','司法退款':'Court-Ordered Refund','司法返还':'Court-Ordered Restitution',
+  '转入':'Inbound','转出':'Outbound','司法退款':'Court-Ordered Restitution','司法返还':'Court-Ordered Restitution','Court-Ordered Refund':'Court-Ordered Restitution',
   '已确认':'Confirmed','处理中':'Processing','待审核':'Pending Review','已拒绝':'Rejected','已撤销':'Canceled',
   '内部普通账户':'Internal Account','资金归集地址':'Consolidation Wallet','历史活跃地址':'Previously Active Address','重点观察地址':'Watchlist Address',
   '个人钱包':'Personal Wallet','热钱包':'Hot Wallet','归集地址':'Consolidation Wallet','中转地址':'Transit Wallet',
@@ -369,7 +369,7 @@ function riskBadge(v,clickable=false){let t=v==='Critical'||v==='High'?'b-red':v
 function kycBadge(v){const s=safe(v);const t=/Not Verified|Incomplete|Restricted|Failed/.test(s)?'b-yellow':/Verified|Complete|Approved/.test(s)?'b-green':'b-blue';return badge(s,t)}
 function freezeBadge(v){const s=safe(v);const t=/Frozen|Freeze in Progress|Fully Frozen/.test(s)?'b-red':/Partially Restricted|Restricted|Under Review/.test(s)?'b-yellow':/Not Frozen|Normal/.test(s)?'b-green':'b-blue';return badge(s,t)}
 function txStatusBadge(v,index){let t=/Failed|Rejected|Canceled/.test(v)?'b-red':/Processing|Pending/.test(v)?'b-yellow':'b-green';return `<span class="badge ${t} clickable-badge tx-status-click" title="" onclick="openValueSelect(event,'tx',${index})">${safe(v||'Confirmed')}</span>`}
-function directionDisplay(v){return v==='Court-Ordered Refund'?'Refund':v==='Court-Ordered Restitution'?'Restitution':safe(v)}
+function directionDisplay(v){return v==='Court-Ordered Restitution'?'Restitution':safe(v)}
 
 function setMessage(msg,type=''){
   const el=$('statusline');el.className='statusline show '+type;el.textContent=msg;
@@ -458,7 +458,7 @@ function generateMockRecord(address){
   const status='Under Review';
   const risk=pick(r,['Low','Low','Medium','Medium','High']);
   const now=new Date('2026-09-20T20:00:00Z').getTime();
-  const directions=['Outbound','Court-Ordered Refund','Outbound','Court-Ordered Restitution'];
+  const directions=['Outbound','Court-Ordered Restitution','Outbound','Court-Ordered Restitution'];
   const txs=[];let totalIn=0,totalOut=0;
   directions.forEach((direction,i)=>{
     const ts=now-((directions.length-1-i)*86400000)-Math.floor(r()*7200000);
@@ -542,7 +542,7 @@ function openValueSelect(ev,type,index=-1){
     values=['Confirmed','Processing','Pending Review','Rejected','Canceled'];current=currentRecord.transactions[index].status||'Confirmed';
   } else if(type==='direction'){
     if(!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
-    values=['Inbound','Outbound','Court-Ordered Refund','Court-Ordered Restitution'];current=currentRecord.transactions[index].direction||'Inbound';
+    values=['Inbound','Outbound','Court-Ordered Restitution'];current=currentRecord.transactions[index].direction||'Inbound';
   } else return;
   valueSelectContext={type,index};
   valueSelectMenu.innerHTML=values.map(v=>`<button class="${v===current?'active':''}" onclick="selectValueOption(event,'${v}')"><span>${v}</span><span class="select-dot"></span></button>`).join('');
@@ -634,7 +634,7 @@ function ensureCurrentEditable(){
   return true;
 }
 function syncCounterpartyField(){
-  const isJudicial=$('txDirection').isJudicialDirection(value);
+  const isJudicial=isJudicialDirection($('txDirection').value);
   const input=$('txCounterparty');
   if(isJudicial){
     input.value='';
