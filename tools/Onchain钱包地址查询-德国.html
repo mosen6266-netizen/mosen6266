@@ -51,6 +51,7 @@
   .amount-in{color:#64eab0;font-weight:800}.amount-out{color:#ff9eaa;font-weight:800}
   .clickable-badge{cursor:pointer;user-select:none;transition:.16s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}.clickable-badge:hover{transform:translateY(-1px);filter:brightness(1.12);box-shadow:0 6px 18px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.08)}
   .editable-balance{cursor:pointer;user-select:none;border-radius:11px;padding:5px 6px;margin:-5px -6px;transition:.16s}.editable-balance:hover{background:rgba(77,140,255,.08);box-shadow:inset 0 0 0 1px rgba(77,140,255,.18)}
+  .editable-fee{cursor:pointer;user-select:none;border-radius:8px;transition:.16s}.editable-fee:hover{background:rgba(77,140,255,.10);box-shadow:inset 0 0 0 1px rgba(77,140,255,.20)}
   .editable-balance .coin-top{font-size:18px;color:var(--text)}.editable-balance .coin-top span:last-child{font-weight:850}
   .tx-status-click{cursor:pointer;user-select:none;display:inline-flex;align-items:center;justify-content:center;width:max-content;min-width:max-content;max-width:none;white-space:nowrap;padding-left:10px;padding-right:10px;line-height:1.2;text-align:center;overflow:visible;word-break:keep-all;flex:0 0 auto}.tx-status-click:hover{filter:brightness(1.12)}
   .tx-card th,.tx-card td{min-width:0;overflow:hidden}
@@ -264,6 +265,18 @@
 </dialog>
 
 
+<dialog id="feeDialog" class="tx-dialog" style="width:min(430px,92vw)">
+  <div class="modal-h"><strong>ETH-Netzwerkgebühr bearbeiten</strong><button onclick="feeDialog.close()">Schließen</button></div>
+  <div class="modal-b">
+    <div class="f"><label>ETH-Netzwerkgebühr</label><input id="feeInput" inputmode="decimal" autocomplete="off" placeholder="0,0007513"></div>
+    <div class="modal-actions">
+      <button onclick="feeDialog.close()">Abbrechen</button>
+      <button class="primary" onclick="saveTxFeeEdit()">Gebühr speichern</button>
+    </div>
+  </div>
+</dialog>
+
+
 <dialog id="autoReadDialog" class="tx-dialog" style="width:min(760px,94vw)">
   <div class="modal-h"><strong>Bestelldaten automatisch einlesen</strong><button onclick="autoReadDialog.close()">Schließen</button></div>
   <div class="modal-b">
@@ -306,8 +319,10 @@ const txContextMenu = $('txContextMenu');
 const autoReadDialog = $('autoReadDialog');
 const deleteTxDialog = $('deleteTxDialog');
 const balanceDialog = $('balanceDialog');
+const feeDialog = $('feeDialog');
 const valueSelectMenu = $('valueSelectMenu');
 let pendingDeleteTxIndex = -1;
+let editingFeeTxIndex = -1;
 const OFFICIAL_KYC_NOTE='Die KYC-Verifizierung für diese Adresse ist noch nicht abgeschlossen. Ausgehende Transaktionen sind derzeit eingeschränkt. Die Transaktionsfunktion wird nach erfolgreicher Identitätsprüfung und Compliance-Prüfung wieder freigeschaltet.';
 function txAmountNumber(v){
   const n=parseLocaleNumber(v);
@@ -581,7 +596,7 @@ function render(r){
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
     const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
     const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
-    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Datum / Uhrzeit">${safe(normalizeDateText(tx.time))}</td><td data-label="Art"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Währung / Betrag" class="${cls}">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Gegenpartei / Kanal">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet-Adresse"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Netzwerkgebühr">${displayFee(tx.fee)}</td></tr>`
+    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Datum / Uhrzeit">${safe(normalizeDateText(tx.time))}</td><td data-label="Art"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Währung / Betrag" class="${cls}">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Gegenpartei / Kanal">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet-Adresse"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Netzwerkgebühr" class="editable-fee" title="Zum Bearbeiten der ETH-Netzwerkgebühr klicken" onclick="editTxFee(event,${i})">${displayFee(tx.fee)}</td></tr>`
   }).join(''):`<tr class="tx-empty-row"><td colspan="8" style="color:#90a4c1;text-align:center;padding:28px">Für diese Adresse sind keine internen Transaktionsdatensätze vorhanden.</td></tr>`;
   const inCount=txs.filter(x=>isIncomingDirection(x.direction)).length;
   const outCount=txs.filter(x=>!isIncomingDirection(x.direction)).length;
@@ -675,6 +690,39 @@ function saveBalanceEdit(){
   persistCurrent();
 }
 $('balanceInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')saveBalanceEdit()});
+
+
+function editTxFee(ev,index){
+  if(ev){ev.preventDefault();ev.stopPropagation()}
+  if(!currentRecord||!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
+  editingFeeTxIndex=index;
+  const current=String(currentRecord.transactions[index].fee||'').replace(/\s*ETH\s*$/i,'').trim();
+  const normalized=canonicalOrderNumber(current);
+  if(normalized){
+    const decimals=normalized.includes('.')?normalized.split('.')[1].length:0;
+    $('feeInput').value=Number(normalized).toLocaleString('de-DE',{useGrouping:false,minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+  }else{
+    $('feeInput').value=current;
+  }
+  feeDialog.showModal();
+  setTimeout(()=>{$('feeInput').focus();$('feeInput').select()},0);
+}
+function saveTxFeeEdit(){
+  if(!currentRecord||editingFeeTxIndex<0||!currentRecord.transactions?.[editingFeeTxIndex]) return;
+  const raw=$('feeInput').value.trim().replace(/\s*ETH\s*$/i,'').trim();
+  if(!/^\d[\d.,]*$/.test(raw)){alert('Bitte geben Sie eine gültige ETH-Netzwerkgebühr ein.');return}
+  const normalized=canonicalOrderNumber(raw);
+  const n=Number(normalized);
+  if(!normalized||!Number.isFinite(n)||n<0){alert('Bitte geben Sie eine gültige ETH-Netzwerkgebühr ein.');return}
+  if(!ensureCurrentEditable()) return;
+  currentRecord.transactions[editingFeeTxIndex].fee=normalized+' ETH';
+  db[norm(currentRecord.address)]=currentRecord;
+  saveDB();
+  feeDialog.close();
+  render(currentRecord);
+  setFixedAccountNotice();
+}
+$('feeInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')saveTxFeeEdit()});
 
 function hideTxMenu(){
   txContextMenu.classList.remove('show');
