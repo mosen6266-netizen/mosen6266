@@ -1,1 +1,147 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+name: Build Signal Scheduler V7.2 Offline Installer
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-windows-offline-installer:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore build source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path buildsrc | Out-Null
+          $b64 = Get-Content -Raw offline-build/signal_v72_build_source.zip.b64
+          [IO.File]::WriteAllBytes("signal_v72_build_source.zip", [Convert]::FromBase64String($b64))
+          Expand-Archive -Force signal_v72_build_source.zip buildsrc
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          architecture: 'x64'
+
+      - name: Install Python build dependencies
+        shell: pwsh
+        working-directory: buildsrc
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-build.txt
+
+      - name: Build self-contained Windows app
+        shell: pwsh
+        working-directory: buildsrc
+        run: |
+          pyinstaller --noconfirm --clean --windowed --onedir --name SignalScheduler --add-data "app/static;app/static" --hidden-import app.main --hidden-import uvicorn.logging --hidden-import uvicorn.loops.asyncio --hidden-import uvicorn.protocols.http.h11_impl --hidden-import uvicorn.lifespan.on --hidden-import h11 launcher.pyw
+
+      - name: Download signal-cli 0.14.8
+        shell: pwsh
+        working-directory: buildsrc
+        run: |
+          New-Item -ItemType Directory -Force -Path bundle | Out-Null
+          Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/AsamK/signal-cli/releases/download/v0.14.8/signal-cli-0.14.8.tar.gz" -OutFile "signal-cli.tar.gz"
+          tar -xzf signal-cli.tar.gz -C bundle
+          if (Test-Path "bundle/signal-cli-0.14.8") { Rename-Item "bundle/signal-cli-0.14.8" "signal-cli" }
+          if (-not (Test-Path "bundle/signal-cli/bin/signal-cli.bat")) { throw "signal-cli.bat not found after extraction" }
+
+      - name: Download Java JRE 25 x64
+        shell: pwsh
+        working-directory: buildsrc
+        run: |
+          Invoke-WebRequest -UseBasicParsing -Uri "https://api.adoptium.net/v3/binary/latest/25/ga/windows/x64/jre/hotspot/normal/eclipse" -OutFile "jre.zip"
+          New-Item -ItemType Directory -Force -Path jre_extract | Out-Null
+          Expand-Archive -Force jre.zip jre_extract
+          $root = Get-ChildItem jre_extract -Directory | Select-Object -First 1
+          if (-not $root) { throw "JRE extraction failed" }
+          Move-Item $root.FullName "bundle/jre"
+          if (-not (Test-Path "bundle/jre/bin/java.exe")) { throw "java.exe not found" }
+
+      - name: Smoke test bundled runtimes
+        shell: pwsh
+        working-directory: buildsrc
+        run: |
+          & .\bundle\jre\bin\java.exe -version
+          $env:JAVA_HOME = (Resolve-Path .\bundle\jre).Path
+          $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+          cmd /d /c ".\bundle\signal-cli\bin\signal-cli.bat --version"
+          $p = Start-Process -FilePath ".\dist\SignalScheduler\SignalScheduler.exe" -ArgumentList "--server" -PassThru
+          try {
+            $ok = $false
+            for ($i=0; $i -lt 45; $i++) {
+              Start-Sleep -Milliseconds 500
+              if ($p.HasExited) { break }
+              try {
+                $r = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8800/api/runtime-status" -TimeoutSec 2
+                if ($r.StatusCode -eq 200) { $ok = $true; break }
+              } catch {}
+            }
+            if (-not $ok) {
+              if (Test-Path ".\dist\SignalScheduler\startup.log") { Get-Content ".\dist\SignalScheduler\startup.log" }
+              if (Test-Path ".\dist\SignalScheduler\server_error.log") { Get-Content ".\dist\SignalScheduler\server_error.log" }
+              throw "Bundled web server did not become healthy"
+            }
+          } finally {
+            if ($p -and -not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+          }
+
+      - name: Ensure Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          if (-not (Test-Path $iscc)) { throw "Inno Setup compiler not found" }
+
+      - name: Build offline installer EXE
+        shell: pwsh
+        working-directory: buildsrc
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          $exe = Get-ChildItem .\output\*.exe | Select-Object -First 1
+          if (-not $exe) { throw "Installer EXE not produced" }
+          Write-Host "Built installer: $($exe.FullName) size=$($exe.Length)"
+
+      - name: Test installed package
+        shell: pwsh
+        working-directory: buildsrc
+        run: |
+          $installer = Get-ChildItem .\output\*.exe | Select-Object -First 1
+          $installDir = Join-Path $env:RUNNER_TEMP "SignalSchedulerOfflineTest"
+          if (Test-Path $installDir) { Remove-Item -Recurse -Force $installDir }
+          $args = @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR=' + $installDir))
+          $ip = Start-Process -FilePath $installer.FullName -ArgumentList $args -Wait -PassThru
+          if ($ip.ExitCode -ne 0) { throw "Installer failed: $($ip.ExitCode)" }
+          $installedExe = Join-Path $installDir "SignalScheduler.exe"
+          if (-not (Test-Path $installedExe)) { throw "Installed EXE not found" }
+          if (-not (Test-Path (Join-Path $installDir "signal-cli\bin\signal-cli.bat"))) { throw "Installed signal-cli missing" }
+          if (-not (Test-Path (Join-Path $installDir "jre\bin\java.exe"))) { throw "Installed JRE missing" }
+          $p = Start-Process -FilePath $installedExe -ArgumentList "--server" -PassThru
+          try {
+            $ok = $false
+            for ($i=0; $i -lt 30; $i++) {
+              Start-Sleep -Seconds 1
+              if ($p.HasExited) { break }
+              try {
+                $r = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8800/api/runtime-status" -TimeoutSec 1
+                if ($r.StatusCode -eq 200) { $ok = $true; break }
+              } catch {}
+            }
+            if (-not $ok) { throw "Installed app server did not become healthy" }
+          } finally {
+            if ($p -and -not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+          }
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SignalScheduler-V7.2-Offline-Installer
+          path: buildsrc/output/*.exe
+          if-no-files-found: error
+          compression-level: 0
