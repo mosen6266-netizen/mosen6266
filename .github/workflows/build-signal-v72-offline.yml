@@ -1,11 +1,1 @@
-name: Signal Build Validation
-on:
-  push:
-    branches:
-      - main
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate trigger
-        run: echo "workflow-valid"
+The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
