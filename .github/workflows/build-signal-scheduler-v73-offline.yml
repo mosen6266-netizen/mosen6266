@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - build/signal-scheduler-v7.3-offline
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     timeout-minutes: 45
     steps:
       - name: Checkout
