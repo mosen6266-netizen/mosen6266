@@ -51,7 +51,7 @@
   .amount-in{color:#64eab0;font-weight:800}.amount-out{color:#ff9eaa;font-weight:800}
   .clickable-badge{cursor:pointer;user-select:none;transition:.16s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}.clickable-badge:hover{transform:translateY(-1px);filter:brightness(1.12);box-shadow:0 6px 18px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.08)}
   .editable-balance{cursor:pointer;user-select:none;border-radius:11px;padding:5px 6px;margin:-5px -6px;transition:.16s}.editable-balance:hover{background:rgba(77,140,255,.08);box-shadow:inset 0 0 0 1px rgba(77,140,255,.18)}
-  .editable-fee{cursor:pointer;user-select:none;border-radius:8px;transition:.16s}.editable-fee:hover{background:rgba(77,140,255,.10);box-shadow:inset 0 0 0 1px rgba(77,140,255,.20)}
+  .editable-fee,.editable-cell{cursor:pointer;user-select:none;border-radius:8px;transition:.16s}.editable-fee:hover,.editable-cell:hover{background:rgba(77,140,255,.10);box-shadow:inset 0 0 0 1px rgba(77,140,255,.20)}
   .editable-balance .coin-top{font-size:18px;color:var(--text)}.editable-balance .coin-top span:last-child{font-weight:850}
   .tx-status-click{cursor:pointer;user-select:none;display:inline-flex;align-items:center;justify-content:center;width:max-content;min-width:max-content;max-width:none;white-space:nowrap;padding-left:10px;padding-right:10px;line-height:1.2;text-align:center;overflow:visible;word-break:keep-all;flex:0 0 auto}.tx-status-click:hover{filter:brightness(1.12)}
   .tx-card th,.tx-card td{min-width:0;overflow:hidden}
@@ -233,7 +233,7 @@
       <div class="f span2"><label>Gegenpartei / Abwicklungskanal</label><input id="txCounterparty" class="mono" placeholder="0x..."></div>
       <div class="f"><label>Status</label><input id="txStatus" placeholder="Bestätigt / In Bearbeitung"></div>
       <div class="f"><label>Block</label><input id="txBlock" placeholder="23104567"></div>
-      <div class="f span2"><label>Wallet-Adresse</label><input id="txHash" class="mono" placeholder="Aktuelle Wallet-Adresse" readonly></div>
+      <div class="f span2"><label>Wallet-Adresse</label><input id="txHash" class="mono" placeholder="Aktuelle Wallet-Adresse"></div>
       <div class="f span2"><label>Netzwerkgebühr</label><input id="txFee" placeholder="0,82 USDT"></div>
     </div>
     <div class="modal-actions">
@@ -272,6 +272,19 @@
     <div class="modal-actions">
       <button onclick="feeDialog.close()">Abbrechen</button>
       <button class="primary" onclick="saveTxFeeEdit()">Gebühr speichern</button>
+    </div>
+  </div>
+</dialog>
+
+
+<dialog id="cellEditDialog" class="tx-dialog" style="width:min(460px,92vw)">
+  <div class="modal-h"><strong id="cellEditTitle">Transaktionsfeld bearbeiten</strong><button onclick="cellEditDialog.close()">Schließen</button></div>
+  <div class="modal-b">
+    <div class="f"><label id="cellEditLabel">Wert</label><input id="cellEditInput" autocomplete="off"></div>
+    <div class="f" id="cellEditSecondaryWrap" style="display:none;margin-top:12px"><label id="cellEditSecondaryLabel">Betrag</label><input id="cellEditSecondaryInput" autocomplete="off"></div>
+    <div class="modal-actions">
+      <button onclick="cellEditDialog.close()">Abbrechen</button>
+      <button class="primary" onclick="saveDirectTxEdit()">Speichern</button>
     </div>
   </div>
 </dialog>
@@ -320,9 +333,12 @@ const autoReadDialog = $('autoReadDialog');
 const deleteTxDialog = $('deleteTxDialog');
 const balanceDialog = $('balanceDialog');
 const feeDialog = $('feeDialog');
+const cellEditDialog = $('cellEditDialog');
 const valueSelectMenu = $('valueSelectMenu');
 let pendingDeleteTxIndex = -1;
 let editingFeeTxIndex = -1;
+let editingCellTxIndex = -1;
+let editingCellField = '';
 const OFFICIAL_KYC_NOTE='Die KYC-Verifizierung für diese Adresse ist noch nicht abgeschlossen. Ausgehende Transaktionen sind derzeit eingeschränkt. Die Transaktionsfunktion wird nach erfolgreicher Identitätsprüfung und Compliance-Prüfung wieder freigeschaltet.';
 function txAmountNumber(v){
   const n=parseLocaleNumber(v);
@@ -595,8 +611,8 @@ function render(r){
   $('txBody').innerHTML=txs.length?txs.map((tx,i)=>{
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
     const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
-    const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
-    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Datum / Uhrzeit">${safe(normalizeDateText(tx.time))}</td><td data-label="Art"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Währung / Betrag" class="${cls}">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Gegenpartei / Kanal">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet-Adresse"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Netzwerkgebühr" class="editable-fee" title="Zum Bearbeiten der ETH-Netzwerkgebühr klicken" onclick="editTxFee(event,${i})">${displayFee(tx.fee)}</td></tr>`
+    const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(tx.counterparty||judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
+    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Datum / Uhrzeit" class="editable-cell" title="Zum Bearbeiten von Datum / Uhrzeit klicken" onclick="openDirectTxEdit(event,${i},'time')">${safe(normalizeDateText(tx.time))}</td><td data-label="Art"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Währung / Betrag" class="${cls} editable-cell" title="Zum Bearbeiten von Währung / Betrag klicken" onclick="openDirectTxEdit(event,${i},'assetAmount')">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Gegenpartei / Kanal" class="editable-cell" title="Zum Bearbeiten von Gegenpartei / Abwicklungskanal klicken" onclick="openDirectTxEdit(event,${i},'counterparty')">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet-Adresse" class="editable-cell" title="Zum Bearbeiten der Wallet-Adresse klicken" onclick="openDirectTxEdit(event,${i},'hash')"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block" class="editable-cell" title="Zum Bearbeiten des Blocks klicken" onclick="openDirectTxEdit(event,${i},'block')">${safe(tx.block)}</td><td data-label="Netzwerkgebühr" class="editable-fee" title="Zum Bearbeiten der ETH-Netzwerkgebühr klicken" onclick="editTxFee(event,${i})">${displayFee(tx.fee)}</td></tr>`
   }).join(''):`<tr class="tx-empty-row"><td colspan="8" style="color:#90a4c1;text-align:center;padding:28px">Für diese Adresse sind keine internen Transaktionsdatensätze vorhanden.</td></tr>`;
   const inCount=txs.filter(x=>isIncomingDirection(x.direction)).length;
   const outCount=txs.filter(x=>!isIncomingDirection(x.direction)).length;
@@ -724,6 +740,77 @@ function saveTxFeeEdit(){
 }
 $('feeInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')saveTxFeeEdit()});
 
+function openDirectTxEdit(ev,index,field){
+  if(ev){ev.preventDefault();ev.stopPropagation()}
+  if(!currentRecord||!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
+  const tx=currentRecord.transactions[index];
+  editingCellTxIndex=index;
+  editingCellField=field;
+  $('cellEditSecondaryWrap').style.display='none';
+  $('cellEditInput').value='';
+  $('cellEditSecondaryInput').value='';
+  if(field==='time'){
+    $('cellEditTitle').textContent='Datum / Uhrzeit bearbeiten';
+    $('cellEditLabel').textContent='Datum / Uhrzeit';
+    $('cellEditInput').value=normalizeDateText(tx.time)||'';
+  }else if(field==='assetAmount'){
+    $('cellEditTitle').textContent='Währung / Betrag bearbeiten';
+    $('cellEditLabel').textContent='Währung';
+    $('cellEditInput').value=tx.asset||currentRecord.asset||'USDT';
+    $('cellEditSecondaryLabel').textContent='Betrag';
+    $('cellEditSecondaryInput').value=inputAmount(tx.amount??'',tx.asset||currentRecord.asset||'USDT');
+    $('cellEditSecondaryWrap').style.display='block';
+  }else if(field==='counterparty'){
+    $('cellEditTitle').textContent='Gegenpartei / Abwicklungskanal bearbeiten';
+    $('cellEditLabel').textContent='Gegenpartei / Abwicklungskanal';
+    $('cellEditInput').value=tx.counterparty||(isJudicialDirection(tx.direction)?judicialChannelLabel(tx.direction):'');
+  }else if(field==='hash'){
+    $('cellEditTitle').textContent='Wallet-Adresse bearbeiten';
+    $('cellEditLabel').textContent='Wallet-Adresse';
+    $('cellEditInput').value=tx.hash||currentRecord.address||'';
+  }else if(field==='block'){
+    $('cellEditTitle').textContent='Block bearbeiten';
+    $('cellEditLabel').textContent='Block';
+    $('cellEditInput').value=tx.block||'';
+  }else return;
+  cellEditDialog.showModal();
+  setTimeout(()=>{$('cellEditInput').focus();$('cellEditInput').select()},0);
+}
+function saveDirectTxEdit(){
+  if(!currentRecord||editingCellTxIndex<0||!currentRecord.transactions?.[editingCellTxIndex]) return;
+  if(!ensureCurrentEditable()) return;
+  const tx=currentRecord.transactions[editingCellTxIndex];
+  const value=$('cellEditInput').value.trim();
+  if(editingCellField==='time'){
+    const normalized=normalizeDateText(value);
+    if(!normalized){alert('Datum / Uhrzeit ist erforderlich.');return}
+    tx.time=normalized;
+  }else if(editingCellField==='assetAmount'){
+    const asset=(value||currentRecord.asset||'USDT').toUpperCase();
+    const rawAmount=$('cellEditSecondaryInput').value.trim();
+    const amountNum=parseLocaleNumber(rawAmount);
+    if(!rawAmount||!Number.isFinite(amountNum)){alert('Bitte geben Sie einen gültigen Betrag ein.');return}
+    tx.asset=asset;
+    tx.amount=amountNum.toFixed(asset==='ETH'?6:2);
+  }else if(editingCellField==='counterparty'){
+    tx.counterparty=value;
+  }else if(editingCellField==='hash'){
+    if(!value){alert('Wallet-Adresse ist erforderlich.');return}
+    tx.hash=value;
+  }else if(editingCellField==='block'){
+    tx.block=value;
+  }else return;
+  recomputeDerived(currentRecord);
+  db[norm(currentRecord.address)]=currentRecord;
+  saveDB();
+  cellEditDialog.close();
+  render(currentRecord);
+  setFixedAccountNotice();
+}
+$('cellEditInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&editingCellField!=='assetAmount')saveDirectTxEdit()});
+$('cellEditSecondaryInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')saveDirectTxEdit()});
+
+
 function hideTxMenu(){
   txContextMenu.classList.remove('show');
   document.querySelectorAll('.tx-row.context-selected').forEach(el=>el.classList.remove('context-selected'));
@@ -758,12 +845,10 @@ function ensureCurrentEditable(){
 function syncCounterpartyField(){
   const isJudicial=isJudicialDirection($('txDirection').value);
   const input=$('txCounterparty');
+  input.disabled=false;
   if(isJudicial){
-    input.value='';
-    input.disabled=true;
     input.placeholder=judicialChannelLabel($('txDirection').value);
   }else{
-    input.disabled=false;
     input.placeholder='0x...';
   }
 }
@@ -899,7 +984,7 @@ function saveTxRow(){
   const feeRaw=$('txFee').value.trim();
   const feeMatch=feeRaw.match(/^([+-]?[\d.,]+)\s*([A-Za-z0-9]+)?$/);
   const feeCanonical=feeMatch&&Number.isFinite(parseLocaleNumber(feeMatch[1]))?`${parseLocaleNumber(feeMatch[1]).toFixed((feeMatch[2]||'ETH').toUpperCase()==='ETH'?6:2)} ${(feeMatch[2]||'ETH').toUpperCase()}`:feeRaw;
-  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset,amount:Number.isFinite(amountNum)?amountNum.toFixed(asset==='ETH'?6:2):$('txAmount').value.trim(),counterparty:isJudicialDirection(dir)?'':$('txCounterparty').value.trim(),status:internalText($('txStatus').value.trim()),hash:$('txHash').value.trim()||currentRecord.address,block:$('txBlock').value.trim(),fee:feeCanonical};
+  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset,amount:Number.isFinite(amountNum)?amountNum.toFixed(asset==='ETH'?6:2):$('txAmount').value.trim(),counterparty:$('txCounterparty').value.trim(),status:internalText($('txStatus').value.trim()),hash:$('txHash').value.trim()||currentRecord.address,block:$('txBlock').value.trim(),fee:feeCanonical};
   if(!tx.time||!tx.amount){alert('Datum/Uhrzeit und Betrag sind erforderlich.');return}
   if(!Array.isArray(currentRecord.transactions))currentRecord.transactions=[];
   if(txEditMode==='add') currentRecord.transactions.push(tx); else if(selectedTxIndex>=0) currentRecord.transactions[selectedTxIndex]=tx;
