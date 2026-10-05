@@ -51,7 +51,7 @@
   .amount-in{color:#64eab0;font-weight:800}.amount-out{color:#ff9eaa;font-weight:800}
   .clickable-badge{cursor:pointer;user-select:none;transition:.16s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}.clickable-badge:hover{transform:translateY(-1px);filter:brightness(1.12);box-shadow:0 6px 18px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.08)}
   .editable-balance{cursor:pointer;user-select:none;border-radius:11px;padding:5px 6px;margin:-5px -6px;transition:.16s}.editable-balance:hover{background:rgba(77,140,255,.08);box-shadow:inset 0 0 0 1px rgba(77,140,255,.18)}
-  .editable-fee{cursor:pointer;user-select:none;border-radius:8px;transition:.16s}.editable-fee:hover{background:rgba(77,140,255,.10);box-shadow:inset 0 0 0 1px rgba(77,140,255,.20)}
+  .editable-fee,.editable-cell{cursor:pointer;user-select:none;border-radius:8px;transition:.16s}.editable-fee:hover,.editable-cell:hover{background:rgba(77,140,255,.10);box-shadow:inset 0 0 0 1px rgba(77,140,255,.20)}
   .editable-balance .coin-top{font-size:18px;color:var(--text)}.editable-balance .coin-top span:last-child{font-weight:850}
   .tx-status-click{cursor:pointer;user-select:none;display:inline-flex;align-items:center;justify-content:center;width:max-content;min-width:max-content;max-width:none;white-space:nowrap;padding-left:10px;padding-right:10px;line-height:1.2;text-align:center;overflow:visible;word-break:keep-all;flex:0 0 auto}.tx-status-click:hover{filter:brightness(1.12)}
   .tx-card th,.tx-card td{min-width:0;overflow:hidden}
@@ -233,7 +233,7 @@
       <div class="f span2"><label>Counterparty / Processing Channel</label><input id="txCounterparty" class="mono" placeholder="0x..."></div>
       <div class="f"><label>Status</label><input id="txStatus" placeholder="Confirmed / Processing"></div>
       <div class="f"><label>Block</label><input id="txBlock" placeholder="23104567"></div>
-      <div class="f span2"><label>Wallet Address</label><input id="txHash" class="mono" placeholder="Current wallet address" readonly></div>
+      <div class="f span2"><label>Wallet Address</label><input id="txHash" class="mono" placeholder="Current wallet address"></div>
       <div class="f span2"><label>Network Fee</label><input id="txFee" placeholder="0.82 USDT"></div>
     </div>
     <div class="modal-actions">
@@ -272,6 +272,19 @@
     <div class="modal-actions">
       <button onclick="feeDialog.close()">Cancel</button>
       <button class="primary" onclick="saveTxFeeEdit()">Save Fee</button>
+    </div>
+  </div>
+</dialog>
+
+
+<dialog id="cellEditDialog" class="tx-dialog" style="width:min(460px,92vw)">
+  <div class="modal-h"><strong id="cellEditTitle">Edit Transfer Field</strong><button onclick="cellEditDialog.close()">Close</button></div>
+  <div class="modal-b">
+    <div class="f"><label id="cellEditLabel">Value</label><input id="cellEditInput" autocomplete="off"></div>
+    <div class="f" id="cellEditSecondaryWrap" style="display:none;margin-top:12px"><label id="cellEditSecondaryLabel">Amount</label><input id="cellEditSecondaryInput" autocomplete="off"></div>
+    <div class="modal-actions">
+      <button onclick="cellEditDialog.close()">Cancel</button>
+      <button class="primary" onclick="saveDirectTxEdit()">Save</button>
     </div>
   </div>
 </dialog>
@@ -320,9 +333,12 @@ const autoReadDialog = $('autoReadDialog');
 const deleteTxDialog = $('deleteTxDialog');
 const balanceDialog = $('balanceDialog');
 const feeDialog = $('feeDialog');
+const cellEditDialog = $('cellEditDialog');
 const valueSelectMenu = $('valueSelectMenu');
 let pendingDeleteTxIndex = -1;
 let editingFeeTxIndex = -1;
+let editingCellTxIndex = -1;
+let editingCellField = '';
 const OFFICIAL_KYC_NOTE='KYC verification for this address is incomplete. Outbound transfer functionality is currently restricted. Transfer access will be restored once identity verification and compliance review are successfully completed.';
 function txAmountNumber(v){
   const n=Number(String(v??'').replaceAll(',','').trim());
@@ -542,8 +558,8 @@ function render(r){
   $('txBody').innerHTML=txs.length?txs.map((tx,i)=>{
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
     const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
-    const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
-    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Date / Time">${safe(normalizeDateText(tx.time))}</td><td data-label="Type"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Asset / Amount" class="${cls}">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Counterparty / Channel">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet Address"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block">${safe(tx.block)}</td><td data-label="Network Fee" class="editable-fee" title="Click to edit ETH network fee" onclick="editTxFee(event,${i})">${safe(tx.fee)}</td></tr>`
+    const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(tx.counterparty||judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
+    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Date / Time" class="editable-cell" title="Click to edit date / time" onclick="openDirectTxEdit(event,${i},'time')">${safe(normalizeDateText(tx.time))}</td><td data-label="Type"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Asset / Amount" class="${cls} editable-cell" title="Click to edit asset / amount" onclick="openDirectTxEdit(event,${i},'assetAmount')">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Counterparty / Channel" class="editable-cell" title="Click to edit counterparty / processing channel" onclick="openDirectTxEdit(event,${i},'counterparty')">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet Address" class="editable-cell" title="Click to edit wallet address" onclick="openDirectTxEdit(event,${i},'hash')"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block" class="editable-cell" title="Click to edit block" onclick="openDirectTxEdit(event,${i},'block')">${safe(tx.block)}</td><td data-label="Network Fee" class="editable-fee" title="Click to edit ETH network fee" onclick="editTxFee(event,${i})">${safe(tx.fee)}</td></tr>`
   }).join(''):`<tr class="tx-empty-row"><td colspan="8" style="color:#90a4c1;text-align:center;padding:28px">No internal transfer records are available for this address.</td></tr>`;
   const inCount=txs.filter(x=>isIncomingDirection(x.direction)).length;
   const outCount=txs.filter(x=>!isIncomingDirection(x.direction)).length;
@@ -664,6 +680,76 @@ function saveTxFeeEdit(){
 }
 $('feeInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')saveTxFeeEdit()});
 
+function openDirectTxEdit(ev,index,field){
+  if(ev){ev.preventDefault();ev.stopPropagation()}
+  if(!currentRecord||!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
+  const tx=currentRecord.transactions[index];
+  editingCellTxIndex=index;
+  editingCellField=field;
+  $('cellEditSecondaryWrap').style.display='none';
+  $('cellEditInput').value='';
+  $('cellEditSecondaryInput').value='';
+  if(field==='time'){
+    $('cellEditTitle').textContent='Edit Date / Time';
+    $('cellEditLabel').textContent='Date / Time';
+    $('cellEditInput').value=normalizeDateText(tx.time)||'';
+  }else if(field==='assetAmount'){
+    $('cellEditTitle').textContent='Edit Asset / Amount';
+    $('cellEditLabel').textContent='Asset';
+    $('cellEditInput').value=tx.asset||currentRecord.asset||'USDT';
+    $('cellEditSecondaryLabel').textContent='Amount';
+    $('cellEditSecondaryInput').value=String(tx.amount??'');
+    $('cellEditSecondaryWrap').style.display='block';
+  }else if(field==='counterparty'){
+    $('cellEditTitle').textContent='Edit Counterparty / Processing Channel';
+    $('cellEditLabel').textContent='Counterparty / Processing Channel';
+    $('cellEditInput').value=tx.counterparty||(isJudicialDirection(tx.direction)?judicialChannelLabel(tx.direction):'');
+  }else if(field==='hash'){
+    $('cellEditTitle').textContent='Edit Wallet Address';
+    $('cellEditLabel').textContent='Wallet Address';
+    $('cellEditInput').value=tx.hash||currentRecord.address||'';
+  }else if(field==='block'){
+    $('cellEditTitle').textContent='Edit Block';
+    $('cellEditLabel').textContent='Block';
+    $('cellEditInput').value=tx.block||'';
+  }else return;
+  cellEditDialog.showModal();
+  setTimeout(()=>{$('cellEditInput').focus();$('cellEditInput').select()},0);
+}
+function saveDirectTxEdit(){
+  if(!currentRecord||editingCellTxIndex<0||!currentRecord.transactions?.[editingCellTxIndex]) return;
+  if(!ensureCurrentEditable()) return;
+  const tx=currentRecord.transactions[editingCellTxIndex];
+  const value=$('cellEditInput').value.trim();
+  if(editingCellField==='time'){
+    const normalized=normalizeDateText(value);
+    if(!normalized){alert('Date / time is required.');return}
+    tx.time=normalized;
+  }else if(editingCellField==='assetAmount'){
+    const asset=(value||currentRecord.asset||'USDT').toUpperCase();
+    const amount=$('cellEditSecondaryInput').value.trim();
+    if(!amount){alert('Amount is required.');return}
+    tx.asset=asset;
+    tx.amount=amount;
+  }else if(editingCellField==='counterparty'){
+    tx.counterparty=value;
+  }else if(editingCellField==='hash'){
+    if(!value){alert('Wallet address is required.');return}
+    tx.hash=value;
+  }else if(editingCellField==='block'){
+    tx.block=value;
+  }else return;
+  recomputeDerived(currentRecord);
+  db[norm(currentRecord.address)]=currentRecord;
+  saveDB();
+  cellEditDialog.close();
+  render(currentRecord);
+  setFixedAccountNotice();
+}
+$('cellEditInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&editingCellField!=='assetAmount')saveDirectTxEdit()});
+$('cellEditSecondaryInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')saveDirectTxEdit()});
+
+
 function hideTxMenu(){
   txContextMenu.classList.remove('show');
   document.querySelectorAll('.tx-row.context-selected').forEach(el=>el.classList.remove('context-selected'));
@@ -698,12 +784,10 @@ function ensureCurrentEditable(){
 function syncCounterpartyField(){
   const isJudicial=isJudicialDirection($('txDirection').value);
   const input=$('txCounterparty');
+  input.disabled=false;
   if(isJudicial){
-    input.value='';
-    input.disabled=true;
     input.placeholder=judicialChannelLabel($('txDirection').value);
   }else{
-    input.disabled=false;
     input.placeholder='0x...';
   }
 }
@@ -834,7 +918,7 @@ function openEditTx(){
 function saveTxRow(){
   if(!currentRecord)return;
   const dir=$('txDirection').value;
-  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset:$('txAsset').value.trim()||currentRecord.asset||'USDT',amount:$('txAmount').value.trim(),counterparty:isJudicialDirection(dir)?'':$('txCounterparty').value.trim(),status:$('txStatus').value.trim(),hash:$('txHash').value.trim()||currentRecord.address,block:$('txBlock').value.trim(),fee:$('txFee').value.trim()};
+  const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset:$('txAsset').value.trim()||currentRecord.asset||'USDT',amount:$('txAmount').value.trim(),counterparty:$('txCounterparty').value.trim(),status:$('txStatus').value.trim(),hash:$('txHash').value.trim()||currentRecord.address,block:$('txBlock').value.trim(),fee:$('txFee').value.trim()};
   if(!tx.time||!tx.amount){alert('Date/time and amount are required.');return}
   if(!Array.isArray(currentRecord.transactions))currentRecord.transactions=[];
   if(txEditMode==='add') currentRecord.transactions.push(tx); else if(selectedTxIndex>=0) currentRecord.transactions[selectedTxIndex]=tx;
