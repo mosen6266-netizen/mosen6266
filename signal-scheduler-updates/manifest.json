@@ -1,17 +1,18 @@
 {
   "format": "signal-scheduler-update-manifest-v1",
   "channel": "stable",
-  "latest_version": "8.1.0",
-  "latest_build": "8.1.0-web-20261007",
-  "package_url": "",
-  "package_sha256": "",
+  "latest_version": "8.1.1",
+  "latest_build": "8.1.1-web-20261007",
+  "package_url": "https://ms007.me/__updates/v8.1.1.ssu",
+  "package_sha256": "69cf27534e70103229f8a3c6961880fb1ce56cbe0625c1dd7638a096ac864988",
   "notes": [
-    "新增“设置 → 系统更新”一键更新",
-    "更新前自动备份数据库和当前代码",
-    "更新失败自动回滚",
-    "普通网页更新不会重启 Signal Worker，也不会清空扫码登录状态"
+    "首次真实验证网页一键更新链路",
+    "更新前自动备份",
+    "更新包 SHA256 校验与加密解密",
+    "仅更新网页调度器文件，不重启 Signal Worker",
+    "更新失败时自动回滚到更新前版本"
   ],
-  "published_at": "2026-10-07T14:55:00Z",
+  "published_at": "2026-10-07T16:37:00Z",
   "encryption": "RSA-3072 + AES-256-GCM",
   "public_key_path": "signal-scheduler-updates/update_public.pem"
 }
