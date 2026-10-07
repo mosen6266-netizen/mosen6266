@@ -1,19 +1,19 @@
 {
   "format": "signal-scheduler-update-manifest-v1",
   "channel": "stable",
-  "latest_version": "8.2.0",
-  "latest_build": "8.2.0-web-20261007",
-  "package_url": "https://ms007.me/__updates/v8.2.0.ssu",
-  "package_sha256": "b8f78d78bf8d4bd1813d12566b6b93d6a17fb09a03bdfebbc7750c497e4153e1",
+  "latest_version": "8.3.0",
+  "latest_build": "8.3.0-web-20261007",
+  "package_url": "https://ms007.me/__updates/v8.3.0.ssu",
+  "package_sha256": "a93156a5a00b3b10fb5d52570d8e9a8a3c2f0f38f33e96d92a3ef103618b5aa4",
   "notes": [
-    "新增多用户独立登录与会话管理",
-    "新增管理员后台、用户状态与到期控制",
-    "新增卡密激活、续期与有效期管理",
-    "新增用户权限与资源额度控制",
-    "新增用户数据隔离，避免不同用户互相看到账号、剧本和任务",
-    "升级前继续使用现有自动备份与失败回滚机制"
+    "左上角版本号改为读取后端真实版本",
+    "新增 Cloud Control + Windows Local Agent 架构支持",
+    "网页断开或退出登录后，正在运行的任务自动暂停",
+    "网页恢复后任务不会自动继续，必须手动点击继续",
+    "新增网页在线租约/心跳校验，Agent 每次发送前验证运行许可",
+    "优化 signal-cli 健康检查与异常判定，减少短暂超时导致的误掉线"
   ],
-  "published_at": "2026-10-07T18:02:00Z",
+  "published_at": "2026-10-07T19:17:00Z",
   "encryption": "RSA-3072 + AES-256-GCM",
   "public_key_path": "signal-scheduler-updates/update_public.pem"
 }
