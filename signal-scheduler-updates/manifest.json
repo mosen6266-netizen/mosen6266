@@ -1,0 +1,17 @@
+{
+  "format": "signal-scheduler-update-manifest-v1",
+  "channel": "stable",
+  "latest_version": "8.1.0",
+  "latest_build": "8.1.0-web-20261007",
+  "package_url": "",
+  "package_sha256": "",
+  "notes": [
+    "新增“设置 → 系统更新”一键更新",
+    "更新前自动备份数据库和当前代码",
+    "更新失败自动回滚",
+    "普通网页更新不会重启 Signal Worker，也不会清空扫码登录状态"
+  ],
+  "published_at": "2026-10-07T14:55:00Z",
+  "encryption": "RSA-3072 + AES-256-GCM",
+  "public_key_path": "signal-scheduler-updates/update_public.pem"
+}
