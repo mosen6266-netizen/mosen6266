@@ -1,0 +1,97 @@
+name: Build Signal Scheduler V7.3 Windows Payload on Linux
+
+on:
+  push:
+    branches:
+      - build/signal-scheduler-v7.3-offline
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  payload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Assemble Windows offline payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf work stage wheels
+          mkdir -p work stage wheels stage/runtime/python/Lib/site-packages stage/runtime/jre stage/runtime/signal-cli
+          unzip -q build_assets/signal_scheduler_v7_3_source_payload.zip -d work
+          SRC="$(find work -mindepth 1 -maxdepth 1 -type d | head -n1)"
+          cp -a "$SRC"/. stage/
+
+          curl -fL --retry 3 -o /tmp/python.zip https://www.python.org/ftp/python/3.13.14/python-3.13.14-embed-amd64.zip
+          unzip -q /tmp/python.zip -d stage/runtime/python
+          cat > stage/runtime/python/python313._pth <<'EOF'
+          python313.zip
+          .
+          Lib
+          Lib\site-packages
+          import site
+          EOF
+
+          python -m pip download --disable-pip-version-check --no-cache-dir             --dest wheels --only-binary=:all: --platform win_amd64 --python-version 3.13 --implementation cp --abi cp313             'fastapi==0.115.6' 'uvicorn==0.34.0' 'httpx==0.28.1' 'qrcode==8.2'
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          dst=Path('stage/runtime/python/Lib/site-packages')
+          for whl in Path('wheels').glob('*.whl'):
+              with zipfile.ZipFile(whl) as z:
+                  z.extractall(dst)
+          print('unpacked wheels', len(list(Path('wheels').glob('*.whl'))))
+          PY
+
+          curl -fL --retry 3 -o /tmp/jre.zip 'https://api.adoptium.net/v3/binary/latest/25/ga/windows/x64/jre/hotspot/normal/eclipse?project=jdk'
+          mkdir -p /tmp/jre-unpack
+          unzip -q /tmp/jre.zip -d /tmp/jre-unpack
+          JROOT="$(find /tmp/jre-unpack -mindepth 1 -maxdepth 1 -type d | head -n1)"
+          cp -a "$JROOT"/. stage/runtime/jre/
+
+          curl -fL --retry 3 -o /tmp/signal-cli.tar.gz https://github.com/AsamK/signal-cli/releases/download/v0.14.8/signal-cli-0.14.8.tar.gz
+          mkdir -p /tmp/signal-unpack
+          tar -xzf /tmp/signal-cli.tar.gz -C /tmp/signal-unpack
+          SROOT="$(find /tmp/signal-unpack -mindepth 1 -maxdepth 1 -type d | head -n1)"
+          cp -a "$SROOT"/. stage/runtime/signal-cli/
+
+          cat > stage/create_shortcuts.vbs <<'VBS'
+          Option Explicit
+          Dim sh, fso, appDir, desktop, programs, sc, py, script
+          Set sh = CreateObject("WScript.Shell")
+          Set fso = CreateObject("Scripting.FileSystemObject")
+          appDir = fso.GetParentFolderName(WScript.ScriptFullName)
+          py = appDir & "\runtime\python\pythonw.exe"
+          script = appDir & "\launcher.pyw"
+          desktop = sh.SpecialFolders("Desktop")
+          programs = sh.SpecialFolders("Programs")
+          Set sc = sh.CreateShortcut(desktop & "\Signal 自动调度台.lnk")
+          sc.TargetPath = py
+          sc.Arguments = Chr(34) & script & Chr(34)
+          sc.WorkingDirectory = appDir
+          sc.Save
+          Set sc = sh.CreateShortcut(programs & "\Signal 自动调度台.lnk")
+          sc.TargetPath = py
+          sc.Arguments = Chr(34) & script & Chr(34)
+          sc.WorkingDirectory = appDir
+          sc.Save
+          VBS
+
+          echo "Offline payload size:"
+          du -sh stage
+          (cd stage && zip -q -9 -r ../SignalScheduler_V7.3_Full_Offline_Payload.zip .)
+          sha256sum SignalScheduler_V7.3_Full_Offline_Payload.zip
+
+      - name: Upload payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: SignalScheduler-V7.3-Windows-Payload
+          path: SignalScheduler_V7.3_Full_Offline_Payload.zip
+          if-no-files-found: error
+          retention-days: 7
