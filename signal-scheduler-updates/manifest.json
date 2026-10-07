@@ -1,18 +1,19 @@
 {
   "format": "signal-scheduler-update-manifest-v1",
   "channel": "stable",
-  "latest_version": "8.1.1",
-  "latest_build": "8.1.1-web-20261007",
-  "package_url": "https://ms007.me/__updates/v8.1.1.ssu",
-  "package_sha256": "69cf27534e70103229f8a3c6961880fb1ce56cbe0625c1dd7638a096ac864988",
+  "latest_version": "8.2.0",
+  "latest_build": "8.2.0-web-20261007",
+  "package_url": "https://ms007.me/__updates/v8.2.0.ssu",
+  "package_sha256": "b8f78d78bf8d4bd1813d12566b6b93d6a17fb09a03bdfebbc7750c497e4153e1",
   "notes": [
-    "首次真实验证网页一键更新链路",
-    "更新前自动备份",
-    "更新包 SHA256 校验与加密解密",
-    "仅更新网页调度器文件，不重启 Signal Worker",
-    "更新失败时自动回滚到更新前版本"
+    "新增多用户独立登录与会话管理",
+    "新增管理员后台、用户状态与到期控制",
+    "新增卡密激活、续期与有效期管理",
+    "新增用户权限与资源额度控制",
+    "新增用户数据隔离，避免不同用户互相看到账号、剧本和任务",
+    "升级前继续使用现有自动备份与失败回滚机制"
   ],
-  "published_at": "2026-10-07T16:37:00Z",
+  "published_at": "2026-10-07T18:02:00Z",
   "encryption": "RSA-3072 + AES-256-GCM",
   "public_key_path": "signal-scheduler-updates/update_public.pem"
 }
