@@ -125,34 +125,24 @@ SHA="$(sha256sum "$PKG" | awk '{print $1}')"
 docker exec signal-scheduler-caddy sh -c 'mkdir -p /data/updates/__updates'
 docker cp "$PKG" signal-scheduler-caddy:/data/updates/__updates/v8.1.1.ssu >/dev/null
 
-python3 - <<'PY'
-from pathlib import Path
-p=Path("/opt/signal-scheduler-web/Caddyfile.runtime")
-s=p.read_text("utf-8")
-marker="handle /__updates/* {"
-if marker not in s:
-    lines=s.splitlines()
-    out=[]
-    inserted=False
-    for line in lines:
-        out.append(line)
-        if not inserted and line.strip().endswith("{") and not line.lstrip().startswith("#"):
-            out += [
-                "    handle /__updates/* {",
-                "        root * /data/updates",
-                "        file_server",
-                "    }",
-                "    handle {",
-            ]
-            inserted=True
-            continue
-        if inserted and line.strip()=="}":
-            # close fallback handle before the site's final brace
-            out.insert(len(out)-1, "    }")
-            inserted=False
-    s="\n".join(out)+"\n"
-    p.write_text(s,"utf-8")
-PY
+SITE="$(awk '/^[[:space:]]*[^#[:space:]][^ ]*[[:space:]]*\\{$/{print $1; exit}' "$PROJECT/Caddyfile.runtime")"
+HASH="$(awk '/^[[:space:]]*admin[[:space:]]+/{print $2; exit}' "$PROJECT/Caddyfile.runtime")"
+[ -n "$SITE" ] && [ -n "$HASH" ] || { echo "Could not read Caddy site/password hash"; exit 6; }
+cat > "$PROJECT/Caddyfile.runtime" <<EOF
+$SITE {
+    encode zstd gzip
+    handle /__updates/* {
+        root * /data/updates
+        file_server
+    }
+    handle {
+        basic_auth {
+            admin $HASH
+        }
+        reverse_proxy scheduler:8800
+    }
+}
+EOF
 
 docker exec signal-scheduler-caddy caddy validate --config /etc/caddy/Caddyfile >/dev/null
 docker exec signal-scheduler-caddy caddy reload --config /etc/caddy/Caddyfile >/dev/null
