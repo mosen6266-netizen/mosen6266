@@ -107,6 +107,56 @@ RESULT="$(systemctl show -p Result --value signal-scheduler-backup.service)"
 LATEST="$(ls -1dt "$PROJECT"/backups/*/ 2>/dev/null | head -n 1 || true)"
 [ -n "$LATEST" ] && [ -s "${LATEST}scheduler_data.tar.gz" ] || { echo "Backup verification failed"; exit 5; }
 
+# Stage a real V8.1.1 encrypted package locally so the web updater can be tested.
+STAGING="$PROJECT/.staging_v811"
+PKGDIR="$PROJECT/.update_packages"
+rm -rf "$STAGING"
+mkdir -p "$STAGING/app/static" "$PKGDIR"
+cp "$PROJECT/app/main.py" "$STAGING/app/main.py"
+cp "$PROJECT/app/static/index.html" "$STAGING/app/static/index.html"
+sed -i 's/APP_BUILD = "8.1.0-web-20261007"/APP_BUILD = "8.1.1-web-20261007"/' "$STAGING/app/main.py"
+sed -i 's/V8\.0\.1 Web · 云端账号隔离版/V8.1.1 Web · 安全备份收尾版/g' "$STAGING/app/static/index.html"
+sed -i "s/8\.1\.0-web-20261007/8.1.1-web-20261007/g" "$STAGING/app/static/index.html"
+
+docker exec signal-scheduler-updater python /project/scripts/build_update_package.py   --public-key /project/updater/update_public.pem   --source-dir /project/.staging_v811   --version 8.1.1   --build 8.1.1-web-20261007   --file app/main.py   --file app/static/index.html   --output /project/.update_packages/v8.1.1.ssu >/tmp/signal_update_build.json
+
+PKG="$PKGDIR/v8.1.1.ssu"
+SHA="$(sha256sum "$PKG" | awk '{print $1}')"
+docker exec signal-scheduler-caddy sh -c 'mkdir -p /data/updates/__updates'
+docker cp "$PKG" signal-scheduler-caddy:/data/updates/__updates/v8.1.1.ssu >/dev/null
+
+python3 - <<'PY'
+from pathlib import Path
+p=Path("/opt/signal-scheduler-web/Caddyfile.runtime")
+s=p.read_text("utf-8")
+marker="handle /__updates/* {"
+if marker not in s:
+    lines=s.splitlines()
+    out=[]
+    inserted=False
+    for line in lines:
+        out.append(line)
+        if not inserted and line.strip().endswith("{") and not line.lstrip().startswith("#"):
+            out += [
+                "    handle /__updates/* {",
+                "        root * /data/updates",
+                "        file_server",
+                "    }",
+                "    handle {",
+            ]
+            inserted=True
+            continue
+        if inserted and line.strip()=="}":
+            # close fallback handle before the site's final brace
+            out.insert(len(out)-1, "    }")
+            inserted=False
+    s="\n".join(out)+"\n"
+    p.write_text(s,"utf-8")
+PY
+
+docker exec signal-scheduler-caddy caddy validate --config /etc/caddy/Caddyfile >/dev/null
+docker exec signal-scheduler-caddy caddy reload --config /etc/caddy/Caddyfile >/dev/null
+
 echo "DONE"
 echo "SSH_PASSWORD_AUTH=$(/usr/sbin/sshd -T | awk '/^passwordauthentication /{print $2;exit}')"
 echo "SSH_ROOT_LOGIN=$(/usr/sbin/sshd -T | awk '/^permitrootlogin /{print $2;exit}')"
@@ -114,3 +164,5 @@ echo "UFW=$(ufw status | head -n 1)"
 echo "FAIL2BAN=$(systemctl is-active fail2ban)"
 echo "BACKUP_TIMER=$(systemctl is-enabled signal-scheduler-backup.timer)/$(systemctl is-active signal-scheduler-backup.timer)"
 echo "FIRST_BACKUP=$LATEST"
+echo "UPDATE_PACKAGE_URL=https://ms007.me/__updates/v8.1.1.ssu"
+echo "UPDATE_PACKAGE_SHA256=$SHA"
