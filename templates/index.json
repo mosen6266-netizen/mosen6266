@@ -57,13 +57,6 @@
       "sha256": "1849b7717177b43255bc08090a2b5897476aede67c7e2800c432893e16fa5b55"
     },
     {
-      "name": "客户建档模板（美国银行卡模式）.docx",
-      "path": "templates/客户建档模板（美国银行卡模式）.docx",
-      "region": "us",
-      "size": 1175402,
-      "sha256": "76c8a4172f0121915439dee4df18954ddc9364eaaa2eab2b45ac1038d5b5204b"
-    },
-    {
       "name": "首充减免模板-德国.docx",
       "path": "templates/首充减免模板-德国.docx",
       "region": "de",
