@@ -50,6 +50,9 @@ jobs:
           base64 --decode site.b64 > site.tar.xz
           xz -t site.tar.xz
           tar -xJf site.tar.xz -C public
+          # Keep the committed DOCX editor as the source of truth so export-name settings
+          # and other editor changes are not replaced by the archived site snapshot.
+          cp 'DOCX文件编辑器.html' 'public/DOCX文件编辑器.html'
 
           test -f public/index.html
           test -f 'public/DOCX文件编辑器.html'
