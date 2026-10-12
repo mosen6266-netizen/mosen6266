@@ -43,6 +43,13 @@
       "sha256": "a9e3ca9e08656a8b0a47737887edc63da620f35f09dc0c94f8948c1b851e7715"
     },
     {
+      "name": "受害者事实陈述与宣誓书（美国银行卡模式）.docx",
+      "path": "templates/受害者事实陈述与宣誓书（美国银行卡模式）.docx",
+      "region": "us",
+      "size": 1646696,
+      "sha256": "0353e60fbb510c78da488e768d27f6f00b81ee574c40dc19cb8fd919488ddcb2"
+    },
+    {
       "name": "客户建档模板-德国.docx",
       "path": "templates/客户建档模板-德国.docx",
       "region": "de",
@@ -62,6 +69,34 @@
       "region": "us",
       "size": 1175388,
       "sha256": "7e0f94169152e9fc869094dd698ec67f611b3d447bd011e6f4bd3b37994bb624"
+    },
+    {
+      "name": "底层资产调查与取证报告（美国银行卡模式）.docx",
+      "path": "templates/底层资产调查与取证报告（美国银行卡模式）.docx",
+      "region": "us",
+      "size": 2059556,
+      "sha256": "0ecab8623cd4e991ffc8c72b71cb5770ed7f7d812fa7d37009abc9589aaf9b80"
+    },
+    {
+      "name": "致 Wise 官方紧急冻结通知（美国银行卡模式）.docx",
+      "path": "templates/致 Wise 官方紧急冻结通知（美国银行卡模式）.docx",
+      "region": "us",
+      "size": 2058898,
+      "sha256": "3b4e17ca74cfa9689ba0f0518e386a1a834b2d22d050f22adfa60618955fdf8f"
+    },
+    {
+      "name": "致英国金融行为监管局 (FCA) 强制冻结请求（美国银行卡模式）.docx",
+      "path": "templates/致英国金融行为监管局 (FCA) 强制冻结请求（美国银行卡模式）.docx",
+      "region": "us",
+      "size": 2058980,
+      "sha256": "2236a3218740bd28654e6e2d5794ca48d644fd9463942bc916f0c45adbbebe9e"
+    },
+    {
+      "name": "跨国司法协助请求书（美国银行卡模式）.docx",
+      "path": "templates/跨国司法协助请求书（美国银行卡模式）.docx",
+      "region": "us",
+      "size": 2022475,
+      "sha256": "52305c16a1f3bc2a55eec66f92e47c8b324726a356152d6d9251b7517205d868"
     },
     {
       "name": "首充减免模板-德国.docx",
