@@ -344,7 +344,9 @@ function makeExportNameOption(filename,hint,isTemplateName=false){
 function renderExportNameOptions(){
   els.exportNameList.replaceChildren();
   const currentFilename=cleanExportFilename(state.current?.name)||'Document.docx';
-  els.exportNameList.appendChild(makeExportNameOption(currentFilename,'沿用左侧模板名称',true));
+  // Avoid showing the same filename twice when the selected template already has its own preset.
+  if(!state.exportPresets.some(p=>p.filename.toLowerCase()===currentFilename.toLowerCase()))
+    els.exportNameList.appendChild(makeExportNameOption(currentFilename,'沿用左侧模板名称',true));
   for(const preset of state.exportPresets)
     els.exportNameList.appendChild(makeExportNameOption(preset.filename,preset.hint));
   selectExportFilename(state.exportFilename);
