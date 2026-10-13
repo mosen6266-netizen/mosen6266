@@ -69,7 +69,7 @@
   "updatedAt": "2026-10-13T10:35:45.697Z",
   "docxExportNames": {
     "version": 1,
-    "updatedAt": "2026-10-13T10:04:48.795Z",
+    "updatedAt": "2026-10-13T10:36:03.794Z",
     "bindings": {
       "builtin:templates/客户建档模板.docx": "WC-CRYPTO-1068-0177.docx",
       "builtin:templates/冻结令和资金返还令模板.docx": "Order for Emergency Freeze and Asset Return (Copy).docx",
@@ -84,7 +84,8 @@
       "builtin:templates/致 Wise 官方紧急冻结通知（美国银行卡模式）.docx": "Urgent Notice of Fraudulent Funds(Copy).docx",
       "builtin:templates/致英国金融行为监管局 (FCA) 强制冻结请求（美国银行卡模式）.docx": "Regulatory Freeze Request(Copy).docx",
       "builtin:templates/跨国司法协助请求书（美国银行卡模式）.docx": "Mutual Legal Assistance Request Letters Rogatory(Copy).docx",
-      "builtin:templates/受害者事实陈述与宣誓书（美国银行卡模式）.docx": "Sworn Affidavit Declaration.docx"
+      "builtin:templates/受害者事实陈述与宣誓书（美国银行卡模式）.docx": "Sworn Affidavit Declaration.docx",
+      "builtin:templates/冻结令和资金返还令模板（美国银行卡模式）.docx": "Emergency Freeze Order(Copy).docx"
     }
   }
 }
