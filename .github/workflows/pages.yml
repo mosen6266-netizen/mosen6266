@@ -73,6 +73,7 @@ jobs:
           test -f 'public/图标.png'
 
           cp docx-template-loader.js public/docx-template-loader.js
+          cp docx-export-name-sync.js public/docx-export-name-sync.js
           cp shared-order.js public/shared-order.js
           cp dynamic-tools.js public/dynamic-tools.js
           cp access-config-fresh.js public/access-config-fresh.js
@@ -97,12 +98,13 @@ jobs:
               '.template-name{font-size:13px;font-weight:650;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.45;overflow-wrap:anywhere}'
           )
           for v in range(1, 30):
-              for name in ('docx-template-loader.js', 'shared-order.js'):
+              for name in ('docx-template-loader.js', 'docx-export-name-sync.js', 'shared-order.js'):
                   old = f'<script src="./{name}?v={v}"></script>'
                   s = s.replace(old + '\n', '').replace(old, '')
           s = s.replace(
               '</body>',
               '<script src="./docx-template-loader.js?v=7"></script>\n'
+              '<script src="./docx-export-name-sync.js?v=1"></script>\n'
               '<script src="./shared-order.js?v=4"></script>\n'
               '</body>'
           )
