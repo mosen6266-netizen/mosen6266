@@ -145,10 +145,53 @@ function markDirty(on=true){dirty=on;const s=document.getElementById('builtinSor
 function saveOrder(){const data={us:[...document.querySelectorAll('#builtinUsList .builtin-item')].map(x=>x.dataset.path),de:[...document.querySelectorAll('#builtinDeList .builtin-item')].map(x=>x.dataset.path)};localStorage.setItem(ORDER_KEY,JSON.stringify(data));catalog.us=applyOrder(catalog.us,data.us);catalog.de=applyOrder(catalog.de,data.de);markDirty(false);if(typeof toast==='function')toast('当前模板排序已保存','success');}
 function humanSize(bytes){if(!Number.isFinite(bytes))return '';const units=['B','KB','MB','GB'];let i=0,n=bytes;while(n>=1024&&i<units.length-1){n/=1024;i++;}return `${n.toFixed(i?1:0)} ${units[i]}`;}
 
+
+const EXPORT_PRESET_STORAGE_KEY='docxChineseEditorExportPresetsV1';
+function storedOutputPresets(){
+  try{
+    const saved=localStorage.getItem(EXPORT_PRESET_STORAGE_KEY);
+    const parsed=saved===null
+      ? (typeof state!=='undefined'?state.exportPresets:[])
+      : JSON.parse(saved);
+    return Array.isArray(parsed)?parsed:[];
+  }catch(err){console.warn('读取模板输出文件名失败',err);return []}
+}
+function boundOutputName(t,presets){
+  // A right-click addition is tied to a specific template, not a fuzzy name match.
+  const sourceId=BUILTIN_PREFIX+t.path;
+  const linked=[...presets].reverse().find(p=>p&&p.sourceTemplateId===sourceId&&typeof p.filename==='string');
+  return linked?linked.filename.replace(/\.docx$/i,'').trim():'';
+}
+function builtInMetadataText(t,presets){
+  const filename=boundOutputName(t,presets);
+  return (filename||'内置模板')+(t.size?' · '+humanSize(t.size):'');
+}
+function updateBuiltInOutputLabels(){
+  // Update text in place: do not reset drag order, selection or unsaved sorting.
+  const byPath=new Map([...catalog.us,...catalog.de].map(t=>[t.path,t]));
+  const presets=storedOutputPresets();
+  document.querySelectorAll('#builtinTemplateWrap .builtin-item').forEach(item=>{
+    const template=byPath.get(item.dataset.path);
+    const meta=item.querySelector('.builtin-meta');
+    if(!template||!meta)return;
+    const display=builtInMetadataText(template,presets);
+    meta.textContent=display;
+    meta.title=display;
+  });
+}
+window.addEventListener('docx-export-presets-updated',updateBuiltInOutputLabels);
+window.addEventListener('storage',event=>{
+  if(event.key===EXPORT_PRESET_STORAGE_KEY)updateBuiltInOutputLabels();
+});
+
 function makeItem(t){
   const el=document.createElement('div');
   el.className='builtin-item';el.draggable=true;el.dataset.path=t.path;
-  el.innerHTML=`<div class="builtin-grip" title="拖拽排序">⋮⋮</div><div><div class="builtin-name" title="${esc(t.name)}">${esc(t.name.replace(/\.docx$/i,''))}</div><div class="builtin-meta">内置模板${t.size?` · ${humanSize(t.size)}`:''}</div></div>`;
+  el.innerHTML=`<div class="builtin-grip" title="拖拽排序">⋮⋮</div><div><div class="builtin-name" title="${esc(t.name)}">${esc(t.name.replace(/\.docx$/i,''))}</div><div class="builtin-meta"></div></div>`;
+  const meta=el.querySelector('.builtin-meta');
+  const metaText=builtInMetadataText(t,storedOutputPresets());
+  meta.textContent=metaText;
+  meta.title=metaText;
   el.addEventListener('click',()=>{if(typeof closeTemplateContextMenu==='function')closeTemplateContextMenu();openBuiltIn(t)});
   // Built-in templates are rendered here, not by the editor's "我的模板" renderer.
   // Use the editor's same context menu and stable template ID for both columns.
