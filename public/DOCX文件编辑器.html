@@ -83,7 +83,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
     </label>
     <div class="template-head"><h2>我的模板</h2><span class="badge" id="templateCount">0</span></div>
     <div class="template-list" id="templateList"><div class="empty-side">还没有保存的模板</div></div>
-    <div class="side-note">隐私说明：文件与编辑草稿仅存储在本机浏览器的 IndexedDB 中，不会发送到任何服务器。清除浏览器网站数据后，模板也会被清除。</div>
+    <div class="side-note">隐私说明：DOCX 文件与编辑草稿仅存储在当前浏览器，不会上传。内置模板的输出文件名只有在你主动点击全局发布时才会写入 GitHub 共享配置，供其他电脑读取。</div>
   </aside>
 
   <main class="main">
@@ -674,6 +674,7 @@ window.addEventListener('beforeunload',()=>{if(state.draftTimer)clearTimeout(sta
   if(backBtn)backBtn.addEventListener('click',closeExactTool);
 })();
 </script>
+<script src="./docx-export-name-sync.js?v=1"></script>
 <script src="./docx-template-loader.js?v=7"></script>
 <script src="./shared-order.js?v=4"></script>
 </body>
