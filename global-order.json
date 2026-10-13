@@ -39,7 +39,13 @@
       "templates/冻结令和资金返还令模板.docx",
       "templates/Tether退款通知模板.docx",
       "templates/Tether退款通知模板（没有利润）.docx",
-      "templates/首充减免模板.docx"
+      "templates/首充减免模板.docx",
+      "templates/客户建档模板（美国银行卡模式）.docx",
+      "templates/受害者事实陈述与宣誓书（美国银行卡模式）.docx",
+      "templates/底层资产调查与取证报告（美国银行卡模式）.docx",
+      "templates/致 Wise 官方紧急冻结通知（美国银行卡模式）.docx",
+      "templates/致英国金融行为监管局 (FCA) 强制冻结请求（美国银行卡模式）.docx",
+      "templates/跨国司法协助请求书（美国银行卡模式）.docx"
     ],
     "de": [
       "templates/客户建档模板-德国.docx",
@@ -50,7 +56,7 @@
     ]
   },
   "docxPlaceholder": "在这里输入对应的英文内容...",
-  "updatedAt": "2026-09-19T13:50:28.787Z",
+  "updatedAt": "2026-10-13T10:02:16.039Z",
   "docxExportNames": {
     "version": 1,
     "updatedAt": "2026-10-13T09:15:41.048Z",
