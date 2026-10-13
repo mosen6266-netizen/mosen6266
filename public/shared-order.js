@@ -362,7 +362,26 @@
           : DEFAULT_DOCX_PLACEHOLDER
       );
 
-      const observer = new MutationObserver(() => { if(!applying) applyGlobal(); });
+      // A moved DOM node during drag-and-drop is not a new template.
+      // Re-applying the published order for every childList mutation immediately
+      // undoes the user's drag before they can save the new order.
+      // Only re-apply global order when freshly rendered template nodes appear.
+      const seenTemplateRows = new WeakSet();
+      const rememberTemplateRows = () => {
+        for(const row of [...usList.querySelectorAll('.builtin-item'), ...deList.querySelectorAll('.builtin-item')])
+          seenTemplateRows.add(row);
+      };
+      rememberTemplateRows();
+      const observer = new MutationObserver(records => {
+        if(applying || !shared)return;
+        const hasFreshTemplateRows = records.some(record =>
+          [...record.addedNodes].some(node =>
+            node.nodeType === 1 && node.matches('.builtin-item') && !seenTemplateRows.has(node)
+          )
+        );
+        rememberTemplateRows();
+        if(hasFreshTemplateRows)applyGlobal();
+      });
       observer.observe(usList, {childList:true});
       observer.observe(deList, {childList:true});
 
