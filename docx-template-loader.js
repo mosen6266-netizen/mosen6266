@@ -116,43 +116,27 @@ function keepSingleExportSelection(btn){
   document.querySelectorAll('#exportNameList .export-name-option').forEach(x=>x.classList.toggle('selected',x===btn));
 }
 
+
+const LEGACY_PRESET_MIGRATION='mosenDocxBuiltinExportNamesMigratedV2';
 function patchExportNameModal(){
-  const list=document.getElementById('exportNameList');
-  const exportBtn=document.getElementById('exportBtn');
-  if(!list||!exportBtn||list.dataset.regionPatched==='1')return;
-  list.dataset.regionPatched='1';
-  list.innerHTML=`
-    <section class="export-region" data-export-region="us">
-      <div class="export-region-title">${US_FLAG}<span>美国</span></div>
-      <div class="export-region-options">
-        ${exportOption('us','client',EXPORT_NAMES.us.client,'客户建档')}
-        ${exportOption('us','freeze',EXPORT_NAMES.us.freeze,'冻结令和资金返还令')}
-        ${exportOption('us','tether',EXPORT_NAMES.us.tether,'Tether退款确认文件')}
-        ${exportOption('us','assistance',EXPORT_NAMES.us.assistance,'首充减免')}
-      </div>
-    </section>
-    <section class="export-region" data-export-region="de">
-      <div class="export-region-title">${DE_FLAG}<span>德国</span></div>
-      <div class="export-region-options">
-        ${exportOption('de','client',EXPORT_NAMES.de.client,'客户建档')}
-        ${exportOption('de','freeze',EXPORT_NAMES.de.freeze,'冻结令和资金返还令')}
-        ${exportOption('de','tether',EXPORT_NAMES.de.tether,'Tether退款确认文件')}
-        ${exportOption('de','assistance',EXPORT_NAMES.de.assistance,'首充减免')}
-      </div>
-    </section>`;
-
-  list.addEventListener('click',e=>{
-    const btn=e.target.closest('.export-name-option');
-    if(btn)setTimeout(()=>keepSingleExportSelection(btn),0);
-  });
-
-  exportBtn.addEventListener('click',()=>{
-    setTimeout(()=>{
-      const {region,kind}=detectExportChoice();
-      const btn=list.querySelector(`.export-name-option[data-region="${region}"][data-kind="${kind}"]`);
-      if(btn){btn.click();keepSingleExportSelection(btn);}
-    },0);
-  });
+  // Older versions replaced the export-name list with a fixed country list
+  // and intercepted the export button. That silently hid user-created presets.
+  // Migrate those names once, then leave the editable picker in full control.
+  if(typeof persistExportPresets!=='function'||typeof state==='undefined')return;
+  try{
+    if(localStorage.getItem(LEGACY_PRESET_MIGRATION)==='1')return;
+    const additions=[
+      {id:'builtin-us-assistance',filename:EXPORT_NAMES.us.assistance,hint:'美国 · 首充减免',aliases:'美国,首充,减免,assistance,victim,special'},
+      {id:'builtin-de-freeze',filename:EXPORT_NAMES.de.freeze,hint:'德国 · 冻结令',aliases:'德国,冻结,freeze,vermögensarrest'},
+      {id:'builtin-de-tether',filename:EXPORT_NAMES.de.tether,hint:'德国 · Tether退款',aliases:'德国,退款,tether,erstattung'},
+      {id:'builtin-de-assistance',filename:EXPORT_NAMES.de.assistance,hint:'德国 · 首充减免',aliases:'德国,首充,减免,sonderhilfe'}
+    ];
+    const found=new Set((state.exportPresets||[]).map(p=>String(p.filename||'').toLowerCase()));
+    const toAdd=additions.filter(p=>!found.has(p.filename.toLowerCase()));
+    const next=[...(state.exportPresets||[]),...toAdd];
+    if(toAdd.length&&!persistExportPresets(next))return;
+    localStorage.setItem(LEGACY_PRESET_MIGRATION,'1');
+  }catch(err){console.warn('预选文件名迁移失败',err)}
 }
 
 function loadSavedOrder(){try{return JSON.parse(localStorage.getItem(ORDER_KEY)||'{}')||{};}catch{return {};}}
@@ -165,7 +149,14 @@ function makeItem(t){
   const el=document.createElement('div');
   el.className='builtin-item';el.draggable=true;el.dataset.path=t.path;
   el.innerHTML=`<div class="builtin-grip" title="拖拽排序">⋮⋮</div><div><div class="builtin-name" title="${esc(t.name)}">${esc(t.name.replace(/\.docx$/i,''))}</div><div class="builtin-meta">内置模板${t.size?` · ${humanSize(t.size)}`:''}</div></div>`;
-  el.addEventListener('click',()=>openBuiltIn(t));
+  el.addEventListener('click',()=>{if(typeof closeTemplateContextMenu==='function')closeTemplateContextMenu();openBuiltIn(t)});
+  // Built-in templates are rendered here, not by the editor's "我的模板" renderer.
+  // Use the editor's same context menu and stable template ID for both columns.
+  el.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    if(typeof openTemplateContextMenu==='function')
+      openTemplateContextMenu({id:BUILTIN_PREFIX+t.path,name:t.name,builtin:true,_builtinPath:t.path},e.clientX,e.clientY);
+  });
   el.addEventListener('dragstart',e=>{el.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',t.path);});
   el.addEventListener('dragend',()=>el.classList.remove('dragging'));
   return el;
