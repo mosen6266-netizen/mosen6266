@@ -214,7 +214,7 @@ const A_NS='http://schemas.openxmlformats.org/drawingml/2006/main';
 const DB_NAME='docxChineseEditorDB';
 const DB_VERSION=1;
 const STORE='templates';
-const state={db:null,templates:[],current:null,occurrences:[],draftTimer:null,renameId:null,exportFilename:'',exportPresets:[],editingExportPresetId:null,templateContextId:null,quickExportTemplateId:null,busy:false};
+const state={db:null,templates:[],current:null,occurrences:[],draftTimer:null,renameId:null,exportFilename:'',exportPresets:[],editingExportPresetId:null,templateContextId:null,templateContextRecord:null,quickExportTemplateId:null,quickExportTemplateRecord:null,busy:false};
 
 const $=id=>document.getElementById(id);
 const els={fileInput:$('fileInput'),dropZone:$('dropZone'),templateList:$('templateList'),templateCount:$('templateCount'),welcome:$('welcome'),workspace:$('workspace'),currentName:$('currentName'),totalCount:$('totalCount'),filledCount:$('filledCount'),fileSize:$('fileSize'),rows:$('rows'),searchInput:$('searchInput'),filterSelect:$('filterSelect'),exportBtn:$('exportBtn'),clearDraftBtn:$('clearDraftBtn'),copyOriginalBtn:$('copyOriginalBtn'),progress:$('progress'),renameModal:$('renameModal'),renameInput:$('renameInput'),renameCancel:$('renameCancel'),renameSave:$('renameSave'),exportNameModal:$('exportNameModal'),exportNameList:$('exportNameList'),exportNameCancel:$('exportNameCancel'),exportNameConfirm:$('exportNameConfirm'),exportManageToggle:$('exportManageToggle'),exportPickerPanel:$('exportPickerPanel'),exportMatchStatus:$('exportMatchStatus'),exportManagerPanel:$('exportManagerPanel'),exportManageList:$('exportManageList'),exportManagerBack:$('exportManagerBack'),exportPresetName:$('exportPresetName'),exportPresetHint:$('exportPresetHint'),exportPresetAliases:$('exportPresetAliases'),exportPresetReset:$('exportPresetReset'),exportPresetSave:$('exportPresetSave'),templateContextMenu:$('templateContextMenu'),templateContextTitle:$('templateContextTitle'),templateContextAdd:$('templateContextAdd'),templateContextCustom:$('templateContextCustom'),quickExportNameModal:$('quickExportNameModal'),quickExportSource:$('quickExportSource'),quickExportName:$('quickExportName'),quickExportHint:$('quickExportHint'),quickExportAliases:$('quickExportAliases'),quickExportCancel:$('quickExportCancel'),quickExportSave:$('quickExportSave'),toastWrap:$('toastWrap')};
@@ -475,12 +475,14 @@ function handleExportManagerClick(e){
 
 function closeTemplateContextMenu(){
   state.templateContextId=null;
+  state.templateContextRecord=null;
   els.templateContextMenu.hidden=true;
 }
 function openTemplateContextMenu(template,x,y){
   closeTemplateContextMenu();
   if(!template)return;
   state.templateContextId=template.id;
+  state.templateContextRecord=template;
   els.templateContextTitle.textContent=template.name;
   els.templateContextMenu.hidden=false;
   const rect=els.templateContextMenu.getBoundingClientRect();
@@ -491,7 +493,7 @@ function openTemplateContextMenu(template,x,y){
   els.templateContextAdd.focus({preventScroll:true});
 }
 function getContextTemplate(){
-  return state.templates.find(t=>t.id===state.templateContextId)||null;
+  return state.templateContextRecord||state.templates.find(t=>t.id===state.templateContextId)||null;
 }
 function addExportPresetFromTemplate(template,rawName,hint='',extraKeywords=''){
   if(!template)return false;
@@ -518,6 +520,7 @@ function openQuickExportNameModal(template){
   closeTemplateContextMenu();
   if(!template)return;
   state.quickExportTemplateId=template.id;
+  state.quickExportTemplateRecord=template;
   els.quickExportSource.textContent='来源模板：'+template.name;
   els.quickExportName.value=String(template.name||'').replace(/\.docx$/i,'');
   els.quickExportHint.value='';
@@ -527,10 +530,11 @@ function openQuickExportNameModal(template){
 }
 function closeQuickExportNameModal(){
   state.quickExportTemplateId=null;
+  state.quickExportTemplateRecord=null;
   els.quickExportNameModal.classList.remove('show');
 }
 function saveQuickExportName(){
-  const template=state.templates.find(t=>t.id===state.quickExportTemplateId);
+  const template=state.quickExportTemplateRecord||state.templates.find(t=>t.id===state.quickExportTemplateId);
   if(addExportPresetFromTemplate(template,els.quickExportName.value,els.quickExportHint.value,els.quickExportAliases.value))
     closeQuickExportNameModal();
 }
