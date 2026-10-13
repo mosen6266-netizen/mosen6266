@@ -50,5 +50,25 @@
     ]
   },
   "docxPlaceholder": "在这里输入对应的英文内容...",
-  "updatedAt": "2026-09-19T13:50:28.787Z"
+  "updatedAt": "2026-09-19T13:50:28.787Z",
+  "docxExportNames": {
+    "version": 1,
+    "updatedAt": "2026-10-13T09:15:41.048Z",
+    "bindings": {
+      "builtin:templates/客户建档模板.docx": "WC-CRYPTO-1068-0177.docx",
+      "builtin:templates/冻结令和资金返还令模板.docx": "Order for Emergency Freeze and Asset Return (Copy).docx",
+      "builtin:templates/Tether退款通知模板.docx": "Tether Refund Processing Notice.docx",
+      "builtin:templates/Tether退款通知模板（没有利润）.docx": "Tether Refund Processing Notice.docx",
+      "builtin:templates/客户建档模板（美国银行卡模式）.docx": "WC-2026-FX7717.docx",
+      "builtin:templates/客户建档模板-德国.docx": "WC-CRYPTO-1068-0177.docx",
+      "builtin:templates/冻结令和资金返还令模板-德国.docx": "Beschluss über den Vermögensarrest und die Rückgewähr von Vermögenswerten (Abschrift).docx",
+      "builtin:templates/Tether退款通知模板-德国.docx": "Bestätigung der Rückerstattung durch Tether.docx",
+      "builtin:templates/Tether退款通知模板（没有利润）-德国.docx": "Bestätigung der Rückerstattung durch Tether.docx",
+      "builtin:templates/底层资产调查与取证报告（美国银行卡模式）.docx": "Underlying Asset Investigation & Evidence Dossier(Copy).docx",
+      "builtin:templates/致 Wise 官方紧急冻结通知（美国银行卡模式）.docx": "Urgent Notice of Fraudulent Funds(Copy).docx",
+      "builtin:templates/致英国金融行为监管局 (FCA) 强制冻结请求（美国银行卡模式）.docx": "Regulatory Freeze Request(Copy).docx",
+      "builtin:templates/跨国司法协助请求书（美国银行卡模式）.docx": "Mutual Legal Assistance Request Letters Rogatory(Copy).docx",
+      "builtin:templates/受害者事实陈述与宣誓书（美国银行卡模式）.docx": "Sworn Affidavit Declaration.docx"
+    }
+  }
 }
