@@ -307,7 +307,8 @@ function loadExportPresets(){
     if(!Array.isArray(parsed))throw new Error('Invalid presets');
     state.exportPresets=parsed.slice(0,300).filter(p=>p&&typeof p==='object'&&cleanExportFilename(p.filename)).map((p,i)=>({
       id:String(p.id||'custom-'+i),filename:cleanExportFilename(p.filename),
-      hint:String(p.hint||'').slice(0,50),aliases:String(p.aliases||'').slice(0,250)
+      hint:String(p.hint||'').slice(0,50),aliases:String(p.aliases||'').slice(0,250),
+      sourceTemplateId:String(p.sourceTemplateId||'').slice(0,180)
     }));
   }catch(err){
     console.warn('预选文件名读取失败',err);
@@ -363,6 +364,9 @@ function exportNameScore(source,option){
   return Math.min(100,Math.round(score));
 }
 function matchExportPreset(templateName){
+  // Context-menu additions are explicitly linked to a template, avoiding fuzzy-match ties.
+  const exactTemplatePreset=[...state.exportPresets].reverse().find(p=>p.sourceTemplateId&&p.sourceTemplateId===state.current?.id);
+  if(exactTemplatePreset)return exactTemplatePreset;
   const rankings=state.exportPresets.map((preset,index)=>{
     const aliases=[preset.filename,preset.hint,...preset.aliases.split(/[,，;；\n|]+/)];
     return {preset,index,score:Math.max(0,...aliases.map(alias=>exportNameScore(templateName,alias)))};
@@ -444,7 +448,9 @@ function saveExportPreset(){
   if(state.exportPresets.some(p=>p.id!==id&&p.filename.toLowerCase()===filename.toLowerCase())){
     toast('这个预选文件名已经存在','error');return;
   }
+  const existing=state.exportPresets.find(p=>p.id===id);
   const preset={id:id||uid(),filename,hint:els.exportPresetHint.value.trim(),aliases:els.exportPresetAliases.value.trim()};
+  if(existing?.sourceTemplateId)preset.sourceTemplateId=existing.sourceTemplateId;
   const next=id?state.exportPresets.map(p=>p.id===id?preset:p):[...state.exportPresets,preset];
   if(next.length>300){toast('预选文件名最多保存 300 个','error');return}
   if(!persistExportPresets(next))return;
@@ -499,7 +505,7 @@ function addExportPresetFromTemplate(template,rawName,hint='',extraKeywords=''){
   if(state.exportPresets.length>=300){toast('预选文件名最多保存 300 个','error');return false}
   const sourceName=String(template.name||'').replace(/\.docx$/i,'').trim();
   const keywords=[sourceName,String(extraKeywords||'').trim()].filter(Boolean).join(', ').slice(0,250);
-  const next=[...state.exportPresets,{id:uid(),filename,hint:String(hint||'').trim().slice(0,50),aliases:keywords}];
+  const next=[...state.exportPresets,{id:uid(),filename,hint:String(hint||'').trim().slice(0,50),aliases:keywords,sourceTemplateId:String(template.id).slice(0,180)}];
   if(!persistExportPresets(next))return false;
   if(els.exportNameModal.classList.contains('show')){
     renderExportManageList();
