@@ -317,7 +317,12 @@ function loadExportPresets(){
   }
 }
 function persistExportPresets(next){
-  try{localStorage.setItem(EXPORT_PRESET_STORAGE_KEY,JSON.stringify(next));state.exportPresets=next;return true}
+  try{
+    localStorage.setItem(EXPORT_PRESET_STORAGE_KEY,JSON.stringify(next));
+    state.exportPresets=next;
+    window.dispatchEvent(new Event('docx-export-presets-updated'));
+    return true;
+  }
   catch(err){console.error(err);toast('保存预选文件名失败：请检查浏览器存储权限','error');return false}
 }
 function normalizeForExportMatch(value){
