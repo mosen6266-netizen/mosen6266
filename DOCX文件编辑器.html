@@ -25,7 +25,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .template-main{min-width:0;cursor:pointer}.template-name{font-size:13px;font-weight:650;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.45;overflow-wrap:anywhere}.template-meta{font-size:10px;color:#96a2b8;margin-top:5px}.template-actions{display:flex;align-items:center;gap:2px}.icon-btn{width:28px;height:28px;border:0;background:transparent;color:#aeb9ce;border-radius:7px}.icon-btn:hover{background:rgba(255,255,255,.09);color:#fff}
 
 /* 左侧模板右键快捷添加输出名 */
-.template-context-menu[hidden],.quick-export-name-modal[hidden]{display:none!important}
+.template-context-menu[hidden],.quick-export-name-modal[hidden]{display:none!important}.quick-export-name-modal button[hidden]{display:none!important}
 .template-context-menu{position:fixed;z-index:55;min-width:228px;max-width:min(350px,calc(100vw - 20px));padding:6px;border:1px solid #dce3f0;background:#fff;color:#172033;border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.24)}
 .template-context-menu .context-title{font-size:11px;color:#697386;padding:8px 10px;border-bottom:1px solid #e4e8f0;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .template-context-menu button{display:block;width:100%;border:0;background:transparent;text-align:left;color:#172033;padding:11px 10px;font-size:13px;border-radius:7px;font-weight:650}
@@ -133,63 +133,38 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 </div>
 
 
-<div id="templateContextMenu" class="template-context-menu" role="menu" aria-label="模板输出文件名操作" hidden>
-  <div id="templateContextTitle" class="context-title"></div>
-  <button type="button" id="templateContextAdd" role="menuitem">以当前文件名添加到输出预选</button>
-  <button type="button" id="templateContextCustom" role="menuitem">自定义输出文件名后添加…</button>
-</div>
+
 <div id="quickExportNameModal" class="modal-backdrop quick-export-name-modal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="quickExportNameTitle">
-    <h3 id="quickExportNameTitle">从左侧模板添加输出文件名</h3>
+    <h3 id="quickExportNameTitle">设置输出文件名</h3>
     <p class="quick-export-source" id="quickExportSource"></p>
-    <label for="quickExportName">输出文件名</label>
-    <input id="quickExportName" maxlength="160" autocomplete="off" placeholder="输入输出 DOCX 的名称">
-    <label for="quickExportHint">中文用途备注（可选）</label>
-    <input id="quickExportHint" maxlength="50" autocomplete="off" placeholder="例如：客户档案">
-    <label for="quickExportAliases">额外匹配关键词（可选）</label>
-    <input id="quickExportAliases" maxlength="250" autocomplete="off" placeholder="多个关键词用逗号分隔">
-    <p class="quick-export-note">自动把当前左侧模板名作为匹配关键词，今后输出这个模板时会优先匹配新增的名称。</p>
+    <label for="quickExportName">此模板的输出文件名</label>
+    <input id="quickExportName" maxlength="155" autocomplete="off" required placeholder="请输入输出文件名">
+    <p class="quick-export-note">每个模板独立保存一个输出文件名。不同模板允许使用相同的名称，修改不会影响其他模板。</p>
     <div class="modal-actions">
+      <button type="button" class="btn btn-danger" id="quickExportRemove" hidden>清除设置</button>
       <button type="button" class="btn btn-ghost" id="quickExportCancel">取消</button>
-      <button type="button" class="btn btn-primary" id="quickExportSave">保存到输出预选</button>
+      <button type="button" class="btn btn-primary" id="quickExportSave">确认</button>
     </div>
   </div>
 </div>
+
 <div class="modal-backdrop" id="renameModal"><div class="modal"><h3>重命名模板</h3><p>只修改模板库中的显示名称，不会改变原文件内容。</p><input id="renameInput" maxlength="150"><div class="modal-actions"><button class="btn btn-ghost" id="renameCancel">取消</button><button class="btn btn-primary" id="renameSave">保存</button></div></div></div>
+
 
 <div class="modal-backdrop" id="exportNameModal">
   <div class="modal export-modal" role="dialog" aria-modal="true" aria-labelledby="exportNameTitle">
-    <h3 id="exportNameTitle">选择输出文件名</h3>
-    <p>自动根据左侧当前模板名称匹配预选项，也可以手动选择。右侧中文仅作用途提示，不加入实际文件名。</p>
-    <div class="export-head-actions">
-      <span style="font-size:12px;color:var(--muted)">预选文件名可自行添加、编辑或删除</span>
-      <button type="button" class="btn btn-soft" id="exportManageToggle">管理预选文件名</button>
-    </div>
-    <div class="export-picker-panel" id="exportPickerPanel">
-      <div class="export-match-status" id="exportMatchStatus" aria-live="polite"></div>
-      <div class="export-name-list" id="exportNameList"></div>
-      <div class="export-note">实际下载时统一使用 .docx 扩展名。</div>
-      <div class="modal-actions"><button class="btn btn-ghost" id="exportNameCancel">取消</button><button class="btn btn-primary" id="exportNameConfirm">确认输出</button></div>
-    </div>
-    <div class="export-manager-panel" id="exportManagerPanel" hidden>
-      <div class="export-manager-list" id="exportManageList"></div>
-      <div class="export-preset-form">
-        <label for="exportPresetName">预选输出文件名</label>
-        <input id="exportPresetName" maxlength="160" placeholder="例如：Tether Refund Processing Notice">
-        <label for="exportPresetHint">中文用途备注（可选）</label>
-        <input id="exportPresetHint" maxlength="50" placeholder="例如：退款通知文件">
-        <label for="exportPresetAliases">自动匹配关键词（可选）</label>
-        <input id="exportPresetAliases" maxlength="250" placeholder="例如：退款, refund, tether notice">
-        <div class="export-preset-help">多个关键词用逗号分隔。自动匹配会参考左侧模板名、预选文件名、备注及关键词。修改后保存在当前浏览器。</div>
-        <div class="export-manager-foot">
-          <button type="button" class="btn btn-ghost" id="exportPresetReset">清空输入 / 取消编辑</button>
-          <button type="button" class="btn btn-primary" id="exportPresetSave">添加预选文件名</button>
-        </div>
-      </div>
-      <div class="modal-actions" style="margin-top:14px"><button type="button" class="btn btn-ghost" id="exportManagerBack">返回选择</button></div>
+    <h3 id="exportNameTitle">请输入导出文件名</h3>
+    <p>当前模板还未设置输出名称，必须输入本次导出的 DOCX 文件名才能继续。该输入只用于本次导出；长期绑定请右键左侧模板设置。</p>
+    <label for="exportNameInput" style="font-size:12px;font-weight:650">文件名（必填）</label>
+    <input id="exportNameInput" maxlength="155" autocomplete="off" required placeholder="请输入导出文件名">
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="exportNameCancel">取消</button>
+      <button type="button" class="btn btn-primary" id="exportNameConfirm" disabled>确认导出</button>
     </div>
   </div>
 </div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -217,7 +192,7 @@ const STORE='templates';
 const state={db:null,templates:[],current:null,occurrences:[],draftTimer:null,renameId:null,exportFilename:'',exportPresets:[],editingExportPresetId:null,templateContextId:null,templateContextRecord:null,quickExportTemplateId:null,quickExportTemplateRecord:null,busy:false};
 
 const $=id=>document.getElementById(id);
-const els={fileInput:$('fileInput'),dropZone:$('dropZone'),templateList:$('templateList'),templateCount:$('templateCount'),welcome:$('welcome'),workspace:$('workspace'),currentName:$('currentName'),totalCount:$('totalCount'),filledCount:$('filledCount'),fileSize:$('fileSize'),rows:$('rows'),searchInput:$('searchInput'),filterSelect:$('filterSelect'),exportBtn:$('exportBtn'),clearDraftBtn:$('clearDraftBtn'),copyOriginalBtn:$('copyOriginalBtn'),progress:$('progress'),renameModal:$('renameModal'),renameInput:$('renameInput'),renameCancel:$('renameCancel'),renameSave:$('renameSave'),exportNameModal:$('exportNameModal'),exportNameList:$('exportNameList'),exportNameCancel:$('exportNameCancel'),exportNameConfirm:$('exportNameConfirm'),exportManageToggle:$('exportManageToggle'),exportPickerPanel:$('exportPickerPanel'),exportMatchStatus:$('exportMatchStatus'),exportManagerPanel:$('exportManagerPanel'),exportManageList:$('exportManageList'),exportManagerBack:$('exportManagerBack'),exportPresetName:$('exportPresetName'),exportPresetHint:$('exportPresetHint'),exportPresetAliases:$('exportPresetAliases'),exportPresetReset:$('exportPresetReset'),exportPresetSave:$('exportPresetSave'),templateContextMenu:$('templateContextMenu'),templateContextTitle:$('templateContextTitle'),templateContextAdd:$('templateContextAdd'),templateContextCustom:$('templateContextCustom'),quickExportNameModal:$('quickExportNameModal'),quickExportSource:$('quickExportSource'),quickExportName:$('quickExportName'),quickExportHint:$('quickExportHint'),quickExportAliases:$('quickExportAliases'),quickExportCancel:$('quickExportCancel'),quickExportSave:$('quickExportSave'),toastWrap:$('toastWrap')};
+const els={fileInput:$('fileInput'),dropZone:$('dropZone'),templateList:$('templateList'),templateCount:$('templateCount'),welcome:$('welcome'),workspace:$('workspace'),currentName:$('currentName'),totalCount:$('totalCount'),filledCount:$('filledCount'),fileSize:$('fileSize'),rows:$('rows'),searchInput:$('searchInput'),filterSelect:$('filterSelect'),exportBtn:$('exportBtn'),clearDraftBtn:$('clearDraftBtn'),copyOriginalBtn:$('copyOriginalBtn'),progress:$('progress'),renameModal:$('renameModal'),renameInput:$('renameInput'),renameCancel:$('renameCancel'),renameSave:$('renameSave'),exportNameModal:$('exportNameModal'),exportNameList:$('exportNameList'),exportNameCancel:$('exportNameCancel'),exportNameConfirm:$('exportNameConfirm'),exportNameInput:$('exportNameInput'),exportManageToggle:$('exportManageToggle'),exportPickerPanel:$('exportPickerPanel'),exportMatchStatus:$('exportMatchStatus'),exportManagerPanel:$('exportManagerPanel'),exportManageList:$('exportManageList'),exportManagerBack:$('exportManagerBack'),exportPresetName:$('exportPresetName'),exportPresetHint:$('exportPresetHint'),exportPresetAliases:$('exportPresetAliases'),exportPresetReset:$('exportPresetReset'),exportPresetSave:$('exportPresetSave'),templateContextMenu:$('templateContextMenu'),templateContextTitle:$('templateContextTitle'),templateContextAdd:$('templateContextAdd'),templateContextCustom:$('templateContextCustom'),quickExportNameModal:$('quickExportNameModal'),quickExportSource:$('quickExportSource'),quickExportName:$('quickExportName'),quickExportHint:$('quickExportHint'),quickExportAliases:$('quickExportAliases'),quickExportCancel:$('quickExportCancel'),quickExportSave:$('quickExportSave'),quickExportRemove:$('quickExportRemove'),toastWrap:$('toastWrap')};
 
 function toast(message,type=''){
   const n=document.createElement('div');n.className='toast '+type;n.textContent=message;els.toastWrap.appendChild(n);
@@ -253,7 +228,7 @@ function renderTemplates(){
   els.templateList.innerHTML='';
   for(const t of state.templates){
     const item=document.createElement('div');item.className='template-item'+(state.current?.id===t.id?' active':'');
-    item.innerHTML=`<div class="template-main" title="${escapeHtml(t.name)}"><div class="template-name">${escapeHtml(t.name)}</div><div class="template-meta">${formatBytes(t.size)} · ${dateText(t.updatedAt)}</div></div><div class="template-actions"><button class="icon-btn rename" title="重命名">✎</button><button class="icon-btn delete" title="删除">×</button></div>`;
+    item.innerHTML=`<div class="template-main" title="${escapeHtml(t.name)}"><div class="template-name">${escapeHtml(t.name)}</div><div class="template-meta">${escapeHtml(templateListMetadata(t))}</div></div><div class="template-actions"><button class="icon-btn rename" title="重命名">✎</button><button class="icon-btn delete" title="删除">×</button></div>`;
     item.querySelector('.template-main').onclick=()=>{closeTemplateContextMenu();loadTemplate(t.id)};
     item.addEventListener('contextmenu',e=>{
       if(e.target.closest('.template-actions'))return;
@@ -368,168 +343,52 @@ function exportNameScore(source,option){
   }
   return Math.min(100,Math.round(score));
 }
-function matchExportPreset(templateName){
-  // Context-menu additions are explicitly linked to a template, avoiding fuzzy-match ties.
-  const exactTemplatePreset=[...state.exportPresets].reverse().find(p=>p.sourceTemplateId&&p.sourceTemplateId===state.current?.id);
-  if(exactTemplatePreset)return exactTemplatePreset;
-  const rankings=state.exportPresets.map((preset,index)=>{
-    const aliases=[preset.filename,preset.hint,...preset.aliases.split(/[,，;；\n|]+/)];
-    return {preset,index,score:Math.max(0,...aliases.map(alias=>exportNameScore(templateName,alias)))};
-  }).sort((a,b)=>b.score-a.score||a.index-b.index);
-  const best=rankings[0],runnerUp=rankings[1];
-  // Low-confidence or indistinguishable candidates should never silently select an unrelated preset.
-  if(best&&best.score>=72&&(!runnerUp||best.score-runnerUp.score>=6))
-    return best.preset;
-  return null;
-}
-function makeExportNameOption(filename,hint,isTemplateName=false){
-  const btn=document.createElement('button');
-  btn.type='button';btn.className='export-name-option';btn.dataset.filename=filename;
-  const name=document.createElement('span');name.className='export-file-name';name.textContent=filename.replace(/\.docx$/i,'');
-  const note=document.createElement('span');note.className='export-file-hint';note.textContent=hint||(isTemplateName?'沿用模板名称':'预选文件名');
-  btn.append(name,note);return btn;
-}
-function renderExportNameOptions(){
-  els.exportNameList.replaceChildren();
-  const currentFilename=cleanExportFilename(state.current?.name)||'Document.docx';
-  // Avoid showing the same filename twice when the selected template already has its own preset.
-  if(!state.exportPresets.some(p=>p.filename.toLowerCase()===currentFilename.toLowerCase()))
-    els.exportNameList.appendChild(makeExportNameOption(currentFilename,'沿用左侧模板名称',true));
-  for(const preset of state.exportPresets)
-    els.exportNameList.appendChild(makeExportNameOption(preset.filename,preset.hint));
-  selectExportFilename(state.exportFilename);
-}
-function selectExportFilename(filename){
-  state.exportFilename=filename;
-  els.exportNameList.querySelectorAll('.export-name-option').forEach(btn=>{
-    const selected=btn.dataset.filename===filename;
-    btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',String(selected));
-  });
-}
-function refreshExportNameChoice(){
-  const currentFilename=cleanExportFilename(state.current?.name)||'Document.docx';
-  const match=matchExportPreset(state.current?.name||'');
-  renderExportNameOptions();
-  const selected=match?.filename||currentFilename;
-  selectExportFilename(selected);
-  els.exportMatchStatus.textContent=match
-    ? '已根据左侧模板“'+state.current.name+'”自动匹配：'+match.filename
-    : '没有找到足够相似的预选文件名，默认使用左侧模板名：'+currentFilename;
-}
-function resetExportPresetForm(){
-  state.editingExportPresetId=null;
-  els.exportPresetName.value='';els.exportPresetHint.value='';els.exportPresetAliases.value='';
-  els.exportPresetSave.textContent='添加预选文件名';
-}
-function renderExportManageList(){
-  els.exportManageList.replaceChildren();
-  if(!state.exportPresets.length){
-    const note=document.createElement('div');note.className='export-manager-empty';note.textContent='暂无预选文件名，可以在下方添加。';
-    els.exportManageList.appendChild(note);return;
-  }
-  for(const preset of state.exportPresets){
-    const item=document.createElement('div');item.className='export-manager-item';
-    const label=document.createElement('div');label.className='export-manager-label';label.textContent=preset.filename.replace(/\.docx$/i,'');
-    const small=document.createElement('small');small.textContent=[preset.hint,preset.aliases].filter(Boolean).join(' · ');
-    if(small.textContent)label.appendChild(small);
-    const actions=document.createElement('div');actions.className='export-manager-actions';
-    for(const [action,title] of [['edit','编辑'],['delete','删除']]){
-      const button=document.createElement('button');button.type='button';button.dataset.action=action;button.dataset.id=preset.id;
-      button.textContent=title;actions.appendChild(button);
-    }
-    item.append(label,actions);els.exportManageList.appendChild(item);
-  }
-}
-function toggleExportManager(open){
-  els.exportPickerPanel.hidden=open;els.exportManagerPanel.hidden=!open;
-  els.exportManageToggle.textContent=open?'返回选择文件名':'管理预选文件名';
-  if(open){renderExportManageList();resetExportPresetForm()}
-  else refreshExportNameChoice();
-}
-function saveExportPreset(){
-  const filename=cleanExportFilename(els.exportPresetName.value);
-  if(!filename){toast('文件名不能为空、不能超过 150 字，且不能包含系统禁止的字符','error');els.exportPresetName.focus();return}
-  const id=state.editingExportPresetId;
-  if(state.exportPresets.some(p=>p.id!==id&&p.filename.toLowerCase()===filename.toLowerCase())){
-    toast('这个预选文件名已经存在','error');return;
-  }
-  const existing=state.exportPresets.find(p=>p.id===id);
-  const preset={id:id||uid(),filename,hint:els.exportPresetHint.value.trim(),aliases:els.exportPresetAliases.value.trim()};
-  if(existing?.sourceTemplateId)preset.sourceTemplateId=existing.sourceTemplateId;
-  const next=id?state.exportPresets.map(p=>p.id===id?preset:p):[...state.exportPresets,preset];
-  if(next.length>300){toast('预选文件名最多保存 300 个','error');return}
-  if(!persistExportPresets(next))return;
-  renderExportManageList();resetExportPresetForm();toast(id?'预选文件名已更新':'预选文件名已添加','success');
-}
-function handleExportManagerClick(e){
-  const btn=e.target.closest('button[data-action]');if(!btn)return;
-  const preset=state.exportPresets.find(p=>p.id===btn.dataset.id);if(!preset)return;
-  if(btn.dataset.action==='edit'){
-    state.editingExportPresetId=preset.id;els.exportPresetName.value=preset.filename.replace(/\.docx$/i,'');
-    els.exportPresetHint.value=preset.hint;els.exportPresetAliases.value=preset.aliases;
-    els.exportPresetSave.textContent='保存修改';els.exportPresetName.focus();els.exportPresetName.select();
-  }else if(btn.dataset.action==='delete'){
-    if(!confirm('确定删除预选文件名“'+preset.filename+'”吗？'))return;
-    const next=state.exportPresets.filter(p=>p.id!==preset.id);
-    if(persistExportPresets(next)){
-      if(state.editingExportPresetId===preset.id)resetExportPresetForm();
-      renderExportManageList();toast('预选文件名已删除','success');
-    }
-  }
-}
 
+function getBoundExportPreset(templateId){
+  if(!templateId)return null;
+  return [...state.exportPresets].reverse().find(p=>p.sourceTemplateId===String(templateId))||null;
+}
+function templateListMetadata(t){
+  const preset=getBoundExportPreset(t.id),output=preset?.filename.replace(/\.docx$/i,'');
+  return (output?output+' · ':'')+formatBytes(t.size)+' · '+dateText(t.updatedAt);
+}
+function upsertTemplateExportName(template,rawName){
+  if(!template?.id){toast('没有找到对应模板','error');return false}
+  const filename=cleanExportFilename(rawName);
+  if(!filename){toast('请输入有效的输出文件名（最多150字符，不能含特殊文件名字符）','error');return false}
+  const id=String(template.id);
+  const prev=getBoundExportPreset(id);
+  // Unique by template ID, NOT by filename: multiple templates may share one output filename.
+  const next=state.exportPresets.filter(p=>p.sourceTemplateId!==id);
+  if(next.length>=3000){toast('模板输出名称数量已达到上限','error');return false}
+  next.push({id:prev?.id||uid(),filename,sourceTemplateId:id,hint:'',aliases:''});
+  if(!persistExportPresets(next))return false;
+  toast('已保存该模板的输出文件名：'+filename,'success');
+  return true;
+}
+function removeTemplateExportName(template){
+  if(!template?.id)return;
+  const id=String(template.id),next=state.exportPresets.filter(p=>p.sourceTemplateId!==id);
+  if(next.length===state.exportPresets.length)return;
+  if(persistExportPresets(next)){closeQuickExportNameModal();toast('已清除该模板的输出文件名','success')}
+}
+// Compatible with both local templates and independently rendered US/DE built-in templates.
 function closeTemplateContextMenu(){
   state.templateContextId=null;
   state.templateContextRecord=null;
-  els.templateContextMenu.hidden=true;
 }
 function openTemplateContextMenu(template,x,y){
-  closeTemplateContextMenu();
-  if(!template)return;
-  state.templateContextId=template.id;
-  state.templateContextRecord=template;
-  els.templateContextTitle.textContent=template.name;
-  els.templateContextMenu.hidden=false;
-  const rect=els.templateContextMenu.getBoundingClientRect();
-  const left=Math.max(8,Math.min(x,window.innerWidth-rect.width-8));
-  const top=Math.max(8,Math.min(y,window.innerHeight-rect.height-8));
-  els.templateContextMenu.style.left=left+'px';
-  els.templateContextMenu.style.top=top+'px';
-  els.templateContextAdd.focus({preventScroll:true});
-}
-function getContextTemplate(){
-  return state.templateContextRecord||state.templates.find(t=>t.id===state.templateContextId)||null;
-}
-function addExportPresetFromTemplate(template,rawName,hint='',extraKeywords=''){
-  if(!template)return false;
-  const filename=cleanExportFilename(rawName);
-  if(!filename){
-    toast('输出文件名无效，请输入 1-150 个字符且不含 \\ / : * ? " < > |','error');return false;
-  }
-  if(state.exportPresets.some(p=>p.filename.toLowerCase()===filename.toLowerCase())){
-    toast('预选列表已包含此文件名，无须重复添加','error');return false;
-  }
-  if(state.exportPresets.length>=300){toast('预选文件名最多保存 300 个','error');return false}
-  const sourceName=String(template.name||'').replace(/\.docx$/i,'').trim();
-  const keywords=[sourceName,String(extraKeywords||'').trim()].filter(Boolean).join(', ').slice(0,250);
-  const next=[...state.exportPresets,{id:uid(),filename,hint:String(hint||'').trim().slice(0,50),aliases:keywords,sourceTemplateId:String(template.id).slice(0,180)}];
-  if(!persistExportPresets(next))return false;
-  if(els.exportNameModal.classList.contains('show')){
-    renderExportManageList();
-    if(state.current)refreshExportNameChoice();
-  }
-  toast('已加入输出预选文件名：'+filename,'success');
-  return true;
+  openQuickExportNameModal(template);
 }
 function openQuickExportNameModal(template){
   closeTemplateContextMenu();
-  if(!template)return;
-  state.quickExportTemplateId=template.id;
+  if(!template?.id)return;
+  state.quickExportTemplateId=String(template.id);
   state.quickExportTemplateRecord=template;
-  els.quickExportSource.textContent='来源模板：'+template.name;
-  els.quickExportName.value=String(template.name||'').replace(/\.docx$/i,'');
-  els.quickExportHint.value='';
-  els.quickExportAliases.value='';
+  const old=getBoundExportPreset(template.id);
+  els.quickExportSource.textContent='左侧模板：'+template.name;
+  els.quickExportName.value=old?.filename.replace(/\.docx$/i,'')||String(template.name||'').replace(/\.docx$/i,'');
+  els.quickExportRemove.hidden=!old;
   els.quickExportNameModal.classList.add('show');
   setTimeout(()=>{els.quickExportName.focus();els.quickExportName.select()},30);
 }
@@ -540,23 +399,28 @@ function closeQuickExportNameModal(){
 }
 function saveQuickExportName(){
   const template=state.quickExportTemplateRecord||state.templates.find(t=>t.id===state.quickExportTemplateId);
-  if(addExportPresetFromTemplate(template,els.quickExportName.value,els.quickExportHint.value,els.quickExportAliases.value))
-    closeQuickExportNameModal();
+  if(upsertTemplateExportName(template,els.quickExportName.value))closeQuickExportNameModal();
 }
-
+// Export directly with an assigned filename. Otherwise a required empty input is shown.
 function openExportNameModal(){
   if(!state.current||state.busy)return;
-  toggleExportManager(false);els.exportNameModal.classList.add('show');
-  setTimeout(()=>els.exportNameList.querySelector('.export-name-option.selected')?.focus(),50);
+  const preset=getBoundExportPreset(state.current.id);
+  if(preset){exportDocx(preset.filename);return}
+  els.exportNameInput.value='';
+  els.exportNameConfirm.disabled=true;
+  els.exportNameModal.classList.add('show');
+  setTimeout(()=>els.exportNameInput.focus(),30);
 }
-function closeExportNameModal(){
-  els.exportNameModal.classList.remove('show');
-  els.exportPickerPanel.hidden=false;els.exportManagerPanel.hidden=true;
-  els.exportManageToggle.textContent='管理预选文件名';resetExportPresetForm();
-}
+function closeExportNameModal(){els.exportNameModal.classList.remove('show')}
 function confirmExportFilename(){
-  const filename=cleanExportFilename(state.exportFilename)||cleanExportFilename(state.current?.name)||'Document.docx';
-  closeExportNameModal();exportDocx(filename);
+  const filename=cleanExportFilename(els.exportNameInput.value);
+  if(!filename){
+    toast('请先填写有效的导出文件名，不能为空','error');
+    els.exportNameInput.focus();
+    return;
+  }
+  closeExportNameModal();
+  exportDocx(filename);
 }
 
 function showWelcome(){els.welcome.style.display='block';els.workspace.classList.remove('show');els.exportBtn.disabled=true;els.clearDraftBtn.disabled=true;renderTemplates()}
@@ -721,60 +585,41 @@ function applyRecord(p,record,replacement){
   const segs=[...segMap.values()];if(!segs.length)return false;segs.forEach((seg,idx)=>{const raw=seg.node.textContent||'';seg.node.textContent=raw.slice(0,seg.start)+(idx===0?replacement:'')+raw.slice(seg.end);if(/^\s|\s$/.test(seg.node.textContent||''))seg.node.setAttribute('xml:space','preserve')});applyFormatProfile(segs[0].run,record.profile);return true;
 }
 async function exportDocx(filename){
-  if(!state.current||state.busy)return;const empty=state.occurrences.filter(o=>!o.replacement.trim()).length;if(empty&&!confirm(`还有 ${empty} 处中文没有填写英文。\n继续输出时，这些位置会保留原中文。`))return;
+  if(!state.current||state.busy)return;filename=cleanExportFilename(filename);if(!filename){toast('必须填写有效的输出文件名','error');return}const empty=state.occurrences.filter(o=>!o.replacement.trim()).length;if(empty&&!confirm(`还有 ${empty} 处中文没有填写英文。\n继续输出时，这些位置会保留原中文。`))return;
   setBusy(true,'正在按识别到的标题/正文格式生成 DOCX…');
   try{
     await saveDraft();const result=await scanBuffer(state.current.buffer),byPart=new Map();state.occurrences.forEach((ui,i)=>{const rec=result.occurrences[i];if(!rec)return;const arr=byPart.get(rec.path)||[];arr.push({rec,replacement:ui.replacement.trim()?ui.replacement:ui.originalText});byPart.set(rec.path,arr)});
     for(const [path,items] of byPart){const doc=result.docs.get(path);if(!doc)continue;const groups=new Map();items.forEach(x=>{const arr=groups.get(x.rec.pIndex)||[];arr.push(x);groups.set(x.rec.pIndex,arr)});for(const [pIndex,list] of groups){const p=findParagraph(doc,pIndex);if(!p)continue;list.sort((a,b)=>b.rec.start-a.rec.start).forEach(x=>applyRecord(p,x.rec,x.replacement))}let xml=new XMLSerializer().serializeToString(doc);if(!xml.startsWith('<?xml'))xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+xml;result.zip.file(path,xml)}
-    const blob=await result.zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(filename||state.current.name||'Document.docx').replace(/[\\/:*?"<>|]/g,'_').replace(/\.docx$/i,'')+'.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('DOCX 已生成并开始下载','success');
+    const blob=await result.zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6},mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename.replace(/[\\/:*?"<>|]/g,'_').replace(/\.docx$/i,'')+'.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('DOCX 已生成并开始下载','success');
   }catch(err){console.error(err);toast('输出失败：'+(err.message||err),'error')}finally{setBusy(false)}
 }
 
 els.fileInput.addEventListener('change',e=>{importFiles(e.target.files);e.target.value=''});['dragenter','dragover'].forEach(ev=>els.dropZone.addEventListener(ev,e=>{e.preventDefault();els.dropZone.classList.add('drag')}));['dragleave','drop'].forEach(ev=>els.dropZone.addEventListener(ev,e=>{e.preventDefault();els.dropZone.classList.remove('drag')}));els.dropZone.addEventListener('drop',e=>importFiles(e.dataTransfer.files));els.searchInput.addEventListener('input',filterRows);els.filterSelect.addEventListener('change',filterRows);els.exportBtn.onclick=openExportNameModal;els.clearDraftBtn.onclick=clearDraft;els.copyOriginalBtn.onclick=copyOriginals;els.renameCancel.onclick=closeRename;els.renameSave.onclick=saveRename;els.renameModal.addEventListener('click',e=>{if(e.target===els.renameModal)closeRename()});els.renameInput.addEventListener('keydown',e=>{if(e.key==='Enter')saveRename();if(e.key==='Escape')closeRename()});
-els.exportNameList.addEventListener('click',e=>{
-  const btn=e.target.closest('.export-name-option');if(btn)selectExportFilename(btn.dataset.filename);
-});
-els.exportNameList.addEventListener('dblclick',e=>{
-  const btn=e.target.closest('.export-name-option');
-  if(btn){selectExportFilename(btn.dataset.filename);confirmExportFilename()}
-});
+
 els.exportNameCancel.onclick=closeExportNameModal;
 els.exportNameConfirm.onclick=confirmExportFilename;
-els.exportManageToggle.onclick=()=>toggleExportManager(els.exportManagerPanel.hidden);
-els.exportManagerBack.onclick=()=>toggleExportManager(false);
-els.exportPresetSave.onclick=saveExportPreset;
-els.exportPresetReset.onclick=resetExportPresetForm;
-els.exportManageList.addEventListener('click',handleExportManagerClick);
-els.exportPresetName.addEventListener('keydown',e=>{if(e.key==='Enter')saveExportPreset()});
+els.exportNameInput.addEventListener('input',()=>{
+  els.exportNameConfirm.disabled=!cleanExportFilename(els.exportNameInput.value);
+});
+els.exportNameInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();confirmExportFilename()}
+});
 els.exportNameModal.addEventListener('click',e=>{if(e.target===els.exportNameModal)closeExportNameModal()});
-window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeRename();closeExportNameModal()}});
-
-els.templateContextAdd.onclick=()=>{
-  const template=getContextTemplate();
-  closeTemplateContextMenu();
-  if(template)addExportPresetFromTemplate(template,template.name);
-};
-els.templateContextCustom.onclick=()=>{
-  const template=getContextTemplate();
-  openQuickExportNameModal(template);
-};
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeRename();closeExportNameModal();closeQuickExportNameModal()}
+});
 els.quickExportCancel.onclick=closeQuickExportNameModal;
 els.quickExportSave.onclick=saveQuickExportName;
-els.quickExportName.addEventListener('keydown',e=>{if(e.key==='Enter')saveQuickExportName()});
-els.quickExportNameModal.addEventListener('click',e=>{
-  if(e.target===els.quickExportNameModal)closeQuickExportNameModal();
+els.quickExportRemove.onclick=()=>{
+  const template=state.quickExportTemplateRecord||state.templates.find(t=>t.id===state.quickExportTemplateId);
+  if(template)removeTemplateExportName(template);
+};
+els.quickExportName.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();saveQuickExportName()}
 });
-document.addEventListener('pointerdown',e=>{
-  if(!els.templateContextMenu.hidden&&!els.templateContextMenu.contains(e.target))
-    closeTemplateContextMenu();
-});
-document.addEventListener('scroll',closeTemplateContextMenu,true);
-window.addEventListener('resize',closeTemplateContextMenu);
-window.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    closeTemplateContextMenu();closeQuickExportNameModal();
-  }
-});
+els.quickExportNameModal.addEventListener('click',e=>{if(e.target===els.quickExportNameModal)closeQuickExportNameModal()});
+window.addEventListener('docx-export-presets-updated',()=>{if(state.db)renderTemplates()});
+
 window.addEventListener('beforeunload',()=>{if(state.draftTimer)clearTimeout(state.draftTimer)});
 (async function init(){try{if(!window.JSZip)throw new Error('JSZip 加载失败');loadExportPresets();state.db=await openDB();await refreshTemplates();if(state.templates.length)toast('已载入本机保存的模板库')}catch(err){console.error(err);toast('编辑器初始化失败：'+(err.message||err),'error')}})();
 </script>
@@ -829,7 +674,7 @@ window.addEventListener('beforeunload',()=>{if(state.draftTimer)clearTimeout(sta
   if(backBtn)backBtn.addEventListener('click',closeExactTool);
 })();
 </script>
-<script src="./docx-template-loader.js?v=6"></script>
+<script src="./docx-template-loader.js?v=7"></script>
 <script src="./shared-order.js?v=4"></script>
 </body>
 </html>
