@@ -54,7 +54,7 @@ function createPanel(){
     '<button class="btn btn-ghost" id="docxSyncReload" style="color:#fff;border-color:#52617b;font-size:12px">从全局更新名称</button>'+
     '<button class="btn btn-ghost" id="docxSyncDownload" style="color:#fff;border-color:#52617b;font-size:12px">导出本机名称设置文件</button>'+
     '<small id="docxSyncStatus" aria-live="polite" style="color:#a9bad6;line-height:1.6"></small>'+
-    '<small style="color:#95a6c1;line-height:1.5">仅共享内置模板的输出文件名，不上传 DOCX 和编辑草稿。发布需要 GitHub 写入授权。</small>';
+    '<small style="color:#95a6c1;line-height:1.5">仅共享内置模板的输出文件名，不上传 DOCX 和编辑草稿。注意：仓库公开，发布的文件名也会公开可见。</small>';
   anchor.insertAdjacentElement('afterend',panel);
   $('docxSyncPublish').onclick=publish;
   $('docxSyncReload').onclick=()=>loadGlobal(true);
@@ -122,7 +122,7 @@ async function publish(){
   if(busy)return;
   const bindings=localBindings();
   if(!Object.keys(bindings).length){note('本机没有已设置输出名称的内置模板，无法发布。',true);return}
-  const token=(prompt('发布全局设置需要 GitHub 写入授权。\n请粘贴仅限 mosen6266 仓库且具有 Contents: Read and write 权限的 Fine-grained Token。\n仅用于本次提交，不会保存。也可以取消后导出本机名称设置文件交给我发布。')||'').trim();
+  const token=(prompt('发布的输出文件名会保存到公开 GitHub 仓库，任何人可能查看。请先确认文件名不包含客户隐私。\n\n发布全局设置需要 GitHub 写入授权。\n请粘贴仅限 mosen6266 仓库且具有 Contents: Read and write 权限的 Fine-grained Token。\n仅用于本次提交，不会保存。也可以取消后导出本机名称设置文件交给我发布。')||'').trim();
   if(!token){note('已取消发布，本机设置保持不变。');return}
   busy=true;
   $('docxSyncPublish').disabled=true;
