@@ -64,13 +64,6 @@
       "sha256": "a0bcf78af5e71855c043e5fecaab8a68a0540831887a1106f98b45a6d76047d6"
     },
     {
-      "name": "客户建档模板.docx",
-      "path": "templates/客户建档模板.docx",
-      "region": "us",
-      "size": 1176011,
-      "sha256": "1849b7717177b43255bc08090a2b5897476aede67c7e2800c432893e16fa5b55"
-    },
-    {
       "name": "客户建档模板（美国银行卡模式）.docx",
       "path": "templates/客户建档模板（美国银行卡模式）.docx",
       "region": "us",
