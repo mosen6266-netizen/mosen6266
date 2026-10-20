@@ -497,6 +497,12 @@ function parseDateValue(value){
     if(ap){ap=ap.toUpperCase();if(ap==='PM'&&hour<12)hour+=12;if(ap==='AM'&&hour===12)hour=0}
     return new Date(Number(y),Number(mo)-1,Number(d),hour,Number(mi),Number(se)).getTime();
   }
+  m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if(m){
+    const [,d,mo,y,h='0',mi='0',se='0']=m;
+    const dt=new Date(Number(y),Number(mo)-1,Number(d),Number(h),Number(mi),Number(se));
+    return dt.getFullYear()===Number(y)&&dt.getMonth()+1===Number(mo)&&dt.getDate()===Number(d)?dt.getTime():NaN;
+  }
   const t=Date.parse(s);
   return Number.isFinite(t)?t:NaN;
 }
