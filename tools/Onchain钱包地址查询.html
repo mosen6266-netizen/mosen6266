@@ -303,6 +303,18 @@
   </div>
 </dialog>
 
+
+<dialog id="noteEditDialog" class="tx-dialog" style="width:min(560px,94vw)">
+  <div class="modal-h"><strong>Edit Account Notice</strong><button onclick="noteEditDialog.close()">Close</button></div>
+  <div class="modal-b">
+    <div class="f"><label>Notice / Notes</label><textarea id="noteEditInput" rows="5"></textarea></div>
+    <div class="modal-actions">
+      <button onclick="noteEditDialog.close()">Cancel</button>
+      <button class="primary" onclick="saveAccountNote()">Save</button>
+    </div>
+  </div>
+</dialog>
+
 <div id="txContextMenu" class="context-menu" role="menu">
   <button onclick="openAddTx()">＋ Add Transfer Record</button>
   <button id="ctxEditBtn" onclick="openEditTx()">✎ Edit Selected Record</button>
@@ -335,6 +347,7 @@ const balanceDialog = $('balanceDialog');
 const feeDialog = $('feeDialog');
 const cellEditDialog = $('cellEditDialog');
 const valueSelectMenu = $('valueSelectMenu');
+const noteEditDialog = $('noteEditDialog');
 let pendingDeleteTxIndex = -1;
 let editingFeeTxIndex = -1;
 let editingCellTxIndex = -1;
@@ -355,9 +368,20 @@ function judicialChannelLabel(){
 }
 function recomputeDerived(record){
   const txs=Array.isArray(record.transactions)?record.transactions:[];
-  const times=txs.map(t=>parseDateValue(t.time)).filter(Number.isFinite).sort((a,b)=>a-b);
-  record.firstActivity=times.length?dateText(times[0]):'—';
-  record.lastActivity=times.length?dateText(times[times.length-1]):'—';
+  // Activity is based on chronological transaction timestamps, never display order.
+  const times=txs.map(t=>parseDateValue(t.time??t.zeit??t.timestamp??t.date??t.dateTime)).filter(Number.isFinite).sort((a,b)=>a-b);
+  if(times.length){
+    record.firstActivity=dateText(times[0]);
+    record.lastActivity=dateText(times[times.length-1]);
+  }else if(txs.length===0){
+    record.firstActivity='—';
+    record.lastActivity='—';
+  }else{
+    // Preserve previously saved activity rather than erasing it when an imported
+    // row contains an unfamiliar date string. Never overwrite it with a dash.
+    if(!record.firstActivity)record.firstActivity='—';
+    if(!record.lastActivity)record.lastActivity='—';
+  }
   const incoming={ETH:0,USDT:0,USDC:0};
   const outgoing={ETH:0,USDT:0,USDC:0};
   txs.forEach(tx=>{
@@ -371,7 +395,6 @@ function recomputeDerived(record){
   const main=String(record.asset||'USDT').toUpperCase();
   record.totalIn=(incoming[main]||0).toFixed(main==='ETH'?6:2);
   record.totalOut=(outgoing[main]||0).toFixed(main==='ETH'?6:2);
-  record.note=OFFICIAL_KYC_NOTE;
   return {incoming,outgoing};
 }
 function formatFlowTotals(map){
@@ -422,7 +445,7 @@ function setMessage(msg,type=''){
   const el=$('statusline');el.className='statusline show '+type;el.textContent=msg;
 }
 function setFixedAccountNotice(){
-  setMessage(OFFICIAL_KYC_NOTE,'sim');
+  setMessage(currentRecord?.note??OFFICIAL_KYC_NOTE,'sim');
 }
 function hashSeed(str){
   let h=2166136261>>>0;
@@ -445,6 +468,23 @@ function parseDateValue(value){
   if(typeof value==='number') return Number.isFinite(value)?value:NaN;
   const s=String(value??'').trim();
   if(!s||s==='—') return NaN;
+
+  // Accept the same timestamps shown in imported on-chain records: US, German,
+  // ISO, year-first slashes, Chinese date labels, and Unix seconds/milliseconds.
+  if(/^\d{13}$/.test(s))return Number(s);
+  if(/^\d{10}$/.test(s))return Number(s)*1000;
+  const cleaned=s.replace(/\u00a0/g,' ').replace(/年/g,'/').replace(/月/g,'/')
+    .replace(/日/g,' ').replace(/时/g,':').replace(/分/g,':').replace(/秒/g,'')
+    .trim();
+  let ym=cleaned.match(/^(\d{4})[\/.-](\d{1,2})[\/.-](\d{1,2})(?:[ T,]+\s*(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?\s*(AM|PM)?$/i);
+  if(ym){
+    const [,y,mo,d,h='0',mi='0',se='0',ap='']=ym;
+    let hour=Number(h);
+    if(ap.toUpperCase()==='PM'&&hour<12)hour+=12;
+    if(ap.toUpperCase()==='AM'&&hour===12)hour=0;
+    const dt=new Date(Number(y),Number(mo)-1,Number(d),hour,Number(mi),Number(se));
+    return dt.getFullYear()===Number(y)&&dt.getMonth()+1===Number(mo)&&dt.getDate()===Number(d)?dt.getTime():NaN;
+  }
   let m=s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/);
   if(m){
     const [,y,mo,d,h,mi,se='0']=m;
@@ -552,9 +592,13 @@ function render(r){
   $('risk').innerHTML=riskBadge(r.risk||'Low',true);
   const txs=Array.isArray(r.transactions)?r.transactions:[];
   const items=[
-    ['Record Type',r.simulated?badge('Simulated Test Data','b-yellow'):badge('Internal Address Record','b-blue')],['Wallet Address',`<span class="mono">${safe(r.address)}</span>`],['Network','Ethereum'],['Account Label',safe(r.label)],['Account Type',safe(r.type)],['KYC Status',kycBadge(r.kyc)],['Freeze Status',freezeBadge(r.freezeStatus)],['First Activity',safe(r.firstActivity)],['Most Recent Activity',safe(r.lastActivity)],['Total Inflows',formatFlowTotals(derived.incoming)],['Total Outflows',formatFlowTotals(derived.outgoing)],['Counterparties',safe(r.counterparties)],['Notes',OFFICIAL_KYC_NOTE]
+    ['Record Type',r.simulated?badge('Simulated Test Data','b-yellow'):badge('Internal Address Record','b-blue')],['Wallet Address',`<span class="mono">${safe(r.address)}</span>`],['Network','Ethereum'],['Account Label',safe(r.label)],['Account Type',safe(r.type)],['KYC Status',kycBadge(r.kyc)],['Freeze Status',freezeBadge(r.freezeStatus)],['First Activity',safe(r.firstActivity)],['Most Recent Activity',safe(r.lastActivity)],['Total Inflows',formatFlowTotals(derived.incoming)],['Total Outflows',formatFlowTotals(derived.outgoing)],['Counterparties',safe(r.counterparties)],['Notes',safe(r.note??OFFICIAL_KYC_NOTE)]
   ];
-  $('details').innerHTML=items.map(x=>`<div>${x[0]}</div><div>${x[1]}</div>`).join('');
+  $('details').innerHTML=items.map(x=>{
+    const type=x[0]==='KYC Status'?'kyc':x[0]==='Notes'?'note':'';
+    const attr=type?` data-detail-context="${type}"`:'';
+    return `<div${attr}>${x[0]}</div><div${attr}>${x[1]}</div>`;
+  }).join('');
   $('txBody').innerHTML=txs.length?txs.map((tx,i)=>{
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
     const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
@@ -715,6 +759,34 @@ function persistCurrent(message){
   setFixedAccountNotice();
   return true;
 }
+function openNoteEditor(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation()}
+  if(!currentRecord)return;
+  $('noteEditInput').value=String(currentRecord.note??OFFICIAL_KYC_NOTE);
+  noteEditDialog.showModal();
+  $('noteEditInput').focus();
+}
+function saveAccountNote(){
+  if(!currentRecord)return;
+  const newText=$('noteEditInput').value.trim();
+  if(!ensureCurrentEditable())return;
+  currentRecord.note=newText;
+  db[norm(currentRecord.address)]=currentRecord;
+  saveDB();
+  render(currentRecord);
+  setFixedAccountNotice();
+  noteEditDialog.close();
+}
+$('statusline').addEventListener('contextmenu',ev=>{
+  if(currentRecord)openNoteEditor(ev);
+});
+$('details').addEventListener('contextmenu',ev=>{
+  const cell=ev.target.closest('[data-detail-context]');
+  if(!cell)return;
+  if(cell.dataset.detailContext==='kyc')openValueSelect(ev,'kyc');
+  else if(cell.dataset.detailContext==='note')openNoteEditor(ev);
+});
+
 function hideValueSelect(){
   valueSelectMenu.classList.remove('show');
   valueSelectContext=null;
@@ -725,6 +797,7 @@ function openValueSelect(ev,type,index=-1){
   let values=[],current='';
   if(type==='account'){values=['Active','Under Review','Restricted','Frozen','Closed'];current=currentRecord.status||'Under Review'}
   else if(type==='risk'){values=['Low','Medium','High','Critical'];current=currentRecord.risk||'Low'}
+  else if(type==='kyc'){values=['Verified','Not Verified','Pending Review','Incomplete','Failed','Not Applicable'];current=currentRecord.kyc||'Not Verified'}
   else if(type==='tx'){
     if(!Array.isArray(currentRecord.transactions)||!currentRecord.transactions[index]) return;
     values=['Confirmed','Processing','Pending Review','Rejected','Canceled'];current=currentRecord.transactions[index].status||'Confirmed';
@@ -735,7 +808,8 @@ function openValueSelect(ev,type,index=-1){
   valueSelectContext={type,index};
   valueSelectMenu.innerHTML=values.map(v=>`<button class="${v===current?'active':''}" onclick="selectValueOption(event,'${v}')"><span>${v}</span><span class="select-dot"></span></button>`).join('');
   valueSelectMenu.classList.add('show');
-  const rect=ev.currentTarget.getBoundingClientRect();
+  const anchor=type==='kyc'?(ev.target.closest('[data-detail-context="kyc"]')||ev.currentTarget):ev.currentTarget;
+  const rect=anchor.getBoundingClientRect();
   const menuW=Math.max(146,valueSelectMenu.offsetWidth||146);
   const menuH=valueSelectMenu.offsetHeight||200;
   let x=rect.left, y=rect.bottom+7;
@@ -754,6 +828,10 @@ function selectValueOption(ev,value){
   }
   if(ctx.type==='risk'){
     currentRecord.risk=value;
+    hideValueSelect();persistCurrent();return;
+  }
+  if(ctx.type==='kyc'){
+    currentRecord.kyc=value;
     hideValueSelect();persistCurrent();return;
   }
   if(ctx.type==='tx'&&Array.isArray(currentRecord.transactions)&&currentRecord.transactions[ctx.index]){
@@ -909,7 +987,6 @@ function ensureCurrentEditable(){
   if(currentRecord.simulated){
     currentRecord=JSON.parse(JSON.stringify(currentRecord));
     currentRecord.simulated=false;
-    currentRecord.note=OFFICIAL_KYC_NOTE;
   }
   currentRecord.chain='Ethereum';
   ensureBalances(currentRecord);
@@ -1111,6 +1188,7 @@ function fillForm(r){
   $('fFirst').value=normalizeDateText(r.firstActivity)||'';
   $('fLast').value=normalizeDateText(r.lastActivity)||'';
   $('fChain').value='Ethereum';
+  $('fNote').value=String(r.note??OFFICIAL_KYC_NOTE);
   $('fTx').value=JSON.stringify(r.transactions||[],null,2);
 }
 function clearForm(){
@@ -1122,7 +1200,6 @@ function saveRecord(){
   let tx=[];try{tx=$('fTx').value.trim()?JSON.parse($('fTx').value):[];if(!Array.isArray(tx))throw 0}catch(e){alert('Transfer Records must be a valid JSON array.');return}
   const r={address,chain:'Ethereum',status:$('fStatus').value,asset:$('fAsset').value.trim()||'USDT',balance:$('fBalance').value.trim()||'0.00',risk:$('fRisk').value,label:$('fLabel').value.trim(),type:$('fType').value.trim(),kyc:$('fKyc').value.trim(),firstActivity:normalizeDateText($('fFirst').value.trim()),lastActivity:normalizeDateText($('fLast').value.trim()),freezeStatus:$('fFreeze').value.trim(),totalIn:$('fIn').value.trim()||'0.00',totalOut:$('fOut').value.trim()||'0.00',counterparties:$('fCounterparties').value.trim()||'0',note:$('fNote').value.trim(),transactions:tx.map(t=>({...t,time:normalizeDateText(t.time)}))};
   r.balances=buildBalances(r.balance,address);
-  r.note=OFFICIAL_KYC_NOTE;
   recomputeDerived(r);
   db[norm(address)]=r;saveDB();$('addressInput').value=address;manager.close();queryAddress();
 }
@@ -1434,7 +1511,7 @@ function buildReportHtml(record){
           <div class="label">Account Label</div><div class="value">${escapeHtml(safe(record.label))}</div>
           <div class="label">Account Type</div><div class="value">${escapeHtml(safe(record.type))}</div>
           <div class="label">Counterparties</div><div class="value">${escapeHtml(safe(record.counterparties))}</div>
-          <div class="label">Notes</div><div class="value">${escapeHtml(OFFICIAL_KYC_NOTE)}</div>
+          <div class="label">Notes</div><div class="value">${escapeHtml(record.note??OFFICIAL_KYC_NOTE)}</div>
         </div>
       </div>
       <div class="detail-card">
@@ -1509,7 +1586,6 @@ function generateReport(){
   const record=JSON.parse(JSON.stringify(currentRecord));
   ensureBalances(record);
   recomputeDerived(record);
-  record.note=OFFICIAL_KYC_NOTE;
   const popup=window.open('','_blank');
   if(!popup){alert('Unable to open the report window. Please allow pop-ups and try again.');return}
   popup.document.open();
