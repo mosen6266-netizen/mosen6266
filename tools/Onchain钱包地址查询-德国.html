@@ -366,22 +366,43 @@ function isJudicialDirection(direction){
 function judicialChannelLabel(){
   return 'Rückführungsabwicklung';
 }
-function recomputeDerived(record){
+
+const TRANSACTION_DATE_KEYS=[
+  'time','zeit','dateTime','datetime','date_time','timestamp','date','datum','Datum',
+  'Time','Zeit','createdAt','created_at','blockTime','block_time','blockTimestamp',
+  'block_timestamp','transactionTime','transactionDate','transferTime','transferredAt',
+  'processedAt','confirmedAt','timeStamp','Timestamp','Zeitstempel','Datum / Uhrzeit'
+];
+function transactionDateValue(tx){
+  if(!tx||typeof tx!=='object')return '';
+  for(const key of TRANSACTION_DATE_KEYS){
+    const v=tx[key];
+    if(v===undefined||v===null)continue;
+    const value=v&&typeof v==='object'&&!(v instanceof Date)
+      ? (v.seconds??v._seconds??v.timestamp??v.time??v.value??'') : v;
+    if(Number.isFinite(parseDateValue(value)))return value;
+  }
+  // Do not invent a date if a record contains none.
+  return '';
+}
+function updateActivityDates(record){
   const txs=Array.isArray(record.transactions)?record.transactions:[];
-  // Activity is based on chronological transaction timestamps, never display order.
-  const times=txs.map(t=>parseDateValue(t.time??t.zeit??t.timestamp??t.date??t.dateTime)).filter(Number.isFinite).sort((a,b)=>a-b);
-  if(times.length){
-    record.firstActivity=dateText(times[0]);
-    record.lastActivity=dateText(times[times.length-1]);
-  }else if(txs.length===0){
-    record.firstActivity='—';
-    record.lastActivity='—';
+  const sorted=txs.map(tx=>parseDateValue(transactionDateValue(tx)))
+    .filter(Number.isFinite).sort((a,b)=>a-b);
+  if(sorted.length){
+    record.firstActivity=dateText(sorted[0]);
+    record.lastActivity=dateText(sorted[sorted.length-1]);
   }else{
-    // Preserve previously saved activity rather than erasing it when an imported
-    // row contains an unfamiliar date string. Never overwrite it with a dash.
+    // Keep existing activity values when imported records have no recoverable
+    // transaction dates; do not overwrite them with a blank or a dash.
     if(!record.firstActivity)record.firstActivity='—';
     if(!record.lastActivity)record.lastActivity='—';
   }
+}
+
+function recomputeDerived(record){
+  const txs=Array.isArray(record.transactions)?record.transactions:[];
+  updateActivityDates(record);
   const incoming={ETH:0,USDT:0,USDC:0};
   const outgoing={ETH:0,USDT:0,USDC:0};
   txs.forEach(tx=>{
@@ -518,9 +539,9 @@ function fakeCounterparty(r,chain){
 }
 function parseDateValue(value){
   if(value instanceof Date) return value.getTime();
-  if(typeof value==='number') return Number.isFinite(value)?value:NaN;
+  if(typeof value==='number') return Number.isFinite(value)?(Math.abs(value)>=1e9&&Math.abs(value)<1e11?value*1000:value):NaN;
   const s=String(value??'').trim();
-  if(!s||s==='—') return NaN;
+  if(!s||['—','–','-','null','undefined','n/a','invalid date'].includes(s.toLowerCase())) return NaN;
 
   // Accept the same timestamps shown in imported on-chain records: US, German,
   // ISO, year-first slashes, Chinese date labels, and Unix seconds/milliseconds.
@@ -554,6 +575,18 @@ function parseDateValue(value){
   if(m){
     const [,d,mo,y,h,mi,se='0']=m;
     return new Date(Number(y),Number(mo)-1,Number(d),Number(h),Number(mi),Number(se)).getTime();
+  }
+  // Support slash-delimited European dates that browsers parse inconsistently.
+  const slash=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?\s*(AM|PM)?$/i);
+  if(slash){
+    const [,a,b,y,h='0',mi='0',se='0',ap='']=slash;
+    const dayFirst=Number(a)>12||(Number(a)<=12&&Number(b)<=12&&true);
+    const d=dayFirst?Number(a):Number(b),mo=dayFirst?Number(b):Number(a);
+    let hour=Number(h);
+    if(ap.toUpperCase()==='PM'&&hour<12)hour+=12;
+    if(ap.toUpperCase()==='AM'&&hour===12)hour=0;
+    const dt=new Date(Number(y),mo-1,d,hour,Number(mi),Number(se));
+    if(dt.getFullYear()===Number(y)&&dt.getMonth()+1===mo&&dt.getDate()===d)return dt.getTime();
   }
   const t=Date.parse(s);
   return Number.isFinite(t)?t:NaN;
@@ -656,7 +689,7 @@ function render(r){
     const dir=tx.direction||'—'; const incoming=isIncomingDirection(dir); const cls=incoming?'amount-in':'amount-out';
     const dirClass=isJudicialDirection(dir)?'judicial':incoming?'b-green':'b-red';
     const cp=isJudicialDirection(dir)?`<span class="badge b-blue channel-badge">${safe(tx.counterparty||judicialChannelLabel(dir))}</span>`:`<span class="address-value">${safe(tx.counterparty)}</span>`;
-    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Datum / Uhrzeit" class="editable-cell" title="Zum Bearbeiten von Datum / Uhrzeit klicken" onclick="openDirectTxEdit(event,${i},'time')">${safe(normalizeDateText(tx.time))}</td><td data-label="Art"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Währung / Betrag" class="${cls} editable-cell" title="Zum Bearbeiten von Währung / Betrag klicken" onclick="openDirectTxEdit(event,${i},'assetAmount')">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Gegenpartei / Kanal" class="editable-cell" title="Zum Bearbeiten von Gegenpartei / Abwicklungskanal klicken" onclick="openDirectTxEdit(event,${i},'counterparty')">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet-Adresse" class="editable-cell" title="Zum Bearbeiten der Wallet-Adresse klicken" onclick="openDirectTxEdit(event,${i},'hash')"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block" class="editable-cell" title="Zum Bearbeiten des Blocks klicken" onclick="openDirectTxEdit(event,${i},'block')">${safe(tx.block)}</td><td data-label="Netzwerkgebühr" class="editable-fee" title="Zum Bearbeiten der ETH-Netzwerkgebühr klicken" onclick="editTxFee(event,${i})">${displayFee(tx.fee)}</td></tr>`
+    return `<tr class="tx-row" data-index="${i}" oncontextmenu="openTxMenu(event,${i})"><td data-label="Datum / Uhrzeit" class="editable-cell" title="Zum Bearbeiten von Datum / Uhrzeit klicken" onclick="openDirectTxEdit(event,${i},'time')">${safe(normalizeDateText(transactionDateValue(tx)||tx.time))}</td><td data-label="Art"><span class="badge tx-direction-badge clickable-badge ${dirClass}" onclick="openValueSelect(event,'direction',${i})">${directionDisplay(dir)}</span></td><td data-label="Währung / Betrag" class="${cls} editable-cell" title="Zum Bearbeiten von Währung / Betrag klicken" onclick="openDirectTxEdit(event,${i},'assetAmount')">${displayTxAmount(tx.amount,tx.asset||r.asset)} ${safe(tx.asset||r.asset)}</td><td data-label="Gegenpartei / Kanal" class="editable-cell" title="Zum Bearbeiten von Gegenpartei / Abwicklungskanal klicken" onclick="openDirectTxEdit(event,${i},'counterparty')">${cp}</td><td data-label="Status">${txStatusBadge(tx.status,i)}</td><td data-label="Wallet-Adresse" class="editable-cell" title="Zum Bearbeiten der Wallet-Adresse klicken" onclick="openDirectTxEdit(event,${i},'hash')"><span class="address-value">${safe(tx.hash||r.address)}</span></td><td data-label="Block" class="editable-cell" title="Zum Bearbeiten des Blocks klicken" onclick="openDirectTxEdit(event,${i},'block')">${safe(tx.block)}</td><td data-label="Netzwerkgebühr" class="editable-fee" title="Zum Bearbeiten der ETH-Netzwerkgebühr klicken" onclick="editTxFee(event,${i})">${displayFee(tx.fee)}</td></tr>`
   }).join(''):`<tr class="tx-empty-row"><td colspan="8" style="color:#90a4c1;text-align:center;padding:28px">Für diese Adresse sind keine internen Transaktionsdatensätze vorhanden.</td></tr>`;
   const inCount=txs.filter(x=>isIncomingDirection(x.direction)).length;
   const outCount=txs.filter(x=>!isIncomingDirection(x.direction)).length;
@@ -1241,7 +1274,7 @@ function confirmDeleteTxRow(){
 function txToGermanEditor(tx,address=''){
   const asset=String(tx.asset||'USDT').toUpperCase();
   return {
-    zeit:normalizeDateText(tx.time),
+    zeit:normalizeDateText(transactionDateValue(tx)||tx.time),
     art:directionDisplay(tx.direction),
     asset,
     betrag:inputAmount(tx.amount,asset),
@@ -1260,7 +1293,7 @@ function txFromGermanEditor(tx,address='',fallbackAsset='USDT'){
   const feeMatch=feeRaw.match(/^([+-]?[\d.,]+)\s*([A-Za-z0-9]+)?$/);
   const feeCanonical=feeMatch&&Number.isFinite(parseLocaleNumber(feeMatch[1]))?`${parseLocaleNumber(feeMatch[1]).toFixed((feeMatch[2]||'ETH').toUpperCase()==='ETH'?6:2)} ${(feeMatch[2]||'ETH').toUpperCase()}`:feeRaw;
   return {
-    time:normalizeDateText(tx.zeit??tx.time??''),
+    time:normalizeDateText(transactionDateValue(tx)||tx.zeit||tx.time||''),
     direction,
     asset,
     amount:Number.isFinite(amountNum)?amountNum.toFixed(asset==='ETH'?6:2):String(tx.betrag??tx.amount??''),
