@@ -620,6 +620,142 @@ function render(r){
 }
 
 
+// Long-press reorder is deliberately restricted to the non-editable blank parts
+// of a transfer row; the existing cell editing and context menu stay unchanged.
+let txReorderState=null;
+function txReorderAtPointer(state){
+  const body=$('txBody');
+  const hit=document.elementFromPoint(state.x,state.y);
+  const other=hit&&hit.closest('tr.tx-row');
+  if(!other||other===state.row||!body.contains(other))return;
+  const rect=other.getBoundingClientRect();
+  if(state.y<rect.top+rect.height/2) body.insertBefore(state.row,other);
+  else body.insertBefore(state.row,other.nextSibling);
+}
+function txReorderAutoScroll(state){
+  if(txReorderState!==state||!state.active)return;
+  const pane=state.pane;
+  const bounds=pane.getBoundingClientRect();
+  if(state.x>=bounds.left&&state.x<=bounds.right&&state.y>=bounds.top&&state.y<=bounds.bottom){
+    const edge=36;
+    let speed=0;
+    if(state.y<bounds.top+edge)speed=-Math.max(3,Math.ceil((bounds.top+edge-state.y)/3));
+    else if(state.y>bounds.bottom-edge)speed=Math.max(3,Math.ceil((state.y-(bounds.bottom-edge))/3));
+    if(speed){
+      const before=pane.scrollTop;
+      pane.scrollTop+=Math.max(-16,Math.min(16,speed));
+      if(pane.scrollTop!==before)txReorderAtPointer(state);
+    }
+  }
+  state.frame=requestAnimationFrame(()=>txReorderAutoScroll(state));
+}
+function txReorderBlockClick(ev){
+  ev.preventDefault();
+  ev.stopImmediatePropagation();
+}
+function finishTxReorder(commit){
+  const state=txReorderState;
+  if(!state)return;
+  txReorderState=null;
+  clearTimeout(state.timer);
+  cancelAnimationFrame(state.frame);
+  window.removeEventListener('pointermove',txReorderPointerMove);
+  window.removeEventListener('pointerup',txReorderPointerUp);
+  window.removeEventListener('pointercancel',txReorderPointerCancel);
+  window.removeEventListener('blur',txReorderBlur);
+  document.removeEventListener('keydown',txReorderKeyDown,true);
+  if($('txBody').hasPointerCapture?.(state.pointerId)){
+    try{$('txBody').releasePointerCapture(state.pointerId)}catch(e){}
+  }
+  state.row.style.userSelect=state.oldRowSelect;
+  if(!state.active)return;
+  state.row.style.opacity=state.oldOpacity;
+  document.body.style.userSelect=state.oldBodySelect;
+  // A drop must never activate a field editor or status dropdown.
+  window.addEventListener('click',txReorderBlockClick,true);
+  setTimeout(()=>window.removeEventListener('click',txReorderBlockClick,true),0);
+  const body=$('txBody');
+  const order=Array.from(body.querySelectorAll('tr.tx-row')).map(row=>Number(row.dataset.index));
+  const valid=currentRecord&&norm(currentRecord.address)===state.address
+    &&currentRecord.transactions?.length===state.count
+    &&order.length===state.count
+    &&order.every(i=>Number.isInteger(i)&&i>=0&&i<state.count)
+    &&new Set(order).size===state.count;
+  const changed=valid&&order.some((index,i)=>index!==i);
+  if(commit&&changed&&ensureCurrentEditable()){
+    const original=currentRecord.transactions.slice();
+    currentRecord.transactions=order.map(index=>original[index]);
+    selectedTxIndex=-1;
+    hideTxMenu();
+    hideValueSelect();
+    persistCurrent();
+  }else if(changed||!commit){
+    // Escape, cancellation, and invalid drops restore the original order.
+    if(currentRecord)render(currentRecord);
+  }
+}
+function txReorderPointerMove(ev){
+  const state=txReorderState;
+  if(!state||ev.pointerId!==state.pointerId)return;
+  state.x=ev.clientX;state.y=ev.clientY;
+  if(!state.active){
+    if(Math.hypot(state.x-state.startX,state.y-state.startY)>9)finishTxReorder(false);
+    return;
+  }
+  ev.preventDefault();
+  txReorderAtPointer(state);
+}
+function txReorderPointerUp(ev){
+  if(txReorderState&&ev.pointerId===txReorderState.pointerId)finishTxReorder(txReorderState.active);
+}
+function txReorderPointerCancel(ev){
+  if(txReorderState&&ev.pointerId===txReorderState.pointerId)finishTxReorder(false);
+}
+function txReorderBlur(){finishTxReorder(false)}
+function txReorderKeyDown(ev){
+  if(ev.key==='Escape'&&txReorderState){ev.preventDefault();finishTxReorder(false)}
+}
+$('txBody').addEventListener('pointerdown',ev=>{
+  if(!ev.isPrimary||(ev.pointerType==='mouse'&&ev.button!==0)||!currentRecord||currentRecord.transactions?.length<2)return;
+  const target=ev.target;
+  const row=target.closest?.('tr.tx-row');
+  if(!row||!$('txBody').contains(row))return;
+  // Empty row space, or empty portions of Type/Status cells, are eligible;
+  // editable fields, clickable badges and controls are never drag handles.
+  if(target.closest('.editable-cell,.editable-fee,.clickable-badge,button,a,input,textarea,select,[contenteditable],[onclick]'))return;
+  if(txReorderState)finishTxReorder(false);
+  const state={
+    row,pointerId:ev.pointerId,startX:ev.clientX,startY:ev.clientY,
+    x:ev.clientX,y:ev.clientY,active:false,timer:null,frame:0,
+    pane:row.closest('.table-wrap'),address:norm(currentRecord.address),
+    count:currentRecord.transactions.length,
+    oldRowSelect:row.style.userSelect,oldBodySelect:document.body.style.userSelect,
+    oldOpacity:row.style.opacity
+  };
+  txReorderState=state;
+  row.style.userSelect='none';
+  if(ev.pointerType==='mouse')ev.preventDefault();
+  window.addEventListener('pointermove',txReorderPointerMove,{passive:false});
+  window.addEventListener('pointerup',txReorderPointerUp);
+  window.addEventListener('pointercancel',txReorderPointerCancel);
+  window.addEventListener('blur',txReorderBlur);
+  document.addEventListener('keydown',txReorderKeyDown,true);
+  state.timer=setTimeout(()=>{
+    if(txReorderState!==state||!state.row.isConnected||!currentRecord||norm(currentRecord.address)!==state.address)return;
+    state.active=true;
+    hideTxMenu();
+    hideValueSelect();
+    document.body.style.userSelect='none';
+    state.row.style.opacity='.72';
+    try{$('txBody').setPointerCapture(state.pointerId)}catch(e){}
+    state.frame=requestAnimationFrame(()=>txReorderAutoScroll(state));
+  },320);
+});
+$('txBody').addEventListener('contextmenu',ev=>{
+  if(txReorderState?.active){ev.preventDefault();ev.stopImmediatePropagation()}
+},true);
+
+
 function persistCurrent(message){
   if(!currentRecord) return false;
   if(!ensureCurrentEditable()) return false;
