@@ -513,10 +513,14 @@ function parseDateValue(value){
   }
   m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i);
   if(m){
-    let [,mo,d,y,h,mi,se='0',ap='']=m;
+    const [,a,b,y,h,mi,se='0',ap='']=m;
+    const dayFirst=Number(a)>12||(Number(a)<=12&&Number(b)<=12&&false);
+    const day=dayFirst?Number(a):Number(b),mo=dayFirst?Number(b):Number(a);
     let hour=Number(h);
-    if(ap){ap=ap.toUpperCase();if(ap==='PM'&&hour<12)hour+=12;if(ap==='AM'&&hour===12)hour=0}
-    return new Date(Number(y),Number(mo)-1,Number(d),hour,Number(mi),Number(se)).getTime();
+    if(ap.toUpperCase()==='PM'&&hour<12)hour+=12;
+    if(ap.toUpperCase()==='AM'&&hour===12)hour=0;
+    const dt=new Date(Number(y),mo-1,day,hour,Number(mi),Number(se));
+    if(dt.getFullYear()===Number(y)&&dt.getMonth()+1===mo&&dt.getDate()===day)return dt.getTime();
   }
   m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
   if(m){
