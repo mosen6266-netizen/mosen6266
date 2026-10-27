@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>墨森工具中心 · 访问记录管理</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#19202b;font:14px/1.5 system-ui,-apple-system,"Microsoft YaHei",sans-serif}button,input{font:inherit}
+.shell{max-width:1240px;margin:0 auto;padding:32px 20px 60px}h1{margin:0;font-size:25px;letter-spacing:-.5px}h2{font-size:16px;margin:0 0 17px}.subtitle{color:#6b7280;margin:7px 0 24px}
+.panel,.metric{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:21px;box-shadow:0 6px 24px #12182609}
+.login{max-width:450px;margin:60px auto}.login input{display:block;width:100%;margin:14px 0 12px}
+input{height:42px;border-radius:10px;border:1px solid #d1d5db;background:#fff;padding:0 12px;min-width:0;color:#111827;outline:0}input:focus{border-color:#6b7280;box-shadow:0 0 0 3px #9ca3af25}
+button{border:0;border-radius:10px;cursor:pointer;min-height:42px;padding:0 17px;background:#111827;color:white;font-weight:650}button:hover{background:#303944}button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#eef0f3;color:#111827}.secondary:hover{background:#e2e5e8}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:20px 0}.metric small{color:#6b7280;display:block}.metric strong{font-size:27px;margin-top:7px;display:block;font-variant-numeric:tabular-nums}
+.toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:18px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:#687181}.field input{width:185px}.actions{display:flex;gap:8px}.table-wrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px}table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}th{background:#f8f9fb;text-align:left;color:#667085;font-weight:600}td,th{padding:13px 15px;border-bottom:1px solid #edf0f3}tbody tr:last-child td{border:0}.ip{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer;color:#075991}.ip:hover{text-decoration:underline}.path{max-width:250px;overflow:hidden;text-overflow:ellipsis}.muted{color:#697586}.pager{display:flex;gap:12px;align-items:center;justify-content:flex-end;margin-top:15px}.top{display:flex;align-items:start;justify-content:space-between;gap:16px}.notice{margin:12px 0;color:#777;font-size:12px}.error{color:#bc2d37;margin:8px 0;min-height:20px}#dashboard{display:none}@media(max-width:720px){.grid{grid-template-columns:1fr}.field input{width:100%}.field{flex:1 1 130px}.toolbar .actions{width:100%}.shell{padding:20px 12px}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="top"><div><h1>墨森工具中心 · 访问记录</h1><p class="subtitle">独立管理员后台 · 访问时间、IP 地址、国家/地区、访问页面</p></div><a href="./" style="color:#596477;text-decoration:none;font-size:13px">返回工具中心</a></div>
+<section class="panel login" id="login">
+<h2>管理员登录</h2>
+<p class="muted">请输入访问日志专用管理密码。普通访客不能查询或导出 IP 记录。</p>
+<form id="loginForm"><input aria-label="管理密码" id="password" type="password" autocomplete="off" placeholder="访问记录管理密码" required><button type="submit" style="width:100%">登录并查看记录</button></form>
+<div class="error" id="loginError" role="alert"></div>
+</section>
+<main id="dashboard">
+<div class="grid"><div class="metric"><small>匹配访问次数</small><strong id="visits">0</strong></div><div class="metric"><small>不同 IP 数</small><strong id="unique">0</strong></div><div class="metric"><small>当前页</small><strong id="pageCount">1 / 1</strong></div></div>
+<section class="panel">
+<div class="top"><h2>访问明细</h2><button class="secondary" id="logout">退出</button></div>
+<div class="toolbar">
+<div class="field"><label for="ip">IP 包含</label><input id="ip" placeholder="输入 IP 或片段"></div>
+<div class="field"><label for="country">国家代码</label><input id="country" maxlength="2" placeholder="例如 US、MY"></div>
+<div class="field"><label for="start">开始日期（UTC）</label><input id="start" type="date"></div>
+<div class="field"><label for="end">结束日期（UTC）</label><input id="end" type="date"></div>
+<div class="actions"><button id="search">查询</button><button class="secondary" id="reset">清空</button><button class="secondary" id="export">导出 CSV</button></div>
+</div>
+<div class="table-wrap"><table><thead><tr><th>访问时间（马来西亚）</th><th>IP 地址</th><th>国家/地区</th><th>访问页面</th><th>浏览器信息</th></tr></thead><tbody id="rows"><tr><td colspan="5">正在读取…</td></tr></tbody></table></div>
+<div class="pager"><button class="secondary" id="prev">上一页</button><span id="pageInfo" class="muted">第 1 页</span><button class="secondary" id="next">下一页</button></div>
+<p class="notice">每次成功加载页面后会尝试记录一条访问。国家按公网 IP 推断，VPN、代理和运营商网络可能导致定位不准确。CSV 每次最多导出符合筛选条件的最新 50,000 条；可按日期分批导出。</p>
+<div class="error" id="status" role="status"></div>
+</section>
+</main></div>
+<script>
+(function(){
+'use strict';
+const api='https://mosen-visit-analytics.mosen6266-ms007.workers.dev';
+const $=id=>document.getElementById(id);
+let password='',page=1,total=0;
+const names=typeof Intl.DisplayNames==='function'?new Intl.DisplayNames(['zh-CN'],{type:'region'}):null;
+const inputs=['ip','country','start','end'];
+function params(){const p=new URLSearchParams();inputs.forEach(k=>{const v=$(k).value.trim();if(v)p.set(k,v);});return p;}
+function countryName(code){if(!code||code==='XX'||code==='T1')return '未知 ('+(code||'--')+')';try{return (names?names.of(code):code)+' ('+code+')';}catch(e){return code;}}
+function dateTime(ts){try{return new Date(ts).toLocaleString('zh-CN',{timeZone:'Asia/Kuala_Lumpur',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});}catch(e){return ts;}}
+async function request(path){const response=await fetch(api+path,{headers:{Authorization:'Bearer '+password},cache:'no-store'});if(response.status===401)throw new Error('管理密码错误或已失效');if(!response.ok)throw new Error('服务请求失败：HTTP '+response.status);return response;}
+function cell(tr,value,cls){const td=document.createElement('td');td.textContent=value;if(cls)td.className=cls;tr.appendChild(td);return td;}
+async function load(){try{$('status').textContent='正在读取访问记录…';const p=params();p.set('page',String(page));p.set('size','50');const res=await request('/api/visits?'+p);const data=await res.json();total=Number(data.count)||0;$('visits').textContent=total.toLocaleString();$('unique').textContent=Number(data.unique_ips||0).toLocaleString();const pages=Math.max(1,Math.ceil(total/50));$('pageCount').textContent=page+' / '+pages;$('pageInfo').textContent='第 '+page+' / '+pages+' 页';$('prev').disabled=page===1;$('next').disabled=page>=pages;const rows=$('rows');rows.replaceChildren();if(!data.visits.length){const tr=rows.insertRow();cell(tr,'没有匹配的记录').colSpan=5;}for(const x of data.visits){const tr=rows.insertRow();cell(tr,dateTime(x.visited_at));const td=cell(tr,x.ip,'ip');td.title='点击筛选该 IP';td.onclick=()=>{$('ip').value=x.ip;page=1;load();};cell(tr,countryName(x.country));cell(tr,x.path,'path');cell(tr,x.user_agent||'-','muted');}$('status').textContent='';}catch(e){$('status').textContent=e.message;}}
+$('loginForm').onsubmit=async e=>{e.preventDefault();password=$('password').value.trim();try{const r=await request('/api/visits?page=1&size=1');if(!r.ok)throw new Error('无法登录');$('login').style.display='none';$('dashboard').style.display='block';$('password').value='';load();}catch(e){password='';$('loginError').textContent=e.message;}};
+$('search').onclick=()=>{page=1;load();};$('reset').onclick=()=>{inputs.forEach(k=>$(k).value='');page=1;load();};
+$('prev').onclick=()=>{if(page>1){page--;load();}};$('next').onclick=()=>{if(page*50<total){page++;load();}};
+$('logout').onclick=()=>{password='';$('dashboard').style.display='none';$('login').style.display='block';};
+$('export').onclick=async()=>{try{$('status').textContent='正在生成导出文件…';const r=await request('/api/export?'+params());const blob=await r.blob();const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='墨森工具中心-IP访问记录-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);$('status').textContent='CSV 已生成。';}catch(e){$('status').textContent=e.message;}};
+})();
+</script>
+</body></html>
