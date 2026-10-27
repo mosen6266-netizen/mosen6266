@@ -37,7 +37,7 @@ button{border:0;border-radius:10px;cursor:pointer;min-height:42px;padding:0 17px
 </div>
 <div class="table-wrap"><table><thead><tr><th>访问时间（马来西亚）</th><th>IP 地址</th><th>国家/地区</th><th>访问工具</th><th>浏览器信息</th></tr></thead><tbody id="rows"><tr><td colspan="5">正在读取…</td></tr></tbody></table></div>
 <div class="pager"><button class="secondary" id="prev">上一页</button><span id="pageInfo" class="muted">第 1 页</span><button class="secondary" id="next">下一页</button></div>
-<p class="notice">每次成功加载页面后会尝试记录一条访问。国家按公网 IP 推断，VPN、代理和运营商网络可能导致定位不准确。CSV 每次最多导出符合筛选条件的最新 50,000 条；可按日期分批导出。</p>
+<p class="notice">仅查询和导出最近 90 天的访问记录。超过 90 天的记录由 Cloudflare 每天自动清理，无需人工确认，也不保留例外。国家按公网 IP 推断，VPN、代理和运营商网络可能导致定位不准确。CSV 每次最多导出符合筛选条件的最新 50,000 条；可按日期分批导出。</p>
 <div class="error" id="status" role="status"></div>
 </section>
 </main></div>
@@ -80,7 +80,16 @@ function pageInfo(value){
   }catch(_){ }
   return {title:'其他访问页面',url:null};
 }
-function params(){const p=new URLSearchParams();inputs.forEach(k=>{const v=$(k).value.trim();if(v)p.set(k,v);});return p;}
+// Retention window: query and export only the latest 90 days.
+const RETENTION_MS=90*24*60*60*1000;
+function retentionStart(){return new Date(Date.now()-RETENTION_MS).toISOString().slice(0,10);}
+function params(){
+  const p=new URLSearchParams();
+  inputs.forEach(k=>{const v=$(k).value.trim();if(v)p.set(k,v);});
+  const earliest=retentionStart();
+  if(!p.get('start')||p.get('start')<earliest)p.set('start',earliest);
+  return p;
+}
 function countryName(code){if(!code||code==='XX'||code==='T1')return '未知 ('+(code||'--')+')';try{return (names?names.of(code):code)+' ('+code+')';}catch(e){return code;}}
 function dateTime(ts){try{return new Date(ts).toLocaleString('zh-CN',{timeZone:'Asia/Kuala_Lumpur',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});}catch(e){return ts;}}
 async function request(path){const response=await fetch(api+path,{headers:{Authorization:'Bearer '+password},cache:'no-store'});if(response.status===401)throw new Error('管理密码错误或已失效');if(!response.ok)throw new Error('服务请求失败：HTTP '+response.status);return response;}
