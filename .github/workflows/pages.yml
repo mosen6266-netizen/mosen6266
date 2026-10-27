@@ -215,6 +215,35 @@ jobs:
 
           cp -a public/. .
 
+          # Add independent visit logging without modifying any tool logic.
+          # GitHub Pages is static: this tracks pages whose JavaScript runs.
+          python3 - <<'PY'
+          from pathlib import Path
+          tag = '<script defer src="https://mosen-visit-analytics.mosen6266-ms007.workers.dev/track.js?v=1"></script>'
+          skip_parts = {'.git', 'public', 'site_parts', 'deploy_parts'}
+          updated = 0
+          for path in Path('.').rglob('*.html'):
+              if any(part in skip_parts for part in path.parts):
+                  continue
+              if path.name == 'visit-dashboard.html':
+                  continue
+              try:
+                  html = path.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              if 'mosen-visit-analytics.mosen6266-ms007.workers.dev/track.js' in html:
+                  continue
+              if '</head>' in html:
+                  html = html.replace('</head>', tag + '\n</head>', 1)
+              elif '</body>' in html:
+                  html = html.replace('</body>', tag + '\n</body>', 1)
+              else:
+                  continue
+              path.write_text(html, encoding='utf-8')
+              updated += 1
+          print(f'Visitor tracker active in {updated} HTML pages.')
+          PY
+
       - name: Build dynamic HTML tool index
         shell: bash
         run: |
