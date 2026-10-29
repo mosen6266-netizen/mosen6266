@@ -1238,6 +1238,7 @@ function insertStatusBadge(icon, text, color){
   const badge = document.createElement('span');
   badge.setAttribute('data-status-badge', 'true');
   badge.setAttribute('contenteditable', 'false');
+  badge.setAttribute('title', '右键修改状态文字');
   badge.style.display = 'inline-block';
   badge.style.verticalAlign = 'baseline';
   badge.style.whiteSpace = 'nowrap';
@@ -2361,6 +2362,62 @@ function detectThemeColorFromCanvas(){
   return '';
 }
 
+
+function restoreImportedEditableText(canvas){
+  // A clean exported email intentionally has no editor attributes. Restore editing to
+  // every visible text-bearing element, including spans, bold text and table cells.
+  // Keep nested editables out: a parent with its own text edits its inline children.
+  canvas.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+  const allowed = new Set(['DIV','P','A','SPAN','B','STRONG','I','EM','SMALL','FONT','U','S',
+    'SUB','SUP','H1','H2','H3','H4','H5','H6','TD','TH','LI','LABEL','CODE','TIME',
+    'PRE','BLOCKQUOTE']);
+  const targets = new Set();
+  const walker = document.createTreeWalker(canvas, NodeFilter.SHOW_TEXT);
+  let node;
+  while((node = walker.nextNode())){
+    if(!node.nodeValue || !node.nodeValue.trim()) continue;
+    let el = node.parentElement;
+    if(!el || el.closest('script,style,svg,noscript,template,button,input,textarea,select,option')) continue;
+    while(el && el !== canvas && !allowed.has(el.tagName)) el = el.parentElement;
+    if(el && el !== canvas) targets.add(el);
+  }
+  targets.forEach(el => {
+    let ancestor = el.parentElement;
+    while(ancestor && ancestor !== canvas && !targets.has(ancestor)) ancestor = ancestor.parentElement;
+    if(ancestor && ancestor !== canvas) return;
+    el.setAttribute('contenteditable', 'true');
+    el.setAttribute('spellcheck', 'false');
+  });
+}
+
+function restoreImportedStatusControls(canvas){
+  // Rebuild the state interactions that cleanClone removes from sent emails.
+  // The original status chip's layout survives HTML export, unlike data-* flags.
+  const states = ['初步审核','处理中','待补充','已完成','未通过'];
+  canvas.querySelectorAll('div').forEach(label => {
+    const chip = label.nextElementSibling;
+    if(!chip || chip.tagName !== 'DIV') return;
+    if(chip.style.borderRadius !== '999px' ||
+       chip.style.marginTop !== '3px' ||
+       chip.style.padding !== '2px 10px') return;
+    if(!chip.closest('tr[data-edit-row="true"]')) return;
+    chip.setAttribute('data-status-cycle', 'true');
+    chip.setAttribute('data-status-index', String(states.indexOf(chip.textContent.trim())));
+    chip.setAttribute('contenteditable', 'false');
+    chip.setAttribute('title', '单击切换状态，右键自定义状态文字');
+    chip.style.cursor = 'pointer';
+  });
+  canvas.querySelectorAll('span').forEach(chip => {
+    if(chip.style.borderRadius !== '999px' ||
+       chip.style.verticalAlign !== 'baseline' ||
+       chip.style.whiteSpace !== 'nowrap' ||
+       chip.style.borderStyle !== 'solid') return;
+    chip.setAttribute('data-status-badge', 'true');
+    chip.setAttribute('contenteditable', 'false');
+    chip.setAttribute('title', '右键修改状态文字');
+  });
+}
+
 function markImportedRowsEditable(){
   const canvas = document.getElementById('emailCanvas');
   if(!canvas) throw new Error('没有找到邮件画布');
@@ -2400,20 +2457,8 @@ function markImportedRowsEditable(){
     if(padCell) padCell.setAttribute('data-edit-padding', 'true');
   });
 
-  // 下载出的干净HTML没有 contenteditable，这里恢复文字可直接点击编辑
-  mainBody.querySelectorAll('div,p,a').forEach(el => {
-    if((el.textContent || '').trim() || el.tagName.toLowerCase() === 'a'){
-      el.setAttribute('contenteditable', 'true');
-      el.setAttribute('spellcheck', 'false');
-    }
-  });
-  mainBody.querySelectorAll('td').forEach(td => {
-    const text = (td.textContent || '').trim();
-    if(!text) return;
-    if(td.querySelector('table,img,div,p,a,span')) return;
-    td.setAttribute('contenteditable', 'true');
-    td.setAttribute('spellcheck', 'false');
-  });
+  restoreImportedEditableText(canvas);
+  restoreImportedStatusControls(canvas);
   ensureAutoFitTitleMarkers();
   normalizeInfoTableTitleDisplay(document);
   fitAllAutoTitles();
@@ -3114,6 +3159,22 @@ initSelectableListMarkers();
     scheduleHistorySnapshot();
     flash('状态标签已切换为：' + st[0]);
   }
+
+
+  // Single-click preserves quick preset cycling. Right-click edits custom text.
+  document.addEventListener('contextmenu', function(e){
+    const chip = e.target.closest && e.target.closest('[data-status-cycle="true"],[data-status-badge="true"]');
+    const canvas = document.getElementById('emailCanvas');
+    if(!chip || !canvas || !canvas.contains(chip) || document.body.classList.contains('preview-mode')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const next = prompt('修改状态文字（左键仍可切换预设状态）：', chip.textContent.trim());
+    if(next === null) return;
+    chip.textContent = next;
+    if(chip.matches('[data-status-cycle="true"]')) chip.setAttribute('data-status-index', '-1');
+    scheduleHistorySnapshot();
+    flash('状态文字已更新');
+  }, true);
 
   function initEnhancedBlockInteractions(){
     document.addEventListener('click', function(e){

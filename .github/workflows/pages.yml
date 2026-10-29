@@ -53,6 +53,8 @@ jobs:
           # Keep the committed DOCX editor as the source of truth so export-name settings
           # and other editor changes are not replaced by the archived site snapshot.
           cp 'DOCX文件编辑器.html' 'public/DOCX文件编辑器.html'
+          # Always publish the latest editable email editor, not the archived snapshot.
+          cp '邮件编辑器.html' 'public/邮件编辑器.html'
 
           test -f public/index.html
           test -f 'public/DOCX文件编辑器.html'
