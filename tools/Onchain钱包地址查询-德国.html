@@ -318,6 +318,8 @@
 
 <div id="txContextMenu" class="context-menu" role="menu">
   <button onclick="openAddTx()">＋ Transaktionsdatensatz hinzufügen</button>
+  <button id="ctxInsertAboveBtn" onclick="openInsertTx('above')">↑ Transaktion oberhalb einfügen</button>
+  <button id="ctxInsertBelowBtn" onclick="openInsertTx('below')">↓ Transaktion unterhalb einfügen</button>
   <button id="ctxEditBtn" onclick="openEditTx()">✎ Ausgewählten Datensatz bearbeiten</button>
   <button id="ctxAutoReadBtn" onclick="openAutoReadTx()">⌁ Automatisch einlesen & ändern</button>
   <div class="menu-sep"></div>
@@ -338,6 +340,7 @@ let db = loadDB();
 let currentRecord = null;
 let selectedTxIndex = -1;
 let txEditMode = 'edit';
+let txInsertIndex = -1;
 const $ = id => document.getElementById(id);
 const manager = $('manager');
 const txDialog = $('txDialog');
@@ -1072,14 +1075,16 @@ function openTxMenu(ev,index=-1){
   selectedTxIndex=index;
   document.querySelectorAll('.tx-row.context-selected').forEach(el=>el.classList.remove('context-selected'));
   if(index>=0){const row=document.querySelector(`.tx-row[data-index="${index}"]`);if(row)row.classList.add('context-selected')}
+  $('ctxInsertAboveBtn').style.display=index>=0?'block':'none';
+  $('ctxInsertBelowBtn').style.display=index>=0?'block':'none';
   $('ctxEditBtn').style.display=index>=0?'block':'none';
   $('ctxAutoReadBtn').style.display=index>=0?'block':'none';
   $('ctxDeleteBtn').style.display=index>=0?'block':'none';
-  const menuW=270,menuH=index>=0?178:54;
+  txContextMenu.classList.add('show');
+  const menuW=txContextMenu.offsetWidth,menuH=txContextMenu.offsetHeight;
   const x=Math.min(ev.clientX,window.innerWidth-menuW-10);
   const y=Math.min(ev.clientY,window.innerHeight-menuH-10);
   txContextMenu.style.left=Math.max(8,x)+'px';txContextMenu.style.top=Math.max(8,y)+'px';
-  txContextMenu.classList.add('show');
 }
 function ensureCurrentEditable(){
   if(!currentRecord) return false;
@@ -1221,11 +1226,20 @@ function applyAutoReadTx(){
 
 function openAddTx(){
   hideTxMenu();if(!currentRecord)return;
-  txEditMode='add';clearTxForm();$('txDialogTitle').textContent='Transaktionsdatensatz hinzufügen';txDialog.showModal();
+  txInsertIndex=-1;txEditMode='add';clearTxForm();$('txDialogTitle').textContent='Transaktionsdatensatz hinzufügen';txDialog.showModal();
+}
+function openInsertTx(position){
+  const idx=selectedTxIndex;
+  hideTxMenu();
+  if(!currentRecord||idx<0||!currentRecord.transactions?.[idx])return;
+  txInsertIndex=position==='above'?idx:idx+1;
+  txEditMode='insert';clearTxForm();
+  $('txDialogTitle').textContent=position==='above'?'Transaktion oberhalb einfügen':'Transaktion unterhalb einfügen';
+  txDialog.showModal();
 }
 function openEditTx(){
   const idx=selectedTxIndex;hideTxMenu();if(!currentRecord||idx<0||!currentRecord.transactions?.[idx])return;
-  selectedTxIndex=idx;txEditMode='edit';fillTxForm(currentRecord.transactions[idx]);$('txDialogTitle').textContent='Transaktionsdatensatz bearbeiten';txDialog.showModal();
+  selectedTxIndex=idx;txInsertIndex=-1;txEditMode='edit';fillTxForm(currentRecord.transactions[idx]);$('txDialogTitle').textContent='Transaktionsdatensatz bearbeiten';txDialog.showModal();
 }
 function saveTxRow(){
   if(!currentRecord)return;
@@ -1238,13 +1252,15 @@ function saveTxRow(){
   const tx={time:normalizeDateText($('txTime').value.trim()),direction:dir,asset,amount:Number.isFinite(amountNum)?amountNum.toFixed(asset==='ETH'?6:2):$('txAmount').value.trim(),counterparty:$('txCounterparty').value.trim(),status:internalText($('txStatus').value.trim()),hash:$('txHash').value.trim()||currentRecord.address,block:$('txBlock').value.trim(),fee:feeCanonical};
   if(!tx.time||!tx.amount){alert('Datum/Uhrzeit und Betrag sind erforderlich.');return}
   if(!Array.isArray(currentRecord.transactions))currentRecord.transactions=[];
-  if(txEditMode==='add') currentRecord.transactions.push(tx); else if(selectedTxIndex>=0) currentRecord.transactions[selectedTxIndex]=tx;
+  if(txEditMode==='add') currentRecord.transactions.push(tx);
+  else if(txEditMode==='insert'&&txInsertIndex>=0) currentRecord.transactions.splice(Math.min(txInsertIndex,currentRecord.transactions.length),0,tx);
+  else if(selectedTxIndex>=0) currentRecord.transactions[selectedTxIndex]=tx;
   currentRecord.chain='Ethereum';
   ensureBalances(currentRecord);
   if(!ensureCurrentEditable())return;
   recomputeDerived(currentRecord);
   recomputeDerived(currentRecord);
-  db[norm(currentRecord.address)]=currentRecord;saveDB();txDialog.close();render(currentRecord);setFixedAccountNotice();
+  db[norm(currentRecord.address)]=currentRecord;saveDB();txInsertIndex=-1;txDialog.close();render(currentRecord);setFixedAccountNotice();
 }
 function requestDeleteTxRow(ev){
   if(ev){ev.preventDefault();ev.stopPropagation()}
