@@ -728,6 +728,13 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
   window.WC_buildEditableDOCXBytes = buildDocxBytes;
   window.WC_getManualEdits = wcManualEdits;
   wcInitEditableTracking();
+  // Direct export link: ?autoExport=docx. Reuse the exact same exporter as the button.
+  // The normal page URL and manual button behavior remain unchanged.
+  if(new URLSearchParams(window.location.search).get('autoExport') === 'docx'){
+    window.addEventListener('load', function(){
+      setTimeout(exportProfessionalDOCX, 400);
+    }, {once:true});
+  }
 })();
 </script>
 
